@@ -1,0 +1,7 @@
+{
+  "name": "jeopardy",
+  "version": "1.0.0",
+  "description": "Jeopardy monorepo",
+  "repository": "git@github.com:avbhandaru/jeopardy.git",
+  "scripts": {}
+}
