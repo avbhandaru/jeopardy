@@ -4,13 +4,37 @@ This is the Jeopardy monorepo
 **NOTE: This will be the best jeopardy thing you've ever laid your eggs in!**
 
 ## Setup
-Backend:
+### Backend:
 ```sh
-brew install rustup
+# curl https://sh.rustup.rs -sSf | sh
+# echo 'export PATH=$HOME/.cargo/bin:$PATH' >> ~/.zshrc
+# echo 'source $HOME/.cargo' >> ~/.zshrc
+# cargo install diesel_cli --no-default-features --features postgres
 brew install bazelisk
 ```
 
-General:
+### Local infrastructure:
+First download docker from [here](https://www.docker.com/products/docker-desktop/). Then start docker desktop. And then run the following commands:
+```sh
+docker-compose up -d
+docker ps
+brew install libpq
+echo 'export PATH=$PATH:/opt/homebrew/opt/libpq/bin' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Now you should be able to access your database using `psql` like so:
+```sh
+psql -d postgres://jeopardy:password@localhost:5432/jeopardy
+```
+
+**Temporary**: To add some test data do this:
+```
+create table users (id int primary key, name text);
+insert into users (id, name) values (1, 'Akhil'), (2, 'Matt'), (3, 'Hana'), (4, 'Alex');
+```
+
+### General:
 ```sh
 brew install yarn
 brew install nvm
@@ -34,12 +58,17 @@ nvm install 18.20.4
 To build and then run using the generated binary:
 ```sh
 bazel build //backend/...
-./bazel-bin/backend/main
+DATABASE_URL='...' ./bazel-bin/backend/main
 ```
 
 To run directly:
 ```sh
-bazel run //backend:main
+DATABASE_URL='...' bazel run //backend:main
+```
+
+**NOTE:** For a local postgres docker container the `DATABASE_URL` is:
+```
+postgres://jeopardy:password@localhost:5432/jeopardy
 ```
 
 To build and test a particular sub-tree:
