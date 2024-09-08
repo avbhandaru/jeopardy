@@ -16,11 +16,13 @@ rust-project.json
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-# Bazel folders
+# Bazel generated folders
 bazel-bin
 bazel-jeopardy
 bazel-out
 bazel-testlogs
+MODULE.bazel.lock
 
 # Other
 node_modules
+.env

@@ -4,5 +4,10 @@ rust_binary(
     name = "main",
     srcs = ["main.rs"],
     visibility = ["//visibility:public"],
-    deps = ["//backend/lib"],
+    deps = [
+        "//backend/lib",
+        "@crates//:diesel",
+        "@crates//:diesel-async",
+        "@crates//:tokio",
+    ],
 )
