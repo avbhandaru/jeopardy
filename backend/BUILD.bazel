@@ -6,6 +6,7 @@ rust_binary(
     visibility = ["//visibility:public"],
     deps = [
         "//backend/lib",
+        "@crates//:chrono",
         "@crates//:diesel",
         "@crates//:diesel-async",
         "@crates//:tokio",
