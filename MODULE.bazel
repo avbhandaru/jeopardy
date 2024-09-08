@@ -12,7 +12,8 @@ bazel_dep(name = "protobuf", version = "27.1", repo_name = "com_google_protobuf"
 ##        Rust        ##
 ########################
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
-crate.spec(package = "diesel", version = "2.2.4", features = ["postgres"])
+crate.spec(package = "chrono", version = "0.4.38")
+crate.spec(package = "diesel", version = "2.2.4", features = ["postgres", "chrono"])
 crate.spec(package = "diesel-async", version = "0.5.0", features = ["postgres", "deadpool"])
 crate.spec(package = "tokio", version = "1.40.0", features = ["full"])
 crate.from_specs()

@@ -6,10 +6,10 @@ This is the Jeopardy monorepo
 ## Setup
 ### Backend:
 ```sh
-# curl https://sh.rustup.rs -sSf | sh
-# echo 'export PATH=$HOME/.cargo/bin:$PATH' >> ~/.zshrc
-# echo 'source $HOME/.cargo' >> ~/.zshrc
-# cargo install diesel_cli --no-default-features --features postgres
+curl https://sh.rustup.rs -sSf | sh
+echo 'export PATH=$HOME/.cargo/bin:$PATH' >> ~/.zshrc
+echo 'source $HOME/.cargo' >> ~/.zshrc
+cargo install diesel_cli --no-default-features --features postgres
 brew install bazelisk
 ```
 
@@ -28,10 +28,18 @@ Now you should be able to access your database using `psql` like so:
 psql -d postgres://jeopardy:password@localhost:5432/jeopardy
 ```
 
-**Temporary**: To add some test data do this:
+First run the migrations:
+```sh
+cd backend/db
+diesel migration run \
+    --database-url postgres://jeopardy:password@localhost:5432/jeopardy \
+    --migration-dir ./migrations \
+    --config-file diesel.toml
 ```
-create table users (id int primary key, name text);
-insert into users (id, name) values (1, 'Akhil'), (2, 'Matt'), (3, 'Hana'), (4, 'Alex');
+
+To add some test data do this:
+```sh
+DATABASE_URL=postgres://jeopardy:password@localhost:5432/jeopardy bazel run //backend:main
 ```
 
 ### General:
@@ -99,6 +107,12 @@ TODO
 3. Use `GraphQL, Apollo, React`
 4. Use `MaterialUI` or `Antd` for frontend development (until we want more customization)
 5. Use a modern SQL migration tool
+
+## Database TODOs:
+1. ~Get inserts and updates working~
+1. ~Get update_timestamps() working~
+1. Move schema types to new DAL (data access layer) library
+1. Figure out naming convention of migration files
 
 ## High priority items
 1. Get `GraphQL` server working + initial patterns
