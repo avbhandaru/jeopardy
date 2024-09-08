@@ -21,3 +21,6 @@ bazel-bin
 bazel-jeopardy
 bazel-out
 bazel-testlogs
+
+# Other
+node_modules
