@@ -78,4 +78,3 @@ TODO
 
 ## Low priority items
 1. Husky pre-commit setup
-2. Get testing with rust_rules working
