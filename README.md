@@ -16,6 +16,7 @@ brew install bazelisk
 ### Local infrastructure:
 First download docker from [here](https://www.docker.com/products/docker-desktop/). Then start docker desktop. And then run the following commands:
 ```sh
+cd infrastructure
 docker-compose up -d
 docker ps
 brew install libpq
@@ -45,6 +46,10 @@ DATABASE_URL=postgres://jeopardy:password@localhost:5432/jeopardy bazel run //ba
 ### General:
 ```sh
 brew install yarn
+```
+
+### Frontend:
+```sh
 brew install nvm
 mkdir ~/.nvm
 ```
@@ -56,10 +61,12 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 ```
 
-Then run:
+Then run to install node:
 ```sh
 source ~/.zshrc
-nvm install 18.20.4
+nvm install 20.13.1
+brew install ibazel
+bazel run @pnpm//:pnpm -- --dir $PWD/frontend install
 ```
 
 ## Run
@@ -96,6 +103,13 @@ To format all of our `BUILD.bazel` files:
 bazel run //:buildifier
 ```
 
+To run the frontend React app:
+```sh
+bazel build //frontend/...
+ibazel run //frontend:dev_server
+open http://localhost:9000 # Port we're running the frontend from
+```
+
 ## Zed Settings
 ```json
 TODO
@@ -116,8 +130,14 @@ TODO
 
 ## High priority items
 1. Get `GraphQL` server working + initial patterns
-2. Get Schema migrations and ORM setup
-3. Get docker-compose.yaml file for local database and testing
+2. ~Get Schema migrations and ORM setup~
+3. ~Get docker-compose.yaml file for local database and testing~
+
+## Frontend TODOs:
+1. Move to TypeScript
+1. Add MaterialUI components and dependency
+1. Add Apollo GraphQL binary
+1. Get `bazel run //:buildifier` working again
 
 ## Low priority items
 1. Husky pre-commit setup
