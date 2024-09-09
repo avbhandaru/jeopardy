@@ -25,4 +25,7 @@ MODULE.bazel.lock
 
 # Other
 node_modules
+frontend/node_modules
+pnpm-lock.yaml
 .env
+.zed

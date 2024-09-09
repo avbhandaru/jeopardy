@@ -52,3 +52,7 @@ http_archive(
         "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.2.tar.gz",
     ],
 )
+
+########################
+##     TypeScript     ##
+########################

@@ -1,0 +1,49 @@
+{
+  "name": "react-webpack",
+  "version": "1.0.0",
+  "private": "true",
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "start": "webpack-dev-server --config webpack.config.js"
+  },
+  "devDependencies": {
+    "@swc/core": "1.4.12",
+    "html-webpack-plugin": "5.6.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "swc-loader": "0.2.6",
+    "webpack": "5.89.0",
+    "webpack-cli": "5.1.4",
+    "webpack-dev-server": "4.15.2",
+    "eslint": "^8.55.0",
+    "jsdom": "^23.0.1",
+    "vitest": "^1.0.2"
+  },
+  "pnpm": {
+    "//packageExtensions": "Fix missing dependencies in npm packages, see https://pnpm.io/package_json#pnpmpackageextensions",
+    "packageExtensions": {
+      "@vitejs/plugin-vue": {
+        "peerDependencies": {
+          "vue": "*"
+        }
+      },
+      "@typescript-eslint/eslint-plugin": {
+        "peerDependencies": {
+          "eslint": "*"
+        }
+      },
+      "eslint-config-next": {
+        "peerDependencies": {
+          "next": "*"
+        }
+      },
+      "postcss-loader": {
+        "peerDependencies": {
+          "postcss-flexbugs-fixes": "*",
+          "postcss-preset-env": "*",
+          "postcss-normalize": "*"
+        }
+      }
+    }
+  }
+}
