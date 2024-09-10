@@ -1,11 +1,16 @@
 import React from "react";
+import Users from "./Users";
+import ApolloProvider from "./ApolloProvider";
+
 
 export const App = () => {
   return (
-    <div>
-      <h1>React Webpack App</h1>
-      <br />
-      Build with Bazel. This is a sample React app using JS. Hi Matt!
-    </div>
+    <ApolloProvider>
+      <div className="App">
+        <h1>GraphQL Users</h1>
+        <Users />
+      </div>
+    </ApolloProvider>
   );
 };
+

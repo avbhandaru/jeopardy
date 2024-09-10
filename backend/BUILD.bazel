@@ -5,10 +5,13 @@ rust_binary(
     srcs = ["main.rs"],
     visibility = ["//visibility:public"],
     deps = [
-        "//backend/lib",
+       "//backend/lib",             # Your library code, like `lib.rs`
         "@crates//:chrono",
-        "@crates//:diesel",
-        "@crates//:diesel-async",
-        "@crates//:tokio",
+        "@crates//:diesel",         # Diesel ORM for PostgreSQL
+        "@crates//:diesel-async",   # Async support for Diesel
+        "@crates//:tokio",          # Async runtime
+        "@crates//:async-graphql",  # GraphQL implementation for Rust
+        "@crates//:axum",           # Axum web framework for serving API
+        "@crates//:dotenv",         # For loading environment variables like DATABASE_URL
     ],
 )

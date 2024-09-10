@@ -2,22 +2,23 @@
   "name": "react-webpack",
   "version": "1.0.0",
   "private": "true",
+  "proxy": "http://localhost:3030",
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "start": "webpack-dev-server --config webpack.config.js"
   },
   "devDependencies": {
     "@swc/core": "1.4.12",
+    "eslint": "^8.55.0",
     "html-webpack-plugin": "5.6.0",
+    "jsdom": "^23.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "swc-loader": "0.2.6",
+    "vitest": "^1.0.2",
     "webpack": "5.89.0",
     "webpack-cli": "5.1.4",
-    "webpack-dev-server": "4.15.2",
-    "eslint": "^8.55.0",
-    "jsdom": "^23.0.1",
-    "vitest": "^1.0.2"
+    "webpack-dev-server": "4.15.2"
   },
   "pnpm": {
     "//packageExtensions": "Fix missing dependencies in npm packages, see https://pnpm.io/package_json#pnpmpackageextensions",
@@ -45,5 +46,9 @@
         }
       }
     }
+  },
+  "dependencies": {
+    "@apollo/client": "^3.11.8",
+    "graphql": "^16.9.0"
   }
 }
