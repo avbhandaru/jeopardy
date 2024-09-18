@@ -1,5 +1,12 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 
+rust_library(
+    name = "lib",
+    srcs = glob(["lib/**/*.rs"]),
+    crate_root = "lib/lib.rs",
+    edition = "2021",
+)
+
 rust_binary(
     name = "main",
     srcs = ["main.rs"],
