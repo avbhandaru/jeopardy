@@ -12,6 +12,8 @@ use axum::{
     routing::{get, post},
     Router};
 use axum_server;
+use tower_http::cors::{CorsLayer, Any};
+use http::header::HeaderValue;
 use diesel::prelude::*;
 use diesel_async::{RunQueryDsl, AsyncConnection, AsyncPgConnection};
 // use diesel_async::AsyncPgConnection;
@@ -98,7 +100,13 @@ async fn start_server(conn: Option<Arc<tokio::sync::Mutex<AsyncPgConnection>>>) 
     // Create Router with single route
     let app = Router::new()
         .route("/hello", get(hello_world))
-        .route("/graphql", post( move |request: GraphQLRequest| graphql_handler(schema.clone(), request)));
+        .route("/graphql", post( move |request: GraphQLRequest| graphql_handler(schema.clone(), request)))
+        .layer(
+            CorsLayer::new()
+                .allow_origin("http://localhost:4000".parse::<HeaderValue>().unwrap())
+                .allow_methods(Any)
+                .allow_headers(Any)
+        );
 
     println!("Created app!");
 
@@ -211,8 +219,44 @@ async fn main() {
     dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     println!("{}", database_url);
-    // // Establish a database connection
-    // let connection = AsyncPgConnection::establish(&database_url).await.unwrap();
+
+    // Establish a database connection
+    let connection: AsyncPgConnection = AsyncPgConnection::establish(&database_url).await.unwrap();
+
+    // Wrap connection in Arc for thread safety
+    // let shared_connection = Arc::new(connection);
+    let shared_connection = Arc::new(tokio::sync::Mutex::new(connection));
+    // We need to insert this connection into the context when starting our axum server
+    // ctx.insert(shared_connection.clone());
+
+    // Spawn server as background task
+    // let _server_handle = tokio::spawn(async { start_server(Some(shared_connection)).await; });
+    let _server_handle = start_server(Some(shared_connection)).await;
+
+    // Allow some time for server to start
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
+    // Create a GraphQL Query
+    let client = reqwest::Client::new();
+    // This query will trigger the users() async_graphql::Object we defined above
+    let query = r#"{"query":"{ users { id } }"}"#;
+    let response = client
+        .post("http://localhost:3000/graphql")
+        .header("Content-Type", "application/json")
+        .body(query)
+        .send()
+        .await
+        .expect("Failed to send request");
+
+    println!("Created client, sent query request");
+
+    let status = response.status();
+    let body = response.text().await.unwrap();
+    println!("Response Status: {}", status);
+    println!("Response Body: {}", body);
+
+    // Assert that the status is 200
+    assert_eq!(status, 200);
 
 
 }

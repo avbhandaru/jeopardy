@@ -1,16 +1,41 @@
 import React from "react";
-import Users from "./Users";
-import ApolloProvider from "./ApolloProvider";
+import { useQuery } from '@apollo/react-hooks'
+import gql from 'graphql-tag'
+import './App.css'
 
+const GET_USERS = gql`
+    {
+        users {
+            id
+            username
+        }
+    }
+`
 
-export const App = () => {
-  return (
-    <ApolloProvider>
-      <div className="App">
-        <h1>GraphQL Users</h1>
-        <Users />
+const User = ({ user: { username } }) => (
+  <div className='Card'>
+      <div>
+      <h1 className='Card--name'>{username}</h1>
       </div>
-    </ApolloProvider>
-  );
-};
+  </div>
+)
+
+
+function App() {
+  const { loading, error, data } = useQuery(GET_USERS)
+
+  if (error) return <h1>Something went wrong!</h1>
+  if (loading) return <h1>Loading...</h1>
+
+  return (
+      <main className='App'>
+          <h1>Jeopardy | Users</h1>
+          {data.users.map((user) => (
+              <User key={user.id} user={user} />
+          ))}
+      </main>
+  )
+}
+
+export default App
 
