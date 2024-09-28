@@ -52,6 +52,10 @@ brew install yarn
 ```sh
 brew install nvm
 mkdir ~/.nvm
+brew install pnpm@8
+cd frontend
+pnpm i # installs deps
+bazel build //frontend/...
 ```
 
 Add the following lines to your `~/.zshrc`

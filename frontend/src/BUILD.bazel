@@ -5,6 +5,8 @@ swc(
     srcs = [
         "app.jsx",
         "index.jsx",
+        "ApolloProvider.jsx",
+        "Users.jsx",
     ],
     swcrc = "//frontend:.swcrc",
     visibility = ["//visibility:public"],
