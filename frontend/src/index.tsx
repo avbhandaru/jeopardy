@@ -12,6 +12,11 @@ const client = new ApolloClient({
 
 // Get the root element from your HTML
 const container = document.getElementById('app');
+
+if (!container) {
+    throw new Error('Failed to find the root element');
+  }
+  
 const root = createRoot(container);
 
 // Render your app with ApolloProvider

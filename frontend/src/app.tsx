@@ -12,30 +12,43 @@ const GET_USERS = gql`
     }
 `
 
-const User = ({ user: { username } }) => (
+interface UserType {
+    id: string;
+    username: string;
+}
+
+interface UsersData {
+    users: UserType[];
+}
+
+interface UserProps {
+    user: UserType;
+}
+
+const User: React.FC<UserProps> = ({ user: { username } }) => (
   <div className='Card'>
       <div>
       <h1 className='Card--name'>{username}</h1>
       </div>
   </div>
-)
+);
 
 
-function App() {
-  const { loading, error, data } = useQuery(GET_USERS)
+const App: React.FC = () => {
+  const { loading, error, data } = useQuery<UsersData>(GET_USERS);
 
-  if (error) return <h1>Something went wrong!</h1>
-  if (loading) return <h1>Loading...</h1>
+  if (error) return <h1>Something went wrong!</h1>;
+  if (loading) return <h1>Loading...</h1>;
 
   return (
       <main className='App'>
           <h1>Jeopardy | Users</h1>
-          {data.users.map((user) => (
+          {data?.users.map((user) => (
               <User key={user.id} user={user} />
           ))}
       </main>
-  )
-}
+  );
+};
 
-export default App
+export default App;
 
