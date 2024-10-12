@@ -1,25 +1,2 @@
-[package]
-name = "jeopardy"
-version = "0.1.0"
-edition = "2021"
-
-[[bin]]
-name = "backend"  # Name of your binary
-path = "backend/main.rs"  # Path to your main.rs file
-
-[dependencies]
-axum = "0.7.5"
-async-graphql = "7.0.9"
-async-graphql-axum = "7.0.9"
-diesel = { version = "2.0", features = ["chrono", "postgres"] }
-diesel-async = { version = "0.5.0", features = ["postgres"] }
-tokio = { version = "1.40.0", features = ["full"] }
-dotenv = "0.15"
-chrono = { version = "0.4", features = ["serde"] }
-serde = { version = "1.0", features = ["derive"] }
-axum-server = "0.7.1"
-hyper = "1.4.1"
-reqwest = "0.12.7"
-tower-http = { version = "0.6.1", features = ["cors"] }
-http = "1.1.0"
-
+[workspace]
+members = ["backend"]
