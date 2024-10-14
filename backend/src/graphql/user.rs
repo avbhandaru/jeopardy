@@ -1,16 +1,17 @@
 // graphql/user.rs
 
+use crate::db::DBPool;
+use crate::models::user::NewUser;
 use crate::models::user::User as UserModel;
-use crate::{db::DBPool, models::user::NewUser};
 use async_graphql::{Context, InputObject, Object, Result, SimpleObject};
 use chrono::{DateTime, Utc};
 
 #[derive(SimpleObject)]
 pub struct User {
     pub id: i64,
-    pub username: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub username: String,
 }
 
 // Not sure what this does yet, but I think creates User object as we defined in models/
@@ -18,9 +19,9 @@ impl From<UserModel> for User {
     fn from(user_model: UserModel) -> Self {
         User {
             id: user_model.id,
-            username: user_model.username,
             created_at: user_model.created_at,
             updated_at: user_model.updated_at,
+            username: user_model.username,
             // Map other fields
         }
     }
@@ -57,9 +58,9 @@ impl UserQuery {
 #[derive(InputObject)]
 pub struct CreateUserInput {
     pub id: i64,
-    pub username: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub username: String,
 }
 
 // Define the mutation root for User

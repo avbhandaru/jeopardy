@@ -37,6 +37,7 @@ pnpm-lock.yaml
 .LSOverride
 
 ### VisualStudioCode ###
+.vscode/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
