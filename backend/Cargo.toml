@@ -1,0 +1,38 @@
+[package]
+name = "backend"  # The name of your backend crate
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# You can omit this section if you're using the default settings
+# path = "src/lib.rs"     # Default path is "src/lib.rs"
+
+[[bin]]
+name = "backend" # Name of the binary
+# path = "src/main.rs"    # Default path is "src/main.rs"
+
+[dependencies]
+axum = "0.7.5"
+async-graphql = { version = "7.0.9", features = ["chrono"] }
+async-graphql-axum = "7.0.9"
+diesel = { version = "2.0", features = ["chrono", "postgres"] }
+diesel-async = { version = "0.5.0", features = [
+    "postgres",
+    "deadpool",
+    "async-connection-wrapper",
+] }
+tokio = { version = "1.40.0", features = ["full"] }
+dotenv = "0.15"
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+axum-server = "0.7.1"
+hyper = "1.4.1"
+reqwest = "0.12.7"
+tower-http = { version = "0.6.1", features = ["cors"] }
+http = "1.1.0"
+serde_json = "1.0.128"
+deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
+diesel_migrations = "2.2.0"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

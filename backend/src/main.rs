@@ -1,28 +1,22 @@
-use async_graphql::{
-    Schema,
-    EmptyMutation,
-    EmptySubscription,
-    SimpleObject,
-};
-use async_graphql_axum::{
-    GraphQLRequest,
-    GraphQLResponse,
-};
+use async_graphql::{EmptyMutation, EmptySubscription, Schema, SimpleObject};
+use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{
     routing::{get, post},
-    Router};
+    Router,
+};
 use axum_server;
-use tower_http::cors::{CorsLayer, Any};
-use http::header::HeaderValue;
 use diesel::prelude::*;
-use diesel_async::{RunQueryDsl, AsyncConnection, AsyncPgConnection};
+use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
+use http::header::HeaderValue;
+use tower_http::cors::{Any, CorsLayer};
 // use diesel_async::AsyncPgConnection;
 use dotenv::dotenv;
 // use lib;
-use std::env;
-use std::sync::Arc;
 use chrono::NaiveDateTime;
+use std::env;
 use std::net::SocketAddr;
+use std::sync::Arc;
+mod db;
 
 #[tokio::test]
 async fn it_compiles() {
@@ -34,7 +28,7 @@ table! {
     users {
         id -> BigInt,
         created_at -> Timestamp,
-            updated_at -> Timestamp,
+        updated_at -> Timestamp,
         username -> Text,
     }
 }
@@ -59,7 +53,9 @@ impl Query {
     async fn users<'a>(&self, ctx: &async_graphql::Context<'_>) -> Vec<User> {
         // let conn = ctx.data::<Arc<AsyncPgConnection>>().unwrap();
         // Get the Arc<Mutex<AsyncPgConnection>> from the context
-        let conn = ctx.data::<Arc<tokio::sync::Mutex<AsyncPgConnection>>>().unwrap();
+        let conn = ctx
+            .data::<Arc<tokio::sync::Mutex<AsyncPgConnection>>>()
+            .unwrap();
         let mut conn = conn.lock().await;
         // get_users(&conn).await
         get_users(&mut conn).await
@@ -74,14 +70,19 @@ async fn get_users(conn: &mut AsyncPgConnection) -> Vec<User> {
     users::table
         .filter(users::id.gt(0))
         .load(conn)
-        .await.unwrap()
+        .await
+        .unwrap()
 }
 
-
 // Graphql handler
-async fn graphql_handler(schema: Schema<Query, EmptyMutation, EmptySubscription>, request: GraphQLRequest) -> GraphQLResponse {
+async fn graphql_handler(
+    schema: Schema<Query, EmptyMutation, EmptySubscription>,
+    request: GraphQLRequest,
+) -> GraphQLResponse {
     // schema.execute(request.into_inner()).await.into()
-    async_graphql::Schema::execute(&schema, request.into_inner()).await.into()
+    async_graphql::Schema::execute(&schema, request.into_inner())
+        .await
+        .into()
 }
 
 // Start Server. Optional Postgres connection to add to context
@@ -90,7 +91,7 @@ async fn start_server(conn: Option<Arc<tokio::sync::Mutex<AsyncPgConnection>>>) 
     let mut schema_builder = Schema::build(Query, EmptyMutation, EmptySubscription);
 
     // Check if db connection was passed
-    if let Some(db_conn) = conn{
+    if let Some(db_conn) = conn {
         schema_builder = schema_builder.data(db_conn.clone());
     }
 
@@ -100,12 +101,15 @@ async fn start_server(conn: Option<Arc<tokio::sync::Mutex<AsyncPgConnection>>>) 
     // Create Router with single route
     let app = Router::new()
         .route("/hello", get(hello_world))
-        .route("/graphql", post( move |request: GraphQLRequest| graphql_handler(schema.clone(), request)))
+        .route(
+            "/graphql",
+            post(move |request: GraphQLRequest| graphql_handler(schema.clone(), request)),
+        )
         .layer(
             CorsLayer::new()
                 .allow_origin("http://localhost:4000".parse::<HeaderValue>().unwrap())
                 .allow_methods(Any)
-                .allow_headers(Any)
+                .allow_headers(Any),
         );
 
     println!("Created app!");
@@ -118,7 +122,6 @@ async fn start_server(conn: Option<Arc<tokio::sync::Mutex<AsyncPgConnection>>>) 
         .serve(app.into_make_service())
         .await
         .unwrap();
-
 }
 
 #[tokio::test]
@@ -126,7 +129,9 @@ async fn graphql_hello_works() {
     println!("Starting graphql test!");
 
     // Spawn server as background task
-    let _server_handle = tokio::spawn(async { start_server(None).await; });
+    let _server_handle = tokio::spawn(async {
+        start_server(None).await;
+    });
 
     // Allow some time for server to start
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
@@ -155,7 +160,6 @@ async fn graphql_hello_works() {
 
     // Assert the response body contains the expected data
     assert!(body.contains(r#"{"data":{"hello":"Hello world!"}}"#));
-
 }
 
 #[tokio::test]
@@ -175,7 +179,9 @@ async fn diesel_works() {
     // ctx.insert(shared_connection.clone());
 
     // Spawn server as background task
-    let _server_handle = tokio::spawn(async { start_server(Some(shared_connection)).await; });
+    let _server_handle = tokio::spawn(async {
+        start_server(Some(shared_connection)).await;
+    });
 
     // Allow some time for server to start
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
@@ -204,12 +210,10 @@ async fn diesel_works() {
 
     // Assert the response body contains the expected data
     assert!(body.contains(r#"{"data":{"users":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":5},{"id":6},{"id":7},{"id":8}]}}"#));
-
-
 }
 
 // Handler that returns "Hello World"
-async fn hello_world() -> axum::response::Html<&'static str>{
+async fn hello_world() -> axum::response::Html<&'static str> {
     axum::response::Html("Hello, world!")
 }
 // Main function to set up Axum with GraphQL
@@ -257,6 +261,4 @@ async fn main() {
 
     // Assert that the status is 200
     assert_eq!(status, 200);
-
-
 }
