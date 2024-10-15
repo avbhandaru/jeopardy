@@ -6,6 +6,7 @@ use diesel_async::AsyncPgConnection;
 use dotenv::dotenv;
 use std::env;
 
+
 pub type DBPool = Pool<AsyncPgConnection>;
 
 pub fn create_pool(database_url: &String) -> Result<DBPool, BuildError> {

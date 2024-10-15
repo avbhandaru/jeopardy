@@ -2,10 +2,15 @@
 
 mod setup;
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
-use backend::db::schema::users;
+use backend::db::pool::DBPool;
+use backend::db::schema::users::dsl::*; // Import users table and columns
 use backend::graphql::user::UserQuery;
-use diesel::prelude::*;
-use diesel_async::AsyncPgConnection;
+use backend::models::user::NewUser;
+use backend::models::user::User;
+use chrono::{DateTime, Utc};
+use diesel::prelude::*; // Import Diesel prelude
+use diesel::ExpressionMethods;
+use diesel_async::RunQueryDsl;
 use serde_json::json;
 use setup::setup_test_db;
 
@@ -14,55 +19,41 @@ async fn test_compiles() {
     assert!(true);
 }
 
-// #[tokio::test]
-// async fn test_get_user() {
-//     // Set up test database and schema
-//     let pool: Pool<AsyncPgConnection> = setup_test_db().await;
+#[tokio::test]
+async fn test_migrations() {
+    let _pool: DBPool = setup_test_db().await.unwrap();
+}
 
-//     // Insert a test user into the database
-//     {
-//         let mut conn = pool.get().await.unwrap();
-//         diesel::insert_into(users::table)
-//             .values((users::id.eq(1), users::username.eq("testuser")))
-//             .execute(&mut conn)
-//             .await
-//             .unwrap();
-//     }
+#[tokio::test]
+async fn test_create_user_model() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    // Set up test database and schema
+    let pool: DBPool = setup_test_db().await.unwrap();
 
-//     // Build the schema with the test database
-//     let schema = Schema::build(UserQuery, EmptyMutation, EmptySubscription)
-//         .data(pool)
-//         .finish();
+    // Insert a test user into the database
+    {
+        let new_user: NewUser = NewUser {
+            id: 1,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+            username: "testuser".to_string(),
+        };
 
-//     // Define the query
-//     let query = r#"
-//         query GetUser($id: Int!) {
-//             getUser(id: $id) {
-//                 id
-//                 username
-//             }
-//         }
-//     "#;
+        let mut conn = pool.get().await?;
 
-//     // Execute the query
-//     let response = schema
-//         .execute(
-//             async_graphql::Request::new(query)
-//                 .variables(async_graphql::Variables::from_value(json!({ "id": 1}))),
-//         )
-//         .await;
+        let created_user: User = User::create(&mut *conn, new_user).await?;
 
-//     // Check for errors
-//     assert!(response.errors.is_empty(), "{:?}", response.errors);
+        assert_eq!(created_user.username, "testuser");
+    }
 
-//     // Verify the data
-//     let data = response.data.into_json().unwrap();
-//     let expected = json!({
-//         "getUser": {
-//             "id": 1,
-//             "username": "testuser"
-//         }
-//     });
+    // Fetch the user from the database to verify insertion
+    {
+        let mut conn = pool.get().await?;
+        let user: User = users
+            .filter(username.eq("testuser"))
+            .first(&mut conn)
+            .await?;
+        assert_eq!(user.username, "testuser");
+    }
 
-//     assert_eq!(data, expected);
-// }
+    Ok(())
+}

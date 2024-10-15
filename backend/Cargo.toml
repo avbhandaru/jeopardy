@@ -16,7 +16,11 @@ axum = "0.7.5"
 async-graphql = { version = "7.0.9", features = ["chrono"] }
 async-graphql-axum = "7.0.9"
 diesel = { version = "2.0", features = ["chrono", "postgres"] }
-diesel-async = { version = "0.5.0", features = ["postgres", "deadpool"] }
+diesel-async = { version = "0.5.0", features = [
+    "postgres",
+    "deadpool",
+    "async-connection-wrapper",
+] }
 tokio = { version = "1.40.0", features = ["full"] }
 dotenv = "0.15"
 chrono = { version = "0.4", features = ["serde"] }
