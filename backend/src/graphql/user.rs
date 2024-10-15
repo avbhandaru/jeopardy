@@ -57,7 +57,6 @@ impl UserQuery {
 
 #[derive(InputObject)]
 pub struct CreateUserInput {
-    pub id: i64,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub username: String,
@@ -75,9 +74,9 @@ impl UserMutation {
         let mut conn = pool.get().await.expect("Failed to get connection");
 
         let new_user: NewUser = NewUser {
-            username: input.username,
             created_at: input.created_at,
             updated_at: input.updated_at,
+            username: input.username,
         };
 
         let user_model: UserModel = UserModel::create(&mut conn, new_user).await?;
