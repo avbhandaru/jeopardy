@@ -12,6 +12,7 @@ use std::error::Error;
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../backend/db/migrations");
 
 pub fn run_migrations_sync(database_url: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
+    println!("Running test setup migrations!");
     let mut conn: PgConnection = PgConnection::establish(database_url)?;
     conn.run_pending_migrations(MIGRATIONS)?;
     Ok(())
@@ -22,7 +23,7 @@ pub async fn setup_test_db() -> Result<DBPool, Box<dyn Error>> {
     let database_url: String = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     // Run migrations synchronously
-    run_migrations_sync(&database_url);
+    let _ = run_migrations_sync(&database_url);
 
     // Build async pool to manage multiple asyncpgconnections
     let pool: DBPool = create_pool(&database_url).expect("Failed to create pool");

@@ -18,7 +18,6 @@ pub struct User {
 #[derive(Debug, Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    pub id: i64,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub username: String,

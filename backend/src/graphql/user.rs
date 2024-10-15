@@ -1,6 +1,6 @@
 // graphql/user.rs
 
-use crate::db::DBPool;
+use crate::db::pool::DBPool;
 use crate::models::user::NewUser;
 use crate::models::user::User as UserModel;
 use async_graphql::{Context, InputObject, Object, Result, SimpleObject};
@@ -75,7 +75,6 @@ impl UserMutation {
         let mut conn = pool.get().await.expect("Failed to get connection");
 
         let new_user: NewUser = NewUser {
-            id: input.id,
             username: input.username,
             created_at: input.created_at,
             updated_at: input.updated_at,
