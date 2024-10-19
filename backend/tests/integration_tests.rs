@@ -3,22 +3,13 @@
 mod setup;
 use async_graphql::Response;
 use async_graphql::{EmptyMutation, EmptySubscription, Request, Schema};
-use axum::response;
 use backend::db::pool::DBPool;
-use backend::db::schema::users::dsl::*;
 use backend::graphql::user::UserMutation;
 use backend::graphql::user::UserQuery;
-// Import users table and columns
 use backend::models::user::NewUser;
 use backend::models::user::User;
 use chrono::Utc;
-use diesel::prelude::*;
-// Import Diesel prelude
-use diesel::ExpressionMethods;
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
-use http::request;
-// use serde_json::json;
-use dotenv::dotenv;
 use setup::{rollback_migrations, run_migrations_sync, setup_test_db};
 use std::env;
 
