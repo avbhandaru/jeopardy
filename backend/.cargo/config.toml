@@ -1,2 +1,5 @@
 [build]
 rustflags = ["-A", "dead_code"]
+
+[env]
+RUST_BACKTRACE = "0"

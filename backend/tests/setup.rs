@@ -18,14 +18,24 @@ pub fn run_migrations_sync(database_url: &str) -> Result<(), Box<dyn Error + Sen
     Ok(())
 }
 
-pub async fn setup_test_db() -> Result<DBPool, Box<dyn Error>> {
+pub fn rollback_migrations(database_url: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
+    println!("Rolling back test setup migrations");
+    let mut conn: PgConnection = PgConnection::establish(database_url)?;
+    conn.revert_all_migrations(MIGRATIONS)?;
+    Ok(())
+}
+
+pub async fn setup_test_db() -> Result<DBPool, Box<dyn Error + Send + Sync>> {
     dotenv().ok();
-    let database_url: String = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-    // Run migrations synchronously
-    let _ = run_migrations_sync(&database_url);
+    // Rollback migrations, and propagate any errors
+    rollback_migrations(&database_url)?;
 
-    // Build async pool to manage multiple asyncpgconnections
+    // Run migrations synchronously, and propagate any errors
+    run_migrations_sync(&database_url)?;
+
+    // Build async pool to manage multiple async connections
     let pool: DBPool = create_pool(&database_url).expect("Failed to create pool");
 
     Ok(pool)
