@@ -11,18 +11,18 @@ use std::error::Error;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../backend/db/migrations");
 
-pub fn run_migrations_sync(database_url: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub fn run_migrations_sync(database_url: &str) {
     println!("Running test setup migrations!");
-    let mut conn: PgConnection = PgConnection::establish(database_url)?;
-    conn.run_pending_migrations(MIGRATIONS)?;
-    Ok(())
+    let mut conn: PgConnection =
+        PgConnection::establish(database_url).expect("Could not connect to db");
+    conn.run_pending_migrations(MIGRATIONS);
 }
 
-pub fn rollback_migrations(database_url: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub fn rollback_migrations(database_url: &str) {
     println!("Rolling back test setup migrations");
-    let mut conn: PgConnection = PgConnection::establish(database_url)?;
-    conn.revert_all_migrations(MIGRATIONS)?;
-    Ok(())
+    let mut conn: PgConnection =
+        PgConnection::establish(database_url).expect("Could not connect to db");
+    conn.revert_all_migrations(MIGRATIONS);
 }
 
 pub async fn setup_test_db() -> Result<DBPool, Box<dyn Error + Send + Sync>> {
@@ -30,10 +30,10 @@ pub async fn setup_test_db() -> Result<DBPool, Box<dyn Error + Send + Sync>> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     // Rollback migrations, and propagate any errors
-    rollback_migrations(&database_url)?;
+    rollback_migrations(&database_url);
 
     // Run migrations synchronously, and propagate any errors
-    run_migrations_sync(&database_url)?;
+    run_migrations_sync(&database_url);
 
     // Build async pool to manage multiple async connections
     let pool: DBPool = create_pool(&database_url).expect("Failed to create pool");

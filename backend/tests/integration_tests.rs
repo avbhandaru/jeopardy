@@ -4,14 +4,16 @@ mod setup;
 use async_graphql::Response;
 use async_graphql::{EmptyMutation, EmptySubscription, Request, Schema};
 use backend::db::pool::DBPool;
-use backend::graphql::user::UserMutation;
-use backend::graphql::user::UserQuery;
-use backend::models::user::NewUser;
-use backend::models::user::User;
+use backend::graphql::game_board::{GameBoardMutation, GameBoardQuery};
+use backend::graphql::user::{UserMutation, UserQuery};
+use backend::models::game_board::{GameBoard, NewGameBoard};
+use backend::models::user::{NewUser, User};
 use chrono::Utc;
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
 use setup::{rollback_migrations, run_migrations_sync, setup_test_db};
 use std::env;
+
+// look into test containers for rust, or multiple dbs in one container
 
 #[tokio::test]
 async fn test_check_backtrace() {
@@ -26,37 +28,37 @@ async fn test_compiles() {
 }
 
 #[tokio::test]
-async fn test_setup_test_db() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn test_setup_test_db() {
     let pool: DBPool = setup_test_db().await.unwrap();
 
     // Fetch a connection from the pool to verify that it works
-    let mut conn = pool.get().await?;
+    let mut conn = pool.get().await.unwrap();
     // Dereference the pooled connection to get the underlying AsyncPgConnection
-    let conn: &mut AsyncPgConnection = &mut *conn;
+    // let conn: &mut AsyncPgConnection = &mut *conn;
 
     // Check if the 'users' table exists in the test DB
     let table_exists = diesel::dsl::sql::<diesel::sql_types::Bool>(
         "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')",
     )
-    .get_result::<bool>(&mut *conn)
-    .await?;
+    .get_result::<bool>(&mut conn)
+    .await
+    .unwrap();
 
     // Assert table exists
     assert!(
         table_exists,
         "'users' table should exist in the test database"
     );
-    Ok(())
 }
 
 #[tokio::test]
-async fn test_migrations() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn test_migrations() {
     // Load environment variables (e.g., DATABASE_URL)
     dotenv::dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     // Run migrations synchronously
-    run_migrations_sync(&database_url)?;
+    run_migrations_sync(&database_url);
 
     let mut conn = AsyncPgConnection::establish(&database_url).await.unwrap();
 
@@ -65,7 +67,8 @@ async fn test_migrations() -> Result<(), Box<dyn std::error::Error + Send + Sync
         "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')",
     )
     .get_result::<bool>(&mut conn)
-    .await?;
+    .await
+    .unwrap();
 
     // Ensure that the 'users' table exists
     assert!(
@@ -74,26 +77,25 @@ async fn test_migrations() -> Result<(), Box<dyn std::error::Error + Send + Sync
     );
 
     // Roll back migrations
-    rollback_migrations(&database_url)?;
+    rollback_migrations(&database_url);
 
     // Check again if 'users' table exsits (it should not)
     let table_exists_after_rollback: bool = diesel::dsl::sql::<diesel::sql_types::Bool>(
         "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')",
     )
     .get_result(&mut conn)
-    .await?;
+    .await
+    .unwrap();
 
     // Ensure that the 'users' table no longer exists after rollback
     assert!(
         !table_exists_after_rollback,
         "'users' table should not exist after rolling back migrations"
     );
-
-    Ok(())
 }
 
 #[tokio::test]
-async fn test_create_user_model() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn test_create_user_model() {
     // Set up test database and schema
     let pool: DBPool = setup_test_db().await.unwrap();
 
@@ -105,13 +107,13 @@ async fn test_create_user_model() -> Result<(), Box<dyn std::error::Error + Send
             username: "testuser".to_string(),
         };
 
-        let mut conn = pool.get().await?;
+        let mut conn = pool.get().await.unwrap();
         // Dereference the pooled connection to get the underlying AsyncPgConnection
-        let conn: &mut AsyncPgConnection = &mut *conn;
+        // let conn: &mut AsyncPgConnection = &mut *conn;
         println!("Created async connection object from pool");
 
         // Perform user creation inside the transaction
-        let created_user: User = User::create(&mut *conn, new_user).await?;
+        let created_user: User = User::create(&mut conn, new_user).await.unwrap();
         println!(
             "Created user: {}, id: {}",
             created_user.username, created_user.id
@@ -120,12 +122,10 @@ async fn test_create_user_model() -> Result<(), Box<dyn std::error::Error + Send
         // Assert that the created user matches expectations
         assert_eq!(created_user.username, "testuser");
     }
-
-    Ok(())
 }
 
 #[tokio::test]
-async fn test_create_user_graphql() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn test_create_user_graphql() {
     // Set up test database and schema
     let pool: DBPool = setup_test_db().await.unwrap();
 
@@ -172,12 +172,10 @@ async fn test_create_user_graphql() -> Result<(), Box<dyn std::error::Error + Se
     // Validate that the returned user matches what we expect
     assert_eq!(created_user["username"], "testuser");
     assert!(created_user["id"].as_i64().is_some()); // Ensure an ID was returned
-
-    Ok(())
 }
 
 #[tokio::test]
-async fn test_get_user_graphql() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn test_get_user_graphql() {
     // Set up test database and schema
     let pool: DBPool = setup_test_db().await.unwrap();
 
@@ -188,7 +186,7 @@ async fn test_get_user_graphql() -> Result<(), Box<dyn std::error::Error + Send 
         updated_at: Utc::now(),
     };
     let mut conn = pool.get().await.unwrap();
-    User::create(&mut conn, user1).await?;
+    User::create(&mut conn, user1).await.unwrap();
 
     // Only testing UserQuery, so no need for mutation or subscription
     let schema: Schema<UserQuery, EmptyMutation, EmptySubscription> =
@@ -229,12 +227,10 @@ async fn test_get_user_graphql() -> Result<(), Box<dyn std::error::Error + Send 
     // Validate that the returned user matches what we expect
     assert_eq!(user["username"], "testUser");
     assert_eq!(user["id"], 1); // Ensure an ID was returned
-
-    Ok(())
 }
 
 #[tokio::test]
-async fn test_all_users_graphql() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn test_all_users_graphql() {
     // Set up test database and schema
     let pool: DBPool = setup_test_db().await.unwrap();
 
@@ -253,8 +249,8 @@ async fn test_all_users_graphql() -> Result<(), Box<dyn std::error::Error + Send
         updated_at: Utc::now(),
     };
 
-    User::create(&mut conn, user1).await?;
-    User::create(&mut conn, user2).await?;
+    User::create(&mut conn, user1).await;
+    User::create(&mut conn, user2).await;
 
     // Build the GraphQL schema with Query and Mutation types
     let schema: Schema<UserQuery, UserMutation, EmptySubscription> =
@@ -308,6 +304,54 @@ async fn test_all_users_graphql() -> Result<(), Box<dyn std::error::Error + Send
     assert!(user2_data["id"].as_i64().is_some());
     assert!(user2_data["createdAt"].as_str().is_some());
     assert!(user2_data["updatedAt"].as_str().is_some());
+}
 
-    Ok(())
+#[tokio::test]
+async fn test_create_game_board_model() {
+    // Set up test database and schema
+    let pool: DBPool = setup_test_db().await.unwrap();
+
+    // Insert a test user into the database
+    let new_user: NewUser = NewUser {
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+        username: "testuser".to_string(),
+    };
+
+    let mut conn = pool.get().await.unwrap();
+    // Dereference the pooled connection to get the underlying AsyncPgConnection
+    let conn: &mut AsyncPgConnection = &mut *conn;
+    println!("Created async connection object from pool");
+
+    // Perform user creation inside the transaction
+    let created_user: User = User::create(&mut *conn, new_user).await.unwrap();
+    println!(
+        "Created user: {}, id: {}",
+        created_user.username, created_user.id
+    );
+
+    // Assert that the created user matches expectations
+    assert_eq!(created_user.username, "testuser");
+
+    // Insert a test game board into the database
+    let new_game_board: NewGameBoard = NewGameBoard {
+        user_id: created_user.id,
+        board_name: "testBoard".to_string(),
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+    };
+
+    let created_game_board: GameBoard =
+        GameBoard::create(&mut *conn, new_game_board).await.unwrap();
+
+    println!(
+        "Created gameBoard: {}, id: {}, user_id: {}",
+        created_game_board.board_name, created_game_board.id, created_game_board.user_id
+    );
+
+    // Assert that the created board game matches expectations
+    assert_eq!(created_game_board.board_name, "testBoard");
+    assert_eq!(created_game_board.user_id, created_user.id);
+
+    // Ok(())
 }
