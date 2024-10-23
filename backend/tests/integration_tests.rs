@@ -1,11 +1,12 @@
 // tests/integration_tests.rs
 
 mod setup;
-use async_graphql::Response;
-use async_graphql::{EmptyMutation, EmptySubscription, Request, Schema};
+use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Schema};
 use backend::db::pool::DBPool;
-use backend::graphql::game_board::{GameBoardMutation, GameBoardQuery};
-use backend::graphql::user::{UserMutation, UserQuery};
+use backend::graphql::mutations::game_board::GameBoardMutation;
+use backend::graphql::mutations::user::UserMutation;
+use backend::graphql::query::game_board::GameBoardQuery;
+use backend::graphql::query::user::UserQuery;
 use backend::models::game_board::{GameBoard, NewGameBoard};
 use backend::models::user::{NewUser, User};
 use chrono::Utc;
@@ -352,6 +353,4 @@ async fn test_create_game_board_model() {
     // Assert that the created board game matches expectations
     assert_eq!(created_game_board.board_name, "testBoard");
     assert_eq!(created_game_board.user_id, created_user.id);
-
-    // Ok(())
 }

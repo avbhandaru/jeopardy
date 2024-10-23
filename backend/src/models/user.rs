@@ -1,12 +1,13 @@
 // models/users.rs
 
 use crate::db::schema::users;
+use async_graphql::SimpleObject;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 // Diesel User Model with async-graphql support
-#[derive(Queryable, Selectable, Insertable, Debug)]
+#[derive(Queryable, SimpleObject, Selectable, Insertable, Debug)]
 #[diesel(table_name = users)]
 pub struct User {
     pub id: i64,
@@ -42,6 +43,16 @@ impl User {
         diesel::insert_into(users::table)
             .values(&new_user)
             .get_result(conn)
+            .await
+    }
+
+    pub async fn find_by_username(
+        conn: &mut AsyncPgConnection,
+        username: String,
+    ) -> Result<Vec<Self>, diesel::result::Error> {
+        users::table
+            .filter(users::username.eq(username))
+            .load::<Self>(conn)
             .await
     }
 }
