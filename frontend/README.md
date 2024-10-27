@@ -1,57 +1,36 @@
-# React Webpack Bazel example
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-This example shows how to transpile and bundle a React JS application using SWC for transpilation
-and Webpack for bundling.
+## Getting Started
 
-The Bazel build is build from two rules:
+First, run the development server:
 
-- transpilation, handled by rules_swc
-- bundling, handled by rules_webpack
-
-The transpilation is converting the JSX files to plain JS files, so that Webpack can use them
-directly.
-Then Webpack bundles the simple JS files in a single JS file.
-Also, Webpack has an HTML template plugin added, so the result can be seen in a browser.
-The plugin is added as a part of the Webpack rule.
-
-There are two configurations for Webpack added:
-
-- webpack.bazel.config.js - the configuration that Bazel uses
-- webpack.config.js - a sample configuration for showcasing what is the difference when using Bazel
-  with Webpack
-
-## Install
-
-Only needed if you want to run Webpack not through Bazel, in frontend folder run:
-
-```shell
-pnpm i
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Build
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-To run the Bazel build execute the following:
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-```shell
-bazel build //frontend/...
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-To run the Non-Bazel Webpack build in this folder run:
+## Learn More
 
-```shell
-pnpm build
-```
+To learn more about Next.js, take a look at the following resources:
 
-## Dev server
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-To run the Bazel dev server execute the following:
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-```shell
-ibazel run //frontend:dev_server
-```
+## Deploy on Vercel
 
-To run the Non-Bazel Webpack dev server in this folder run:
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-```shell
-pnpm start
-```
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
