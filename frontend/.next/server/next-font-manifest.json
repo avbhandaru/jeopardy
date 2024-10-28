@@ -1,22 +1,18 @@
 {
   "app": {
-    "[project]/src/app/page": [
-      "static/media/GeistVF-s.p.7fe29570.woff",
-      "static/media/GeistMonoVF-s.p.a9159d35.woff"
-    ],
     "[project]/src/app/users/page": [
-      "static/media/GeistVF-s.p.7fe29570.woff",
-      "static/media/GeistMonoVF-s.p.a9159d35.woff"
-    ],
-    "[project]/src/app/users/[user_uuid]/page": [
-      "static/media/GeistVF-s.p.7fe29570.woff",
-      "static/media/GeistMonoVF-s.p.a9159d35.woff"
-    ],
-    "[project]/src/app/users/[user_uuid]/boards/[board_uuid]/page": [
+      "static/media/KFOlCnqEu92Fr1MmSU5fBBc4AMP6lQ-s.p.fea50f89.woff2",
+      "static/media/KFOmCnqEu92Fr1Mu4mxKKTU1Kg-s.p.0b4aae55.woff2",
+      "static/media/KFOlCnqEu92Fr1MmEU9fBBc4AMP6lQ-s.p.23065d28.woff2",
+      "static/media/KFOlCnqEu92Fr1MmWUlfBBc4AMP6lQ-s.p.4ab04dea.woff2",
       "static/media/GeistVF-s.p.7fe29570.woff",
       "static/media/GeistMonoVF-s.p.a9159d35.woff"
     ],
     "[project]/src/app/games/[game_uuid]/page": [
+      "static/media/KFOlCnqEu92Fr1MmSU5fBBc4AMP6lQ-s.p.fea50f89.woff2",
+      "static/media/KFOmCnqEu92Fr1Mu4mxKKTU1Kg-s.p.0b4aae55.woff2",
+      "static/media/KFOlCnqEu92Fr1MmEU9fBBc4AMP6lQ-s.p.23065d28.woff2",
+      "static/media/KFOlCnqEu92Fr1MmWUlfBBc4AMP6lQ-s.p.4ab04dea.woff2",
       "static/media/GeistVF-s.p.7fe29570.woff",
       "static/media/GeistMonoVF-s.p.a9159d35.woff"
     ]
