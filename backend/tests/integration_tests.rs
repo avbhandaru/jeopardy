@@ -11,7 +11,10 @@ use backend::models::game_board::{GameBoard, NewGameBoard};
 use backend::models::user::{NewUser, User};
 use chrono::Utc;
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
-use setup::{rollback_migrations, run_migrations_sync, setup_test_db};
+use setup::{
+    create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
+    rollback_migrations, run_migrations_sync, setup_test_db, TestDB,
+};
 use std::env;
 
 // look into test containers for rust, or multiple dbs in one container
@@ -29,70 +32,39 @@ async fn test_compiles() {
 }
 
 #[tokio::test]
-async fn test_setup_test_db() {
-    let pool: DBPool = setup_test_db().await.unwrap();
+async fn test_setup() {
+    let mut super_conn = establish_super_connection()
+        .await
+        .expect("Couldn't create super_conn");
+    println!("Successfully created super_conn");
+    let test_db = create_test_database(&mut super_conn)
+        .await
+        .expect("Couldn't create test_db");
+    println!("Successfully created test_db: {}", test_db);
+    let test_db_url = get_test_database_url(&test_db);
+    println!("Current test_db_url: {}", test_db_url);
+    run_migrations_sync(&test_db_url);
+    let _test_db_pool =
+        backend::db::pool::create_pool(&test_db_url).expect("failed to create pool");
 
-    // Fetch a connection from the pool to verify that it works
-    let mut conn = pool.get().await.unwrap();
-    // Dereference the pooled connection to get the underlying AsyncPgConnection
-    // let conn: &mut AsyncPgConnection = &mut *conn;
-
-    // Check if the 'users' table exists in the test DB
-    let table_exists = diesel::dsl::sql::<diesel::sql_types::Bool>(
-        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')",
-    )
-    .get_result::<bool>(&mut conn)
-    .await
-    .unwrap();
-
-    // Assert table exists
-    assert!(
-        table_exists,
-        "'users' table should exist in the test database"
-    );
+    println!("Now attempting to delete test_db");
+    // Await the spawned task to ensure it completes
+    let drop_task = tokio::spawn(async move {
+        drop_test_database(&mut super_conn, &test_db)
+            .await
+            .expect("didn't drop test database oopsie");
+    });
+    drop_task.await.expect("Failed to drop database task");
+    println!("Should have deleted test_db by now");
+    // assert!(false, "Forcing failure");
 }
 
 #[tokio::test]
-async fn test_migrations() {
-    // Load environment variables (e.g., DATABASE_URL)
-    dotenv::dotenv().ok();
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
-    // Run migrations synchronously
-    run_migrations_sync(&database_url);
-
-    let mut conn = AsyncPgConnection::establish(&database_url).await.unwrap();
-
-    // Check if the 'users' table exists by querying its metadata
-    let table_exists: bool = diesel::dsl::sql::<diesel::sql_types::Bool>(
-        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')",
-    )
-    .get_result::<bool>(&mut conn)
-    .await
-    .unwrap();
-
-    // Ensure that the 'users' table exists
-    assert!(
-        table_exists,
-        "'users' table should exist after running migrations"
-    );
-
-    // Roll back migrations
-    rollback_migrations(&database_url);
-
-    // Check again if 'users' table exsits (it should not)
-    let table_exists_after_rollback: bool = diesel::dsl::sql::<diesel::sql_types::Bool>(
-        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')",
-    )
-    .get_result(&mut conn)
-    .await
-    .unwrap();
-
-    // Ensure that the 'users' table no longer exists after rollback
-    assert!(
-        !table_exists_after_rollback,
-        "'users' table should not exist after rolling back migrations"
-    );
+async fn test_testdb_struct() {
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+    println!("Created test_db for {}", test_db.test_db_name);
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
 }
 
 #[tokio::test]

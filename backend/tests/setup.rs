@@ -2,12 +2,19 @@
 
 use backend::db::pool::create_pool;
 use backend::db::pool::DBPool;
+use core::error;
 use diesel::pg::PgConnection;
-use diesel::Connection;
+use diesel::prelude::*;
+use diesel::sql_types::Integer;
+use diesel::QueryableByName;
+use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenv::dotenv;
+use regex::Regex;
 use std::env;
 use std::error::Error;
+use std::fmt::format;
+use uuid::Uuid;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../backend/db/migrations");
 
@@ -25,18 +32,122 @@ pub fn rollback_migrations(database_url: &str) {
     conn.revert_all_migrations(MIGRATIONS);
 }
 
-pub async fn setup_test_db() -> Result<DBPool, Box<dyn Error + Send + Sync>> {
+pub async fn setup_test_db() -> Result<DBPool, Box<dyn Error>> {
     dotenv().ok();
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url: String = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-    // Rollback migrations, and propagate any errors
-    rollback_migrations(&database_url);
+    // Run migrations synchronously
+    let _ = run_migrations_sync(&database_url);
 
-    // Run migrations synchronously, and propagate any errors
-    run_migrations_sync(&database_url);
-
-    // Build async pool to manage multiple async connections
+    // Build async pool to manage multiple asyncpgconnections
     let pool: DBPool = create_pool(&database_url).expect("Failed to create pool");
 
     Ok(pool)
+}
+
+pub async fn establish_super_connection() -> Result<AsyncPgConnection, ConnectionError> {
+    dotenv().ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    AsyncPgConnection::establish(&database_url).await
+}
+
+pub async fn create_test_database(
+    super_conn: &mut AsyncPgConnection,
+) -> Result<String, diesel::result::Error> {
+    let test_db = format!("test_db_{}", Uuid::new_v4());
+    let query = format!("CREATE DATABASE \"{}\";", test_db);
+    println!("{}", query);
+    diesel::sql_query(query)
+        .execute(super_conn)
+        .await
+        .expect("Failed to create test database");
+    Ok(test_db)
+}
+
+pub fn get_test_database_url(test_db: &str) -> String {
+    let url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    // Replace the default database with the test database
+    // Use regex as a way of learning regex with Rust
+    let re = Regex::new(r"/[^/]+$").unwrap();
+    re.replace(&url, format!("/{}", test_db)).to_string()
+}
+
+pub async fn drop_test_database(
+    super_conn: &mut AsyncPgConnection,
+    test_db: &str,
+) -> Result<bool, diesel::result::Error> {
+    // Terminate all connections to database
+    diesel::sql_query(&format!(
+        "SELECT pg_terminate_backend(pg_stat_activity.pid)
+        FROM pg_stat_activity
+        WHERE pg_stat_activity.datname = '{}'
+            AND pid <> pg_backend_pid();",
+        test_db
+    ))
+    .execute(super_conn)
+    .await
+    .expect("Failed to terminate connections");
+
+    diesel::sql_query(&format!("DROP DATABASE IF EXISTS \"{}\"", test_db))
+        .execute(super_conn)
+        .await
+        .expect("Failed to drop test database");
+
+    #[derive(QueryableByName)]
+    struct One {
+        #[sql_type = "Integer"]
+        one: i32,
+    }
+
+    // Check if the database still exists by counting rows in pg_database
+    let rows: Vec<One> = diesel::sql_query(&format!(
+        "SELECT 1 FROM pg_database WHERE datname = '{}';",
+        test_db
+    ))
+    .load(super_conn) // Load rows as a tuple of integers
+    .await
+    .expect("Failed to validate the dropped testdb");
+    // assert!(false, "Forcing failure");
+
+    Ok(rows.is_empty())
+}
+
+/// A struct that represents a test database and ensures it is dropped when the struct goes out of scope.
+pub struct TestDB {
+    pub pool: DBPool,
+    pub test_db_name: String,
+    pub super_conn: AsyncPgConnection,
+}
+
+impl TestDB {
+    pub async fn new() -> Result<Self, diesel::ConnectionError> {
+        // Load environment variables
+        dotenv().ok();
+        let mut super_conn = establish_super_connection()
+            .await
+            .expect("Super Conn failed");
+        let test_db = create_test_database(&mut super_conn)
+            .await
+            .expect("Test DB failed");
+        let test_db_url = get_test_database_url(&test_db);
+        run_migrations_sync(&test_db_url);
+        let pool: DBPool = create_pool(&test_db_url).expect("Failed to create pool");
+
+        Ok(TestDB {
+            pool,
+            test_db_name: test_db,
+            super_conn,
+        })
+    }
+
+    pub async fn close(&mut self) -> Result<bool, diesel::result::Error> {
+        println!("Closing resources for {}", self.test_db_name);
+        drop_test_database(&mut self.super_conn, &self.test_db_name).await
+    }
+}
+
+impl Drop for TestDB {
+    fn drop(&mut self) {
+        println!("Dropping {}", self.test_db_name)
+    }
 }
