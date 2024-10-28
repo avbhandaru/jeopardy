@@ -1,4 +1,6 @@
 import styles from "./page.module.css";
+import * as React from 'react';
+import GameBoard from './GameBoard'
 
 export default async function GamePage({ params }: { params: { game_uuid: string } }) {
   const { game_uuid } = await params;
@@ -12,6 +14,7 @@ export default async function GamePage({ params }: { params: { game_uuid: string
             Get started by editing <code>src/app/games/[game_uuid]/page.tsx</code>.
           </li>
         </ol>
+        <GameBoard />
       </main>
     </div>
   );
