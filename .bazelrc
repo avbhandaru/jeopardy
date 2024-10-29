@@ -1,7 +1,0 @@
-# Building flags
-build --keep_going
-
-# Testing flags
-test --keep_going
-test --test_output=all
-test --test_verbose_timeout_warnings
