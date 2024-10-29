@@ -11,19 +11,19 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 #[diesel(table_name = game_boards)]
 pub struct GameBoard {
     pub id: i64,
-    pub user_id: i64,
-    pub board_name: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub user_id: i64,
+    pub board_name: String,
 }
 
 #[derive(Debug, Insertable)]
 #[diesel(table_name = game_boards)]
 pub struct NewGameBoard {
-    pub user_id: i64,
-    pub board_name: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub user_id: i64,
+    pub board_name: String,
 }
 
 impl GameBoard {

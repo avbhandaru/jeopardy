@@ -3,6 +3,7 @@
 mod setup;
 use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Schema};
 use backend::db::pool::DBPool;
+use backend::db::schema;
 use backend::graphql::mutations::game_board::GameBoardMutation;
 use backend::graphql::mutations::user::UserMutation;
 use backend::graphql::query::game_board::GameBoardQuery;
@@ -11,6 +12,7 @@ use backend::models::game_board::{GameBoard, NewGameBoard};
 use backend::models::user::{NewUser, User};
 use chrono::Utc;
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
+use http::request;
 use setup::{
     create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
     rollback_migrations, run_migrations_sync, setup_test_db, TestDB,
@@ -338,6 +340,76 @@ async fn test_create_game_board_model() {
     // Assert that the created board game matches expectations
     assert_eq!(created_game_board.board_name, "testBoard");
     assert_eq!(created_game_board.user_id, created_user.id);
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
+}
+
+#[tokio::test]
+async fn test_get_game_board_graphql() {
+    // Set up test database and schema
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+
+    // Insert testUser
+    let user1 = NewUser {
+        username: "testUser".to_string(),
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+    };
+    let mut conn = test_db.pool.get().await.unwrap();
+    let new_user: User = User::create(&mut conn, user1).await.unwrap();
+
+    // Insert testGameBoard from testUser
+    let game_board1 = NewGameBoard {
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+        user_id: new_user.id,
+        board_name: "test_board".to_string(),
+    };
+    GameBoard::create(&mut conn, game_board1).await.unwrap();
+
+    // Build graphql schema
+    let schema: Schema<GameBoardQuery, GameBoardMutation, EmptySubscription> =
+        Schema::build(GameBoardQuery, GameBoardMutation, EmptySubscription)
+            .data(test_db.pool.clone())
+            .finish();
+
+    // Define the GraphQL query
+    let query = r#"
+        query {
+            getGameBoard(id: 1) {
+                id
+                createdAt
+                updatedAt
+                userId
+                boardName            
+            }
+        }
+    "#;
+
+    // Execute query and get response
+    let request: Request = Request::new(query);
+    let response: Response = Schema::execute(&schema, request).await;
+
+    // Print the errors to see what went wrong
+    if !response.errors.is_empty() {
+        println!("GraphQL errors: {:?}", response.errors);
+    } else {
+        println!("GraphQL data: {:?}", response.data);
+    }
+
+    // Assess results
+    // Check that the response does not contain errors
+    assert!(response.errors.is_empty());
+
+    let data = response.data.into_json().unwrap();
+    let game_board = data["getGameBoard"].clone();
+
+    // Validate game_board
+    assert_eq!(game_board["id"], 1);
+    assert_eq!(game_board["boardName"], "test_board");
+    assert_eq!(game_board["userId"], 1);
 
     // Tear down test_db
     let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
