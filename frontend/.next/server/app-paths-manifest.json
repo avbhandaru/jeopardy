@@ -1,0 +1,5 @@
+{
+  "/users/page": "app/users/page.js",
+  "/games/[game_uuid]/page": "app/games/[game_uuid]/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js"
+}
