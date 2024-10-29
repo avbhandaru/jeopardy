@@ -70,7 +70,7 @@ async fn test_testdb_struct() {
 #[tokio::test]
 async fn test_create_user_model() {
     // Set up test database and schema
-    let pool: DBPool = setup_test_db().await.unwrap();
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
 
     // Insert a test user into the database
     {
@@ -80,7 +80,7 @@ async fn test_create_user_model() {
             username: "testuser".to_string(),
         };
 
-        let mut conn = pool.get().await.unwrap();
+        let mut conn = test_db.pool.get().await.unwrap();
         // Dereference the pooled connection to get the underlying AsyncPgConnection
         // let conn: &mut AsyncPgConnection = &mut *conn;
         println!("Created async connection object from pool");
@@ -95,17 +95,21 @@ async fn test_create_user_model() {
         // Assert that the created user matches expectations
         assert_eq!(created_user.username, "testuser");
     }
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
 }
 
 #[tokio::test]
 async fn test_create_user_graphql() {
     // Set up test database and schema
-    let pool: DBPool = setup_test_db().await.unwrap();
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
 
     // Build graphql schema with Query and Mutation types
     let schema: Schema<UserQuery, UserMutation, EmptySubscription> =
         Schema::build(UserQuery, UserMutation, EmptySubscription)
-            .data(pool.clone())
+            .data(test_db.pool.clone())
             .finish();
 
     // Define the GraphQL mutation string
@@ -144,27 +148,31 @@ async fn test_create_user_graphql() {
 
     // Validate that the returned user matches what we expect
     assert_eq!(created_user["username"], "testuser");
-    assert!(created_user["id"].as_i64().is_some()); // Ensure an ID was returned
+    // Ensure an ID was returned
+    assert!(created_user["id"].as_i64().is_some());
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
 }
 
 #[tokio::test]
 async fn test_get_user_graphql() {
     // Set up test database and schema
-    let pool: DBPool = setup_test_db().await.unwrap();
-
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
     // Insert testUser
     let user1 = NewUser {
         username: "testUser".to_string(),
         created_at: Utc::now(),
         updated_at: Utc::now(),
     };
-    let mut conn = pool.get().await.unwrap();
+    let mut conn = test_db.pool.get().await.unwrap();
     User::create(&mut conn, user1).await.unwrap();
 
     // Only testing UserQuery, so no need for mutation or subscription
     let schema: Schema<UserQuery, EmptyMutation, EmptySubscription> =
         Schema::build(UserQuery, EmptyMutation, EmptySubscription)
-            .data(pool.clone())
+            .data(test_db.pool.clone())
             .finish();
 
     // Define Graphql query
@@ -200,15 +208,19 @@ async fn test_get_user_graphql() {
     // Validate that the returned user matches what we expect
     assert_eq!(user["username"], "testUser");
     assert_eq!(user["id"], 1); // Ensure an ID was returned
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
 }
 
 #[tokio::test]
 async fn test_all_users_graphql() {
     // Set up test database and schema
-    let pool: DBPool = setup_test_db().await.unwrap();
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
 
     // Grab connection from pool, start a transaction from connection
-    let mut conn = pool.get().await.unwrap();
+    let mut conn = test_db.pool.get().await.unwrap();
 
     // Insert test users
     let user1 = NewUser {
@@ -228,7 +240,7 @@ async fn test_all_users_graphql() {
     // Build the GraphQL schema with Query and Mutation types
     let schema: Schema<UserQuery, UserMutation, EmptySubscription> =
         Schema::build(UserQuery, UserMutation, EmptySubscription)
-            .data(pool.clone())
+            .data(test_db.pool.clone())
             .finish();
 
     // Define the GraphQL query string for allUsers
@@ -277,12 +289,16 @@ async fn test_all_users_graphql() {
     assert!(user2_data["id"].as_i64().is_some());
     assert!(user2_data["createdAt"].as_str().is_some());
     assert!(user2_data["updatedAt"].as_str().is_some());
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
 }
 
 #[tokio::test]
 async fn test_create_game_board_model() {
     // Set up test database and schema
-    let pool: DBPool = setup_test_db().await.unwrap();
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
 
     // Insert a test user into the database
     let new_user: NewUser = NewUser {
@@ -291,13 +307,11 @@ async fn test_create_game_board_model() {
         username: "testuser".to_string(),
     };
 
-    let mut conn = pool.get().await.unwrap();
-    // Dereference the pooled connection to get the underlying AsyncPgConnection
-    let conn: &mut AsyncPgConnection = &mut *conn;
+    let mut conn = test_db.pool.get().await.unwrap();
     println!("Created async connection object from pool");
 
     // Perform user creation inside the transaction
-    let created_user: User = User::create(&mut *conn, new_user).await.unwrap();
+    let created_user: User = User::create(&mut conn, new_user).await.unwrap();
     println!(
         "Created user: {}, id: {}",
         created_user.username, created_user.id
@@ -314,8 +328,7 @@ async fn test_create_game_board_model() {
         updated_at: Utc::now(),
     };
 
-    let created_game_board: GameBoard =
-        GameBoard::create(&mut *conn, new_game_board).await.unwrap();
+    let created_game_board: GameBoard = GameBoard::create(&mut conn, new_game_board).await.unwrap();
 
     println!(
         "Created gameBoard: {}, id: {}, user_id: {}",
@@ -325,4 +338,8 @@ async fn test_create_game_board_model() {
     // Assert that the created board game matches expectations
     assert_eq!(created_game_board.board_name, "testBoard");
     assert_eq!(created_game_board.user_id, created_user.id);
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
 }
