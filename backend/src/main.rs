@@ -1,5 +1,5 @@
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
-use async_graphql::{EmptyMutation, EmptySubscription, MergedObject, Request, Response, Schema};
+use async_graphql::{EmptySubscription, MergedObject, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{extract::Extension, response::Html, routing::get, Router};
 use backend::db::pool::create_app_pool;

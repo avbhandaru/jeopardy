@@ -12,7 +12,7 @@ use chrono::Utc;
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
 use setup::{
     create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
-    rollback_migrations, run_migrations_sync, setup_test_db, TestDB,
+    run_migrations_sync, TestDB,
 };
 
 #[tokio::test]
@@ -230,8 +230,8 @@ async fn test_all_users_graphql() {
         updated_at: Utc::now(),
     };
 
-    User::create(&mut conn, user1).await;
-    User::create(&mut conn, user2).await;
+    let _ = User::create(&mut conn, user1).await;
+    let _ = User::create(&mut conn, user2).await;
 
     // Build the GraphQL schema with Query and Mutation types
     let schema: Schema<UserQuery, UserMutation, EmptySubscription> =

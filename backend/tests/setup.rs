@@ -2,7 +2,6 @@
 
 use backend::db::pool::create_pool;
 use backend::db::pool::DBPool;
-use core::error;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::sql_types::Integer;
@@ -12,8 +11,6 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenv::dotenv;
 use regex::Regex;
 use std::env;
-use std::error::Error;
-use std::fmt::format;
 use uuid::Uuid;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../backend/db/migrations");
@@ -22,27 +19,14 @@ pub fn run_migrations_sync(database_url: &str) {
     println!("Running test setup migrations!");
     let mut conn: PgConnection =
         PgConnection::establish(database_url).expect("Could not connect to db");
-    conn.run_pending_migrations(MIGRATIONS);
+    let _ = conn.run_pending_migrations(MIGRATIONS);
 }
 
 pub fn rollback_migrations(database_url: &str) {
     println!("Rolling back test setup migrations");
     let mut conn: PgConnection =
         PgConnection::establish(database_url).expect("Could not connect to db");
-    conn.revert_all_migrations(MIGRATIONS);
-}
-
-pub async fn setup_test_db() -> Result<DBPool, Box<dyn Error>> {
-    dotenv().ok();
-    let database_url: String = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
-    // Run migrations synchronously
-    let _ = run_migrations_sync(&database_url);
-
-    // Build async pool to manage multiple asyncpgconnections
-    let pool: DBPool = create_pool(&database_url).expect("Failed to create pool");
-
-    Ok(pool)
+    let _ = conn.revert_all_migrations(MIGRATIONS);
 }
 
 pub async fn establish_super_connection() -> Result<AsyncPgConnection, ConnectionError> {
@@ -95,7 +79,7 @@ pub async fn drop_test_database(
 
     #[derive(QueryableByName)]
     struct One {
-        #[sql_type = "Integer"]
+        #[diesel(sql_type = Integer)]
         one: i32,
     }
 
