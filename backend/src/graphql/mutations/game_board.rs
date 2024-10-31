@@ -13,6 +13,7 @@ pub struct CreateGameBoardInput {
     pub board_name: String,
 }
 
+#[derive(Default)]
 pub struct GameBoardMutation;
 
 #[Object]

@@ -2,8 +2,6 @@
 
 mod setup;
 use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Schema};
-use backend::db::pool::DBPool;
-use backend::db::schema;
 use backend::graphql::mutations::game_board::GameBoardMutation;
 use backend::graphql::mutations::user::UserMutation;
 use backend::graphql::query::game_board::GameBoardQuery;
@@ -12,14 +10,10 @@ use backend::models::game_board::{GameBoard, NewGameBoard};
 use backend::models::user::{NewUser, User};
 use chrono::Utc;
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
-use http::request;
 use setup::{
     create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
     rollback_migrations, run_migrations_sync, setup_test_db, TestDB,
 };
-use std::env;
-
-// look into test containers for rust, or multiple dbs in one container
 
 #[tokio::test]
 async fn test_check_backtrace() {

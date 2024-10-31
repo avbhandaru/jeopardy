@@ -13,6 +13,7 @@ pub struct CreateUserInput {
 }
 
 // Define the mutation root for User
+#[derive(Default)]
 pub struct UserMutation;
 
 #[Object]

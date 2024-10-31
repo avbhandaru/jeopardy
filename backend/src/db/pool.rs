@@ -10,8 +10,7 @@ pub type DBPool = Pool<AsyncPgConnection>;
 
 pub fn create_pool(database_url: &String) -> Result<DBPool, BuildError> {
     let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(database_url);
-    let pool = Pool::builder(manager).build();
-    pool
+    Pool::builder(manager).build()
 }
 
 pub fn create_app_pool() -> Result<DBPool, BuildError> {

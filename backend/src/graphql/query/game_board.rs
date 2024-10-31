@@ -4,6 +4,7 @@ use crate::db::pool::DBPool;
 use crate::models::game_board::GameBoard;
 use async_graphql::{Context, Object, Result};
 
+#[derive(Default)]
 pub struct GameBoardQuery;
 
 #[Object]

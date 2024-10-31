@@ -6,6 +6,7 @@ use crate::db::pool::DBPool;
 use crate::models::user::User;
 use async_graphql::{Context, Object, Result};
 
+#[derive(Default)]
 pub struct UserQuery;
 
 #[Object]
