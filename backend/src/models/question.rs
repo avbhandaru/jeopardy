@@ -1,60 +1,62 @@
-// models/game_board.rs
+// models/question.rs
 
-use crate::db::schema::game_boards;
+use crate::db::schema::questions;
 use async_graphql::SimpleObject;
 use chrono::{DateTime, Utc};
 use derive_builder::Builder;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
-/// Diesel Game Board model with async-graphql support
-#[derive(Queryable, Selectable, Insertable, Debug, SimpleObject, Builder)]
-#[diesel(table_name = game_boards)]
-pub struct GameBoard {
+/// Disel Question Model with async-graphql suppport
+#[derive(Queryable, SimpleObject, Selectable, Insertable, Debug, Builder)]
+#[diesel(table_name = questions)]
+pub struct Question {
     pub id: i64,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub user_id: i64,
-    pub board_name: String,
+    pub question_text: String,
+    pub answer: String,
 }
 
 #[derive(Debug, Insertable, Builder)]
-#[diesel(table_name = game_boards)]
-pub struct NewGameBoard {
+#[diesel(table_name = questions)]
+pub struct NewQuestion {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub user_id: i64,
-    pub board_name: String,
+    pub question_text: String,
+    pub answer: String,
 }
 
-impl GameBoard {
+impl Question {
     pub async fn find_by_id(
         conn: &mut AsyncPgConnection,
-        game_board_id: i64,
+        question_id: i64,
     ) -> Result<Self, diesel::result::Error> {
-        game_boards::table.find(game_board_id).first(conn).await
+        questions::table.find(question_id).first(conn).await
+    }
+
+    pub async fn all(conn: &mut AsyncPgConnection) -> Result<Vec<Self>, diesel::result::Error> {
+        questions::table.load::<Self>(conn).await
     }
 
     pub async fn find_by_user(
         conn: &mut AsyncPgConnection,
-        target_user_id: i64,
+        user_id: i64,
     ) -> Result<Vec<Self>, diesel::result::Error> {
-        game_boards::table
-            .filter(game_boards::user_id.eq(target_user_id))
+        questions::table
+            .filter(questions::user_id.eq(user_id))
             .load::<Self>(conn)
             .await
     }
 
-    pub async fn all(conn: &mut AsyncPgConnection) -> Result<Vec<Self>, diesel::result::Error> {
-        game_boards::table.load::<Self>(conn).await
-    }
-
     pub async fn create(
         conn: &mut AsyncPgConnection,
-        new_game_board: NewGameBoard,
+        new_question: NewQuestion,
     ) -> Result<Self, diesel::result::Error> {
-        diesel::insert_into(game_boards::table)
-            .values(&new_game_board)
+        diesel::insert_into(questions::table)
+            .values(&new_question)
             .get_result(conn)
             .await
     }

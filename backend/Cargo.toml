@@ -36,6 +36,7 @@ deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
 diesel_migrations = "2.2.0"
 uuid = { version = "1.11.0", features = ["v4"] }
 regex = "1.11.1"
+derive_builder = "0.20.2"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

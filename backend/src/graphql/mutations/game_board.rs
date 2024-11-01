@@ -1,4 +1,4 @@
-// graphql/mutations/user.rs
+// graphql/mutations/game_board.rs
 
 use crate::db::pool::DBPool;
 use crate::models::game_board::{GameBoard, NewGameBoard};
@@ -33,7 +33,7 @@ impl GameBoardMutation {
             user_id: input.user_id,
             board_name: input.board_name,
         };
-        let game_board = GameBoard::create(&mut conn, new_game_board).await?;
+        let game_board: GameBoard = GameBoard::create(&mut conn, new_game_board).await?;
         Ok(game_board)
     }
 }

@@ -1,13 +1,14 @@
-// models/users.rs
+// models/user.rs
 
 use crate::db::schema::users;
 use async_graphql::SimpleObject;
 use chrono::{DateTime, Utc};
+use derive_builder::Builder;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 // Diesel User Model with async-graphql support
-#[derive(Queryable, SimpleObject, Selectable, Insertable, Debug)]
+#[derive(Queryable, SimpleObject, Selectable, Insertable, Debug, Builder)]
 #[diesel(table_name = users)]
 pub struct User {
     pub id: i64,
@@ -16,7 +17,7 @@ pub struct User {
     pub username: String,
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Insertable, Builder)]
 #[diesel(table_name = users)]
 pub struct NewUser {
     pub created_at: DateTime<Utc>,
