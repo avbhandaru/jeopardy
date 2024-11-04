@@ -1,4 +1,4 @@
-// tests/setup.rs
+// tests/common/setup.rs
 
 use backend::db::pool::create_pool;
 use backend::db::pool::DBPool;

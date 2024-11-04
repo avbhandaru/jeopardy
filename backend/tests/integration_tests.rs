@@ -1,19 +1,21 @@
 // tests/integration_tests.rs
 
-mod setup;
+mod common;
 use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Schema};
 use backend::graphql::mutations::game_board::GameBoardMutation;
 use backend::graphql::mutations::user::UserMutation;
 use backend::graphql::query::game_board::GameBoardQuery;
 use backend::graphql::query::user::UserQuery;
 use backend::models::game_board::{GameBoard, NewGameBoard};
+use backend::models::question::{NewQuestion, Question};
 use backend::models::user::{NewUser, User};
 use chrono::Utc;
-use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
-use setup::{
+use common::factories::{create_test_game_board, create_test_question, create_test_user};
+use common::setup::{
     create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
     run_migrations_sync, TestDB,
 };
+use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
 
 #[tokio::test]
 async fn test_check_backtrace() {
@@ -409,3 +411,31 @@ async fn test_get_game_board_graphql() {
     let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
     assert!(successfully_droppped, "Close method returned false");
 }
+
+#[tokio::test]
+async fn test_factory_functions() {
+    // Set up test database and schema
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+    let mut conn = test_db.pool.get().await.unwrap();
+    let factory_user: User = create_test_user(&mut conn, None).await;
+    assert_eq!(factory_user.username, "defaultuser");
+
+    let factory_game_board: GameBoard =
+        create_test_game_board(&mut conn, factory_user.id, None).await;
+    assert_eq!(factory_game_board.board_name, "defaultboard");
+
+    let factory_question: Question = create_test_question(&mut conn, factory_user.id, None).await;
+    assert_eq!(factory_question.question_text, "defaultquestion");
+    assert_eq!(factory_question.answer, "defaultanswer");
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
+}
+
+// #[tokio::test]
+// async fn test_fixture_creation() {
+//     // Set up test database and schema
+//     let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+//     let mut conn = test_db.pool.get().await.unwrap();
+// }
