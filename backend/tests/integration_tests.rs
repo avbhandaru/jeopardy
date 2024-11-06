@@ -1,21 +1,31 @@
 // tests/integration_tests.rs
 
 mod common;
-use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Schema};
+use async_graphql::{EmptyMutation, EmptySubscription, MergedObject, Request, Response, Schema};
 use backend::graphql::mutations::game_board::GameBoardMutation;
+use backend::graphql::mutations::question::QuestionMutation;
 use backend::graphql::mutations::user::UserMutation;
 use backend::graphql::query::game_board::GameBoardQuery;
+use backend::graphql::query::question::QuestionQuery;
 use backend::graphql::query::user::UserQuery;
 use backend::models::game_board::{GameBoard, NewGameBoard};
 use backend::models::question::{NewQuestion, Question};
 use backend::models::user::{NewUser, User};
 use chrono::Utc;
 use common::factories::{create_test_game_board, create_test_question, create_test_user};
+use common::fixtures::mudkip_fixture;
 use common::setup::{
     create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
     run_migrations_sync, TestDB,
 };
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
+
+/// Query Roots for Graphql schema building
+#[derive(MergedObject, Default)]
+struct QueryRoot(UserQuery, GameBoardQuery, QuestionQuery);
+
+#[derive(MergedObject, Default)]
+struct MutationRoot(UserMutation, GameBoardMutation, QuestionMutation);
 
 #[tokio::test]
 async fn test_check_backtrace() {
@@ -433,9 +443,70 @@ async fn test_factory_functions() {
     assert!(successfully_droppped, "Close method returned false");
 }
 
-// #[tokio::test]
-// async fn test_fixture_creation() {
-//     // Set up test database and schema
-//     let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
-//     let mut conn = test_db.pool.get().await.unwrap();
-// }
+#[tokio::test]
+async fn test_mudkip_fixture() {
+    // Set up test database and schema
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+    let mut conn = test_db.pool.get().await.unwrap();
+
+    // Initialize mudkip fixture with user
+    let mudkip: User = mudkip_fixture(&mut conn).await;
+    assert_eq!(mudkip.username, "Mudkip");
+
+    // Create graphql schema with all queries and mutations
+    let mut schema_builder: async_graphql::SchemaBuilder<
+        QueryRoot,
+        MutationRoot,
+        EmptySubscription,
+    > = Schema::build(
+        QueryRoot::default(),
+        MutationRoot::default(),
+        EmptySubscription,
+    );
+    schema_builder = schema_builder.data(test_db.pool.clone());
+    let schema = schema_builder.finish();
+
+    // Create query for mudkip's questions
+    // Define the GraphQL query string for allUsers
+    let mudkip_question_query = format!(
+        r#"
+        query {{
+            getQuestionFromUser (userId: {}) {{
+                id
+                createdAt
+                updatedAt
+                userId
+                questionText
+                answer
+        }}
+    }}
+    "#,
+        mudkip.id
+    );
+
+    // Execute query and get response
+    let request: Request = Request::new(mudkip_question_query);
+    let response: Response = Schema::execute(&schema, request).await;
+
+    // Print the errors to see what went wrong
+    if !response.errors.is_empty() {
+        println!("GraphQL errors: {:?}", response.errors);
+    } else {
+        println!("GraphQL data: {:?}", response.data);
+    }
+
+    // Retrieve mudkip's 10 questions
+    let data = response.data.into_json().unwrap();
+    let mudkip_questions = data["getQuestionFromUser"].as_array().unwrap();
+
+    for i in 0..10 {
+        assert_eq!(
+            mudkip_questions[i]["questionText"],
+            format!("Question {}", i + 1)
+        );
+    }
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
+}

@@ -75,9 +75,10 @@ pub async fn create_test_game_board(
     let mut builder: NewGameBoardBuilder = NewGameBoardBuilder::default();
 
     if let Some(overrides) = overrides {
-        builder.board_name(overrides.board_name);
         builder.created_at(overrides.created_at);
         builder.updated_at(overrides.updated_at);
+        builder.board_name(overrides.board_name);
+        builder.user_id(user_id);
     } else {
         builder.created_at(Utc::now());
         builder.updated_at(Utc::now());
@@ -85,7 +86,7 @@ pub async fn create_test_game_board(
         builder.board_name("defaultboard".to_string());
     }
 
-    let new_game_board: NewGameBoard = builder.build().expect("Faield to build new game board");
+    let new_game_board: NewGameBoard = builder.build().expect("Faild to build new game board");
 
     GameBoard::create(conn, new_game_board)
         .await
@@ -123,6 +124,7 @@ pub async fn create_test_question(
     if let Some(overrides) = overrides {
         builder.created_at(overrides.created_at);
         builder.updated_at(overrides.updated_at);
+        builder.user_id(user_id);
         builder.question_text(overrides.question_text);
         builder.answer(overrides.answer);
     } else {
