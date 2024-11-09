@@ -4,6 +4,7 @@
 import { gql, useQuery } from '@apollo/client';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Paper, Typography } from '@mui/material';
+import UserMutation from './UserMutation';
 
 // Define User type
 interface User {
@@ -13,7 +14,7 @@ interface User {
     updatedAt: string;
 }
 
-const ALL_USERS_QUERY = gql`
+export const ALL_USERS_QUERY = gql`
  query {
     allUsers {       
             id
@@ -54,6 +55,10 @@ const UserQuery = () => {
             <Typography variant='h4' gutterBottom>
                 Data from Backend:
             </Typography>
+
+            {/* Include the UserMutation component */}
+            <UserMutation />
+
             <Paper sx={{ height: 400, width: '100%' }}>
                 <DataGrid
                     rows={rows}
