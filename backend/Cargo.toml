@@ -3,6 +3,7 @@ name = "backend"  # The name of your backend crate
 version = "0.1.0"
 edition = "2021"
 
+
 [lib]
 # You can omit this section if you're using the default settings
 # path = "src/lib.rs"     # Default path is "src/lib.rs"
@@ -33,6 +34,9 @@ http = "1.1.0"
 serde_json = "1.0.128"
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
 diesel_migrations = "2.2.0"
+uuid = { version = "1.11.0", features = ["v4"] }
+regex = "1.11.1"
+derive_builder = "0.20.2"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

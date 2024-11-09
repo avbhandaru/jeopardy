@@ -1,4 +1,4 @@
-// model modules
+// Query modules
 pub mod game_board;
 pub mod question;
 pub mod user;

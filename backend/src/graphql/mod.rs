@@ -1,2 +1,3 @@
 // GraphQL modules
-pub mod user;
+pub mod mutations;
+pub mod query;
