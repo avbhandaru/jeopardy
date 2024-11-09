@@ -5,7 +5,10 @@ use axum::{extract::Extension, response::Html, routing::get, Router};
 use backend::db::pool::create_app_pool;
 use backend::graphql::mutations::{game_board::GameBoardMutation, user::UserMutation};
 use backend::graphql::query::{game_board::GameBoardQuery, user::UserQuery};
+use http::header::{AUTHORIZATION, CONTENT_TYPE};
+use http::{HeaderValue, Method};
 use std::net::SocketAddr;
+use tower_http::cors::{Any, CorsLayer};
 
 #[derive(MergedObject, Default)]
 struct QueryRoot(UserQuery, GameBoardQuery);
@@ -43,9 +46,17 @@ async fn main() {
 
     let schema = schema_builder.finish();
 
+    // Configure CORS
+    let cors = CorsLayer::new()
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_headers([CONTENT_TYPE, AUTHORIZATION])
+        .allow_credentials(true); // In case of cookies or other credentials
+
     let app = Router::new()
         .route("/graphql", get(graphql_playground).post(graphql_handler))
-        .layer(Extension(schema));
+        .layer(Extension(schema))
+        .layer(cors);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
 

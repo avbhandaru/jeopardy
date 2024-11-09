@@ -1,4 +1,5 @@
-'use client';
+// src/app/lib/theme.ts
+
 import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
