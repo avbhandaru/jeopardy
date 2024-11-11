@@ -1,5 +1,4 @@
 // src/app/users/page.tsx
-
 'use client';
 
 import UserQuery from "./UserQuery";

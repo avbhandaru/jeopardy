@@ -1,3 +1,7 @@
+// src/app/games/page.tsx
+'use client';
+
+import GameBoardQuery from "./GameBoardQuery";
 import styles from "./page.module.css";
 
 export default function GamesPage() {
@@ -5,12 +9,10 @@ export default function GamesPage() {
     <div className={styles.page}>
       <main className={styles.main}>
         <ol>
-          <li><code>/games</code> page</li>
-          <li>
-            Get started by editing <code>src/app/games/page.tsx</code>.
-          </li>
+          <h1>Games Dashboard</h1>
+          <GameBoardQuery />
         </ol>
       </main>
-    </div>
+    </div >
   );
 }

@@ -30,4 +30,13 @@ impl GameBoardQuery {
         let game_boards = GameBoard::find_by_user(&mut conn, user_id).await?;
         Ok(game_boards)
     }
+
+    async fn all_game_boards(&self, ctx: &Context<'_>) -> Result<Vec<GameBoard>> {
+        let pool = ctx
+            .data::<DBPool>()
+            .expect("Cannot get DBPool from context");
+        let mut conn = pool.get().await?;
+        let game_boards = GameBoard::all(&mut conn).await?;
+        Ok(game_boards)
+    }
 }

@@ -16,7 +16,7 @@ const Providers = ({ children }: ProviderProps) => {
         <ApolloProvider client={client}>
             <AppRouterCacheProvider>
                 {/* <CssBaseline */}
-                <ThemeProvider theme={theme} defaultMode="dark">
+                <ThemeProvider theme={theme} defaultMode="system">
                     {children}
                 </ThemeProvider>
             </AppRouterCacheProvider>
