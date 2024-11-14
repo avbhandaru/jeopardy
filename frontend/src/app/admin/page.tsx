@@ -5,6 +5,7 @@
 import styles from "./page.module.css";
 import UserQuery from "../users/UserQuery";
 import GameBoardQuery from "../games/GameBoardQuery";
+import QuestionQuery from "../questions/QuestionQuery";
 
 export default function AdminPage() {
     return (
@@ -19,6 +20,10 @@ export default function AdminPage() {
                     <li>
                         <h1>GameBoards Dashboard</h1>
                         <GameBoardQuery />
+                    </li>
+                    <li>
+                        <h1>Questions Dashboard</h1>
+                        <QuestionQuery />
                     </li>
                 </ol>
             </main>

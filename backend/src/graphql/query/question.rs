@@ -28,4 +28,11 @@ impl QuestionQuery {
         let questions: Vec<Question> = Question::find_by_user(&mut conn, user_id).await?;
         Ok(questions)
     }
+
+    async fn all_questions(&self, ctx: &Context<'_>) -> Result<Vec<Question>> {
+        let pool = ctx.data::<DBPool>().expect("Cant get DBPool from context");
+        let mut conn = pool.get().await?;
+        let questions: Vec<Question> = Question::all(&mut conn).await?;
+        Ok(questions)
+    }
 }

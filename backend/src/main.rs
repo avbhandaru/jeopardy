@@ -3,18 +3,22 @@ use async_graphql::{EmptySubscription, MergedObject, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{extract::Extension, response::Html, routing::get, Router};
 use backend::db::pool::create_app_pool;
-use backend::graphql::mutations::{game_board::GameBoardMutation, user::UserMutation};
-use backend::graphql::query::{game_board::GameBoardQuery, user::UserQuery};
+use backend::graphql::mutations::{
+    game_board::GameBoardMutation, question::QuestionMutation, user::UserMutation,
+};
+use backend::graphql::query::{
+    game_board::GameBoardQuery, question::QuestionQuery, user::UserQuery,
+};
 use http::header::{AUTHORIZATION, CONTENT_TYPE};
 use http::{HeaderValue, Method};
 use std::net::SocketAddr;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 
 #[derive(MergedObject, Default)]
-struct QueryRoot(UserQuery, GameBoardQuery);
+struct QueryRoot(UserQuery, GameBoardQuery, QuestionQuery);
 
 #[derive(MergedObject, Default)]
-struct MutationRoot(UserMutation, GameBoardMutation);
+struct MutationRoot(UserMutation, GameBoardMutation, QuestionMutation);
 
 async fn graphql_playground() -> Html<String> {
     Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))

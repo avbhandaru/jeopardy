@@ -1,56 +1,58 @@
-// src/app/games/GameBoardQuery.tsx
+// src/app/questions/QuestionQuery.tsx
 'use client';
 
 import { gql, useQuery } from '@apollo/client';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Paper, Typography } from '@mui/material';
-// import GameBoard from './[game_uuid]/GameBoard';
-import GameBoardMutation from './GameBoardMutation';
+// import QuestionMutation from './QuestionMutation';
 
-// Define the GameBoard type
-interface GameBoard {
+interface Question {
     id: string,
-    createdAt: string,
-    updatedAt: string,
-    userId: string,
-    boardName: string,
+    created_at: string,
+    updated_at: string,
+    user_id: string,
+    question_text: string,
+    answer: string,
 }
 
-export const ALL_GAMEBOARDS_QUERY = gql`
- query {
-    allGameBoards {
-        id
-        createdAt
-        updatedAt
-        userId
-        boardName
+export const ALL_QUESTIONS_QUERY = gql`
+    query {
+        allQuestions {
+            id
+            createdAt
+            updatedAt
+            userId
+            questionText
+            answer
+        }
     }
- }
 `;
 
 // Define columns for DataGrid
 const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'boardName', headerName: 'Board Name', width: 150 },
     { field: 'userId', headerName: 'User ID', width: 70 },
+    { field: 'questionText', headerName: 'Question Text', width: 200 },
+    { field: 'answer', headerName: 'Answer', width: 200 },
     { field: 'createdAt', headerName: 'Created At', width: 200 },
     { field: 'updatedAt', headerName: 'Updated At', width: 200 },
 ];
 
-const GameBoardQuery = () => {
-    const { loading, error, data } = useQuery<{ allGameBoards: GameBoard[] }>(ALL_GAMEBOARDS_QUERY);
+const QuestionQuery = () => {
+    const { loading, error, data } = useQuery<{ allQuestions: Question[] }>(ALL_QUESTIONS_QUERY);
 
     if (loading) return <p>Loading data...</p>;
     if (error) return <p>Error fetching data: {error.message}</p>;
     if (!data) return <p>No gameboards found.</p>;
 
     // Prepare rows for DataGrid
-    const rows = data.allGameBoards.map((gameboard) => ({
-        id: gameboard.id,
-        createdAt: new Date(gameboard.createdAt).toLocaleString(),
-        updatedAt: new Date(gameboard.updatedAt).toLocaleString(),
-        userId: gameboard.userId,
-        boardName: gameboard.boardName,
+    const rows = data.allQuestions.map((question) => ({
+        id: question.id,
+        createdAt: new Date(question.created_at).toLocaleString(),
+        updatedAt: new Date(question.updated_at).toLocaleString(),
+        userId: question.user_id,
+        questionText: question.question_text,
+        answer: question.answer,
     }));
 
     return (
@@ -60,7 +62,7 @@ const GameBoardQuery = () => {
             </Typography>
 
             {/* Include GameBoardMutation component */}
-            <GameBoardMutation />
+            {/* <QuestionMutation /> */}
 
             <Paper sx={{ height: 400, width: '100%' }}>
                 <DataGrid
@@ -72,7 +74,7 @@ const GameBoardQuery = () => {
                 />
             </Paper>
         </div>
-    );
+    )
 };
 
-export default GameBoardQuery;
+export default QuestionQuery;
