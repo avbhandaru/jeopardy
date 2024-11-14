@@ -4,8 +4,6 @@ use crate::db::pool::DBPool;
 use crate::models::question::{NewQuestion, Question};
 use async_graphql::{Context, InputObject, Object, Result};
 use chrono::{DateTime, Utc};
-use deadpool_diesel::Pool;
-use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection};
 
 #[derive(InputObject)]
 pub struct CreateQuestionInput {
@@ -26,9 +24,8 @@ impl QuestionMutation {
         ctx: &Context<'_>,
         input: CreateQuestionInput,
     ) -> Result<Question> {
-        let pool: &Pool<AsyncDieselConnectionManager<AsyncPgConnection>> =
-            ctx.data::<DBPool>().expect("Cant get DBPool from context");
-        let mut conn = pool.get().await?;
+        let pool = ctx.data::<DBPool>().expect("Cant get DBPool from context");
+        let mut conn = pool.get().await.expect("Failed to get connection");
         let new_question: NewQuestion = NewQuestion {
             created_at: input.created_at,
             updated_at: input.updated_at,

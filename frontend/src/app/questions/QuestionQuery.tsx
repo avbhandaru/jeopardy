@@ -4,14 +4,14 @@
 import { gql, useQuery } from '@apollo/client';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Paper, Typography } from '@mui/material';
-// import QuestionMutation from './QuestionMutation';
+import QuestionMutation from './QuestionMutation';
 
 interface Question {
     id: string,
-    created_at: string,
-    updated_at: string,
-    user_id: string,
-    question_text: string,
+    createdAt: string,
+    updatedAt: string,
+    userId: string,
+    questionText: string,
     answer: string,
 }
 
@@ -43,15 +43,15 @@ const QuestionQuery = () => {
 
     if (loading) return <p>Loading data...</p>;
     if (error) return <p>Error fetching data: {error.message}</p>;
-    if (!data) return <p>No gameboards found.</p>;
+    if (!data) return <p>No questions found.</p>;
 
     // Prepare rows for DataGrid
     const rows = data.allQuestions.map((question) => ({
         id: question.id,
-        createdAt: new Date(question.created_at).toLocaleString(),
-        updatedAt: new Date(question.updated_at).toLocaleString(),
-        userId: question.user_id,
-        questionText: question.question_text,
+        createdAt: new Date(question.createdAt).toLocaleString(),
+        updatedAt: new Date(question.updatedAt).toLocaleString(),
+        userId: question.userId,
+        questionText: question.questionText,
         answer: question.answer,
     }));
 
@@ -62,7 +62,7 @@ const QuestionQuery = () => {
             </Typography>
 
             {/* Include GameBoardMutation component */}
-            {/* <QuestionMutation /> */}
+            <QuestionMutation />
 
             <Paper sx={{ height: 400, width: '100%' }}>
                 <DataGrid
@@ -74,7 +74,7 @@ const QuestionQuery = () => {
                 />
             </Paper>
         </div>
-    )
+    );
 };
 
 export default QuestionQuery;
