@@ -1,7 +1,7 @@
 // src/app/users/page.tsx
-'use client';
+"use client";
 
-import UserQuery from "./UserQuery";
+import UserDashboard from "../components/UserDashboard";
 import styles from "./page.module.css";
 
 export default function UsersPage() {
@@ -10,7 +10,7 @@ export default function UsersPage() {
       <main className={styles.main}>
         <ol>
           <h1>Users Dashboard</h1>
-          <UserQuery />
+          <UserDashboard />
         </ol>
       </main>
     </div>

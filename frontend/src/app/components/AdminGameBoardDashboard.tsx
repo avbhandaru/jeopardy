@@ -1,34 +1,24 @@
 // src/app/games/GameBoardQuery.tsx
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
-import GameBoardMutation from "./GameBoardMutation";
-import { ALL_GAMEBOARDS_QUERY } from "@/graphql/queries/gameBoards";
-
-// Define the GameBoard type
-interface GameBoard {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  boardName: string;
-}
+import GameBoardMutation from "../games/GameBoardMutation";
+import { useGetAllGameBoardsQuery } from "@/generated/graphql";
+import Link from "next/link";
 
 // Define columns for DataGrid
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 70 },
   { field: "boardName", headerName: "Board Name", width: 150 },
+  { field: "grid", headerName: "Grid", width: 150 },
   { field: "userId", headerName: "User ID", width: 70 },
   { field: "createdAt", headerName: "Created At", width: 200 },
   { field: "updatedAt", headerName: "Updated At", width: 200 },
 ];
 
-const GameBoardQuery = () => {
-  const { loading, error, data } = useQuery<{ allGameBoards: GameBoard[] }>(
-    ALL_GAMEBOARDS_QUERY
-  );
+const AdminGameBoardDashboard = () => {
+  const { loading, error, data } = useGetAllGameBoardsQuery();
 
   if (loading) return <p>Loading data...</p>;
   if (error) return <p>Error fetching data: {error.message}</p>;
@@ -41,6 +31,7 @@ const GameBoardQuery = () => {
     updatedAt: new Date(gameboard.updatedAt).toLocaleString(),
     userId: gameboard.userId,
     boardName: gameboard.boardName,
+    grid: JSON.stringify(gameboard.grid, null, 2), // Pretty print JSON
   }));
 
   return (
@@ -65,4 +56,4 @@ const GameBoardQuery = () => {
   );
 };
 
-export default GameBoardQuery;
+export default AdminGameBoardDashboard;

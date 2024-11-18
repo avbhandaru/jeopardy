@@ -1,0 +1,82 @@
+schema {
+  query: QueryRoot
+  mutation: MutationRoot
+}
+
+# Indicates that an Input Object is a OneOf Input Object (and thus requires
+#                         exactly one of its field be provided)
+directive @oneOf on INPUT_OBJECT
+
+input CreateGameBoardInput {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  userId: Int!
+  boardName: String!
+  grid: JSON!
+}
+
+input CreateQuestionInput {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  userId: Int!
+  questionText: String!
+  answer: String!
+}
+
+input CreateUserInput {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  username: String!
+}
+
+# Implement the DateTime<Utc> scalar
+#
+# The input/output is a string in RFC3339 format.
+scalar DateTime
+
+# Diesel Game Board model with async-graphql support
+type GameBoard {
+  id: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  userId: Int!
+  boardName: String!
+  grid: JSON!
+}
+
+# A scalar that can represent any JSON value.
+scalar JSON
+
+type MutationRoot {
+  createUser(input: CreateUserInput!): User!
+  createGameBoard(input: CreateGameBoardInput!): GameBoard!
+  createQuestion(input: CreateQuestionInput!): Question!
+}
+
+type QueryRoot {
+  getUser(id: Int!): User!
+  allUsers: [User!]!
+  getGameBoard(id: Int!): GameBoard!
+  getGameBoardFromUser(userId: Int!): [GameBoard!]!
+  allGameBoards: [GameBoard!]!
+  getQuestion(id: Int!): Question!
+  getQuestionFromUser(userId: Int!): [Question!]!
+  allQuestions: [Question!]!
+}
+
+# Disel Question Model with async-graphql suppport
+type Question {
+  id: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  userId: Int!
+  questionText: String!
+  answer: String!
+}
+
+type User {
+  id: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  username: String!
+}
