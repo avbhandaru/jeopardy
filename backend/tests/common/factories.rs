@@ -5,6 +5,7 @@ use backend::models::question::{NewQuestion, NewQuestionBuilder, Question};
 use backend::models::user::{NewUser, NewUserBuilder, User};
 use chrono::Utc;
 use diesel_async::AsyncPgConnection;
+use serde_json::json;
 
 /// Creates a new test user with default values.
 ///
@@ -79,11 +80,13 @@ pub async fn create_test_game_board(
         builder.updated_at(overrides.updated_at);
         builder.board_name(overrides.board_name);
         builder.user_id(user_id);
+        builder.grid(overrides.grid);
     } else {
         builder.created_at(Utc::now());
         builder.updated_at(Utc::now());
         builder.user_id(user_id);
         builder.board_name("defaultboard".to_string());
+        builder.grid(json!({}));
     }
 
     let new_game_board: NewGameBoard = builder.build().expect("Faild to build new game board");

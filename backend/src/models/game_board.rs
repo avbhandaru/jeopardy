@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use derive_builder::Builder;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use serde_json::{json, Value};
 
 /// Diesel Game Board model with async-graphql support
 #[derive(Queryable, Selectable, Insertable, Debug, SimpleObject, Builder)]
@@ -16,6 +17,7 @@ pub struct GameBoard {
     pub updated_at: DateTime<Utc>,
     pub user_id: i64,
     pub board_name: String,
+    pub grid: Value,
 }
 
 #[derive(Debug, Insertable, Builder)]
@@ -25,6 +27,7 @@ pub struct NewGameBoard {
     pub updated_at: DateTime<Utc>,
     pub user_id: i64,
     pub board_name: String,
+    pub grid: Value,
 }
 
 impl GameBoard {
@@ -51,8 +54,22 @@ impl GameBoard {
 
     pub async fn create(
         conn: &mut AsyncPgConnection,
-        new_game_board: NewGameBoard,
+        mut new_game_board: NewGameBoard,
     ) -> Result<Self, diesel::result::Error> {
+        if new_game_board.grid == json!({}) {
+            let default_grid = json!({
+                "categories": ["Category 1", "Category 2", "Category 3", "Category 4", "Category 5"],
+                "questions": [
+                    ["", "", "", "", ""],
+                    ["", "", "", "", ""],
+                    ["", "", "", "", ""],
+                    ["", "", "", "", ""],
+                    ["", "", "", "", ""]
+                ]
+            });
+            new_game_board.grid = default_grid;
+        }
+
         diesel::insert_into(game_boards::table)
             .values(&new_game_board)
             .get_result(conn)

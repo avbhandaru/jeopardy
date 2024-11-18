@@ -7,6 +7,7 @@ diesel::table! {
         updated_at -> Timestamptz,
         user_id -> Int8,
         board_name -> Text,
+        grid -> Jsonb,
     }
 }
 

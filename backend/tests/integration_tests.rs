@@ -19,6 +19,7 @@ use common::setup::{
     run_migrations_sync, TestDB,
 };
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
+use serde_json::json;
 
 /// Query Roots for Graphql schema building
 #[derive(MergedObject, Default)]
@@ -334,6 +335,7 @@ async fn test_create_game_board_model() {
         board_name: "testBoard".to_string(),
         created_at: Utc::now(),
         updated_at: Utc::now(),
+        grid: json!({}),
     };
 
     let created_game_board: GameBoard = GameBoard::create(&mut conn, new_game_board).await.unwrap();
@@ -372,6 +374,7 @@ async fn test_get_game_board_graphql() {
         updated_at: Utc::now(),
         user_id: new_user.id,
         board_name: "test_board".to_string(),
+        grid: json!({}),
     };
     GameBoard::create(&mut conn, game_board1).await.unwrap();
 

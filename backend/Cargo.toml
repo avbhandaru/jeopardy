@@ -16,7 +16,7 @@ name = "backend" # Name of the binary
 axum = "0.7.5"
 async-graphql = { version = "7.0.9", features = ["chrono"] }
 async-graphql-axum = "7.0.9"
-diesel = { version = "2.0", features = ["chrono", "postgres"] }
+diesel = { version = "2.0", features = ["chrono", "postgres", "serde_json"] }
 diesel-async = { version = "0.5.0", features = [
     "postgres",
     "deadpool",

@@ -4,6 +4,7 @@ use crate::db::pool::DBPool;
 use crate::models::game_board::{GameBoard, NewGameBoard};
 use async_graphql::{Context, InputObject, Object, Result};
 use chrono::{DateTime, Utc};
+use serde_json::Value;
 
 #[derive(InputObject)]
 pub struct CreateGameBoardInput {
@@ -11,6 +12,7 @@ pub struct CreateGameBoardInput {
     pub updated_at: DateTime<Utc>,
     pub user_id: i64,
     pub board_name: String,
+    pub grid: Value,
 }
 
 #[derive(Default)]
@@ -32,6 +34,7 @@ impl GameBoardMutation {
             updated_at: input.updated_at,
             user_id: input.user_id,
             board_name: input.board_name,
+            grid: input.grid,
         };
         let game_board: GameBoard = GameBoard::create(&mut conn, new_game_board).await?;
         Ok(game_board)

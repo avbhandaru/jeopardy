@@ -6,6 +6,7 @@ use backend::models::question::{NewQuestion, Question};
 use backend::models::user::{NewUser, User};
 use chrono::Utc;
 use diesel_async::AsyncPgConnection;
+use serde_json::json;
 
 /// Creates a test fixture with mudkip as test user. Mudkip has one gameboard.
 /// Mudkip has 10 questions.
@@ -43,6 +44,7 @@ pub async fn mudkip_fixture(conn: &mut AsyncPgConnection) -> User {
             updated_at: Utc::now(),
             user_id: mudkip_user.id,
             board_name: "Mudkip's Board".to_string(),
+            grid: json!({}),
         }),
     )
     .await;
