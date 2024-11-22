@@ -5,7 +5,7 @@
 import styles from "./page.module.css";
 import AdminUserDashboard from "../components/AdminUserDashboard";
 import AdminGameBoardDashboard from "../components/AdminGameBoardDashboard";
-import QuestionQuery from "../questions/QuestionQuery";
+import AdminQuestionsDashboard from "../components/AdminQuestionsDashboard";
 
 export default function AdminPage() {
   return (
@@ -23,7 +23,7 @@ export default function AdminPage() {
           </li>
           <li>
             <h1>Questions Dashboard</h1>
-            <QuestionQuery />
+            <AdminQuestionsDashboard />
           </li>
         </ol>
       </main>

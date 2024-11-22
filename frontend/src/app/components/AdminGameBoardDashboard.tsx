@@ -1,4 +1,4 @@
-// src/app/games/GameBoardQuery.tsx
+// src/app/components/AdminGameBoardDashboard.tsx
 "use client";
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";

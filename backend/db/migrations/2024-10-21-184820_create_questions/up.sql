@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS questions (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     user_id BIGINT NOT NULL,
-    question_text TEXT NOT NULL,
+    question TEXT NOT NULL,
     answer TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TRIGGER questions_updated_at

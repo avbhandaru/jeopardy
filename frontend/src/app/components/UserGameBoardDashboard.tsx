@@ -1,33 +1,9 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
+import { useGetGameBoardFromUserQuery } from "@/generated/graphql";
 import Link from "next/link";
-
-// Define the GameBoard type
-interface GameBoard {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  boardName: string;
-  grid: JSON;
-}
-
-// GraphQL Query for User
-export const USER_GAMEBOARDS_QUERY = gql`
-  query GetGameBoardFromUser($userId: Int!) {
-    getGameBoardFromUser(userId: $userId) {
-      id
-      createdAt
-      updatedAt
-      userId
-      boardName
-      grid
-    }
-  }
-`;
 
 // Define columns for DataGrid
 const columns: GridColDef[] = [
@@ -49,9 +25,9 @@ const columns: GridColDef[] = [
 ];
 
 const UserGameBoardDashboard = ({ userId }: { userId: string }) => {
-  const { loading, error, data } = useQuery<{
-    getGameBoardFromUser: GameBoard[];
-  }>(USER_GAMEBOARDS_QUERY, { variables: { userId: parseInt(userId, 10) } });
+  const { loading, error, data } = useGetGameBoardFromUserQuery({
+    variables: { userId: parseInt(userId, 10) },
+  });
   //   console.log("Parsed userId:", parseInt(userId, 10));
   if (loading) return <p>Loading data...</p>;
   if (error) return <p>Error fetching data: {error.message}</p>;

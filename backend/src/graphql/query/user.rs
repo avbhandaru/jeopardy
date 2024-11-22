@@ -11,6 +11,7 @@ pub struct UserQuery;
 
 #[Object]
 impl UserQuery {
+    /// Fetch user by id
     async fn get_user(&self, ctx: &Context<'_>, id: i64) -> Result<User> {
         let pool = ctx
             .data::<DBPool>()
@@ -21,6 +22,7 @@ impl UserQuery {
         Ok(user)
     }
 
+    /// Fetch all users
     async fn all_users(&self, ctx: &Context<'_>) -> Result<Vec<User>> {
         let pool = ctx
             .data::<DBPool>()

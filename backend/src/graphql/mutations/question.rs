@@ -3,14 +3,11 @@
 use crate::db::pool::DBPool;
 use crate::models::question::{NewQuestion, Question};
 use async_graphql::{Context, InputObject, Object, Result};
-use chrono::{DateTime, Utc};
 
 #[derive(InputObject)]
 pub struct CreateQuestionInput {
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
     pub user_id: i64,
-    pub question_text: String,
+    pub question: String,
     pub answer: String,
 }
 
@@ -19,6 +16,7 @@ pub struct QuestionMutation;
 
 #[Object]
 impl QuestionMutation {
+    /// Create a new quesiton
     async fn create_question(
         &self,
         ctx: &Context<'_>,
@@ -27,10 +25,8 @@ impl QuestionMutation {
         let pool = ctx.data::<DBPool>().expect("Cant get DBPool from context");
         let mut conn = pool.get().await.expect("Failed to get connection");
         let new_question: NewQuestion = NewQuestion {
-            created_at: input.created_at,
-            updated_at: input.updated_at,
             user_id: input.user_id,
-            question_text: input.question_text,
+            question: input.question,
             answer: input.answer,
         };
         let question: Question = Question::create(&mut conn, new_question).await?;

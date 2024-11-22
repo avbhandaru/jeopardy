@@ -3,9 +3,7 @@
 use backend::models::game_board::{GameBoard, NewGameBoard, NewGameBoardBuilder};
 use backend::models::question::{NewQuestion, NewQuestionBuilder, Question};
 use backend::models::user::{NewUser, NewUserBuilder, User};
-use chrono::Utc;
 use diesel_async::AsyncPgConnection;
-use serde_json::json;
 
 /// Creates a new test user with default values.
 ///
@@ -30,11 +28,7 @@ pub async fn create_test_user(conn: &mut AsyncPgConnection, overrides: Option<Ne
 
     if let Some(overrides) = overrides {
         builder.username(overrides.username);
-        builder.created_at(overrides.created_at);
-        builder.updated_at(overrides.updated_at);
     } else {
-        builder.created_at(Utc::now());
-        builder.updated_at(Utc::now());
         builder.username("defaultuser".to_string());
     }
 
@@ -76,17 +70,11 @@ pub async fn create_test_game_board(
     let mut builder: NewGameBoardBuilder = NewGameBoardBuilder::default();
 
     if let Some(overrides) = overrides {
-        builder.created_at(overrides.created_at);
-        builder.updated_at(overrides.updated_at);
-        builder.board_name(overrides.board_name);
+        builder.title(overrides.title);
         builder.user_id(user_id);
-        builder.grid(overrides.grid);
     } else {
-        builder.created_at(Utc::now());
-        builder.updated_at(Utc::now());
         builder.user_id(user_id);
-        builder.board_name("defaultboard".to_string());
-        builder.grid(json!({}));
+        builder.title("defaultboard".to_string());
     }
 
     let new_game_board: NewGameBoard = builder.build().expect("Faild to build new game board");
@@ -125,16 +113,12 @@ pub async fn create_test_question(
     let mut builder: NewQuestionBuilder = NewQuestionBuilder::default();
 
     if let Some(overrides) = overrides {
-        builder.created_at(overrides.created_at);
-        builder.updated_at(overrides.updated_at);
         builder.user_id(user_id);
-        builder.question_text(overrides.question_text);
+        builder.question(overrides.question);
         builder.answer(overrides.answer);
     } else {
-        builder.created_at(Utc::now());
-        builder.updated_at(Utc::now());
         builder.user_id(user_id);
-        builder.question_text("defaultquestion".to_string());
+        builder.question("defaultquestion".to_string());
         builder.answer("defaultanswer".to_string());
     }
 

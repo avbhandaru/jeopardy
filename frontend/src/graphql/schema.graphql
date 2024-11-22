@@ -62,6 +62,7 @@ type QueryRoot {
   getQuestion(id: Int!): Question!
   getQuestionFromUser(userId: Int!): [Question!]!
   allQuestions: [Question!]!
+  getQuestionsFromIds(ids: [Int!]!): [Question!]!
 }
 
 # Disel Question Model with async-graphql suppport

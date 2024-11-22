@@ -1,31 +1,19 @@
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
-use async_graphql::{EmptySubscription, MergedObject, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{extract::Extension, response::Html, routing::get, Router};
 use backend::db::pool::create_app_pool;
-use backend::graphql::mutations::{
-    game_board::GameBoardMutation, question::QuestionMutation, user::UserMutation,
-};
-use backend::graphql::query::{
-    game_board::GameBoardQuery, question::QuestionQuery, user::UserQuery,
-};
+use backend::graphql::schema::{create_schema, AppSchema};
 use http::header::{AUTHORIZATION, CONTENT_TYPE};
 use http::{HeaderValue, Method};
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
-
-#[derive(MergedObject, Default)]
-struct QueryRoot(UserQuery, GameBoardQuery, QuestionQuery);
-
-#[derive(MergedObject, Default)]
-struct MutationRoot(UserMutation, GameBoardMutation, QuestionMutation);
 
 async fn graphql_playground() -> Html<String> {
     Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
 }
 
 async fn graphql_handler(
-    Extension(schema): Extension<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
+    schema: Extension<AppSchema>,
     req: GraphQLRequest,
 ) -> impl axum::response::IntoResponse {
     GraphQLResponse::from(schema.execute(req.0).await)
@@ -33,22 +21,11 @@ async fn graphql_handler(
 
 #[tokio::main]
 async fn main() {
-    let mut schema_builder: async_graphql::SchemaBuilder<
-        QueryRoot,
-        MutationRoot,
-        EmptySubscription,
-    > = Schema::build(
-        QueryRoot::default(),
-        MutationRoot::default(),
-        EmptySubscription,
-    );
-
     // Try to get a connection from our DBPool
     let pool = create_app_pool().expect("Failed to create DBPool");
 
-    schema_builder = schema_builder.data(pool.clone());
-
-    let schema = schema_builder.finish();
+    // Create graphql schema
+    let schema = create_schema(pool);
 
     // Configure CORS
     let cors = CorsLayer::new()

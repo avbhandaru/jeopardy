@@ -3,12 +3,9 @@
 use crate::db::pool::DBPool;
 use crate::models::user::{NewUser, User};
 use async_graphql::{Context, InputObject, Object, Result};
-use chrono::{DateTime, Utc};
 
 #[derive(InputObject)]
 pub struct CreateUserInput {
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
     pub username: String,
 }
 
@@ -25,8 +22,6 @@ impl UserMutation {
         let mut conn = pool.get().await.expect("Failed to get connection");
 
         let new_user: NewUser = NewUser {
-            created_at: input.created_at,
-            updated_at: input.updated_at,
             username: input.username,
         };
 

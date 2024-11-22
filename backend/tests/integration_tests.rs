@@ -1,32 +1,17 @@
 // tests/integration_tests.rs
 
 mod common;
-use async_graphql::{EmptyMutation, EmptySubscription, MergedObject, Request, Response, Schema};
-use backend::graphql::mutations::game_board::GameBoardMutation;
-use backend::graphql::mutations::question::QuestionMutation;
-use backend::graphql::mutations::user::UserMutation;
-use backend::graphql::query::game_board::GameBoardQuery;
-use backend::graphql::query::question::QuestionQuery;
-use backend::graphql::query::user::UserQuery;
+use async_graphql::{Request, Response, Schema};
+use backend::graphql::schema::create_schema;
 use backend::models::game_board::{GameBoard, NewGameBoard};
-use backend::models::question::{NewQuestion, Question};
+use backend::models::question::Question;
 use backend::models::user::{NewUser, User};
-use chrono::Utc;
 use common::factories::{create_test_game_board, create_test_question, create_test_user};
-use common::fixtures::mudkip_fixture;
+use common::fixtures::{mudkip_board_with_questions, mudkip_fixture};
 use common::setup::{
     create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
     run_migrations_sync, TestDB,
 };
-use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
-use serde_json::json;
-
-/// Query Roots for Graphql schema building
-#[derive(MergedObject, Default)]
-struct QueryRoot(UserQuery, GameBoardQuery, QuestionQuery);
-
-#[derive(MergedObject, Default)]
-struct MutationRoot(UserMutation, GameBoardMutation, QuestionMutation);
 
 #[tokio::test]
 async fn test_check_backtrace() {
@@ -84,15 +69,10 @@ async fn test_create_user_model() {
     // Insert a test user into the database
     {
         let new_user: NewUser = NewUser {
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
             username: "testuser".to_string(),
         };
 
         let mut conn = test_db.pool.get().await.unwrap();
-        // Dereference the pooled connection to get the underlying AsyncPgConnection
-        // let conn: &mut AsyncPgConnection = &mut *conn;
-        println!("Created async connection object from pool");
 
         // Perform user creation inside the transaction
         let created_user: User = User::create(&mut conn, new_user).await.unwrap();
@@ -116,19 +96,12 @@ async fn test_create_user_graphql() {
     let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
 
     // Build graphql schema with Query and Mutation types
-    let schema: Schema<UserQuery, UserMutation, EmptySubscription> =
-        Schema::build(UserQuery, UserMutation, EmptySubscription)
-            .data(test_db.pool.clone())
-            .finish();
+    let schema = create_schema(test_db.pool.clone());
 
     // Define the GraphQL mutation string
     let mutation = r#"
         mutation {
-            createUser(input: {
-                createdAt: "2024-10-10T12:00:00Z",
-                updatedAt: "2024-10-10T12:00:00Z",
-                username: "testuser"
-            }) {
+            createUser(input: { username: "testuser" }) {
                 id
                 username
                 createdAt
@@ -172,17 +145,12 @@ async fn test_get_user_graphql() {
     // Insert testUser
     let user1 = NewUser {
         username: "testUser".to_string(),
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
     };
     let mut conn = test_db.pool.get().await.unwrap();
     User::create(&mut conn, user1).await.unwrap();
 
     // Only testing UserQuery, so no need for mutation or subscription
-    let schema: Schema<UserQuery, EmptyMutation, EmptySubscription> =
-        Schema::build(UserQuery, EmptyMutation, EmptySubscription)
-            .data(test_db.pool.clone())
-            .finish();
+    let schema = create_schema(test_db.pool.clone());
 
     // Define Graphql query
     let query = r#"
@@ -234,23 +202,16 @@ async fn test_all_users_graphql() {
     // Insert test users
     let user1 = NewUser {
         username: "user1".to_string(),
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
     };
     let user2 = NewUser {
         username: "user2".to_string(),
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
     };
 
     let _ = User::create(&mut conn, user1).await;
     let _ = User::create(&mut conn, user2).await;
 
     // Build the GraphQL schema with Query and Mutation types
-    let schema: Schema<UserQuery, UserMutation, EmptySubscription> =
-        Schema::build(UserQuery, UserMutation, EmptySubscription)
-            .data(test_db.pool.clone())
-            .finish();
+    let schema = create_schema(test_db.pool.clone());
 
     // Define the GraphQL query string for allUsers
     let query = r#"
@@ -311,8 +272,6 @@ async fn test_create_game_board_model() {
 
     // Insert a test user into the database
     let new_user: NewUser = NewUser {
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
         username: "testuser".to_string(),
     };
 
@@ -332,21 +291,18 @@ async fn test_create_game_board_model() {
     // Insert a test game board into the database
     let new_game_board: NewGameBoard = NewGameBoard {
         user_id: created_user.id,
-        board_name: "testBoard".to_string(),
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
-        grid: json!({}),
+        title: "testBoard".to_string(),
     };
 
     let created_game_board: GameBoard = GameBoard::create(&mut conn, new_game_board).await.unwrap();
 
     println!(
         "Created gameBoard: {}, id: {}, user_id: {}",
-        created_game_board.board_name, created_game_board.id, created_game_board.user_id
+        created_game_board.title, created_game_board.id, created_game_board.user_id
     );
 
     // Assert that the created board game matches expectations
-    assert_eq!(created_game_board.board_name, "testBoard");
+    assert_eq!(created_game_board.title, "testBoard");
     assert_eq!(created_game_board.user_id, created_user.id);
 
     // Tear down test_db
@@ -362,27 +318,19 @@ async fn test_get_game_board_graphql() {
     // Insert testUser
     let user1 = NewUser {
         username: "testUser".to_string(),
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
     };
     let mut conn = test_db.pool.get().await.unwrap();
     let new_user: User = User::create(&mut conn, user1).await.unwrap();
 
     // Insert testGameBoard from testUser
     let game_board1 = NewGameBoard {
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
         user_id: new_user.id,
-        board_name: "test_board".to_string(),
-        grid: json!({}),
+        title: "test_board".to_string(),
     };
     GameBoard::create(&mut conn, game_board1).await.unwrap();
 
     // Build graphql schema
-    let schema: Schema<GameBoardQuery, GameBoardMutation, EmptySubscription> =
-        Schema::build(GameBoardQuery, GameBoardMutation, EmptySubscription)
-            .data(test_db.pool.clone())
-            .finish();
+    let schema = create_schema(test_db.pool.clone());
 
     // Define the GraphQL query
     let query = r#"
@@ -392,7 +340,7 @@ async fn test_get_game_board_graphql() {
                 createdAt
                 updatedAt
                 userId
-                boardName            
+                title            
             }
         }
     "#;
@@ -417,7 +365,7 @@ async fn test_get_game_board_graphql() {
 
     // Validate game_board
     assert_eq!(game_board["id"], 1);
-    assert_eq!(game_board["boardName"], "test_board");
+    assert_eq!(game_board["title"], "test_board");
     assert_eq!(game_board["userId"], 1);
 
     // Tear down test_db
@@ -435,10 +383,10 @@ async fn test_factory_functions() {
 
     let factory_game_board: GameBoard =
         create_test_game_board(&mut conn, factory_user.id, None).await;
-    assert_eq!(factory_game_board.board_name, "defaultboard");
+    assert_eq!(factory_game_board.title, "defaultboard");
 
     let factory_question: Question = create_test_question(&mut conn, factory_user.id, None).await;
-    assert_eq!(factory_question.question_text, "defaultquestion");
+    assert_eq!(factory_question.question, "defaultquestion");
     assert_eq!(factory_question.answer, "defaultanswer");
 
     // Tear down test_db
@@ -457,20 +405,9 @@ async fn test_mudkip_fixture() {
     assert_eq!(mudkip.username, "Mudkip");
 
     // Create graphql schema with all queries and mutations
-    let mut schema_builder: async_graphql::SchemaBuilder<
-        QueryRoot,
-        MutationRoot,
-        EmptySubscription,
-    > = Schema::build(
-        QueryRoot::default(),
-        MutationRoot::default(),
-        EmptySubscription,
-    );
-    schema_builder = schema_builder.data(test_db.pool.clone());
-    let schema = schema_builder.finish();
+    let schema = create_schema(test_db.pool.clone());
 
     // Create query for mudkip's questions
-    // Define the GraphQL query string for allUsers
     let mudkip_question_query = format!(
         r#"
         query {{
@@ -479,7 +416,7 @@ async fn test_mudkip_fixture() {
                 createdAt
                 updatedAt
                 userId
-                questionText
+                question
                 answer
         }}
     }}
@@ -504,8 +441,182 @@ async fn test_mudkip_fixture() {
 
     for i in 0..10 {
         assert_eq!(
-            mudkip_questions[i]["questionText"],
+            mudkip_questions[i]["question"],
             format!("Question {}", i + 1)
+        );
+    }
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
+}
+
+#[tokio::test]
+async fn test_get_question_from_ids() {
+    // Set up test database and schema
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+    let mut conn = test_db.pool.get().await.unwrap();
+
+    // Initialize mudkip fixture with user
+    let mudkip: User = mudkip_fixture(&mut conn).await;
+    assert_eq!(mudkip.username, "Mudkip");
+
+    // Create graphql schema with all queries and mutations
+    let schema = create_schema(test_db.pool.clone());
+
+    // Create query for mudkip's questions
+    let ids: Vec<i32> = (1..=10).collect(); // Create a vector [1, 2, ..., 10]
+    let ids_string = format!("{:?}", ids); // Convert vector to string "[1, 2, ..., 10]"
+
+    let ten_question_query = format!(
+        r#"
+        query {{
+            getQuestionsFromIds (ids: {}) {{
+                id
+                createdAt
+                updatedAt
+                userId
+                question
+                answer
+        }}
+    }}
+    "#,
+        ids_string
+    );
+
+    // Execute query and get response
+    let request: Request = Request::new(ten_question_query);
+    let response: Response = Schema::execute(&schema, request).await;
+
+    // Print the errors to see what went wrong
+    if !response.errors.is_empty() {
+        println!("GraphQL errors: {:?}", response.errors);
+    } else {
+        println!("GraphQL data: {:?}", response.data);
+    }
+
+    // Retrieve mudkip's 10 questions
+    let data = response.data.into_json().unwrap();
+    let ten_questions = data["getQuestionsFromIds"].as_array().unwrap();
+
+    for i in 0..10 {
+        assert_eq!(ten_questions[i]["question"], format!("Question {}", i + 1));
+    }
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
+}
+
+#[tokio::test]
+async fn test_get_board_question_graphql() {
+    // Set up test database and schema
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+    let mut conn = test_db.pool.get().await.unwrap();
+
+    let (board, board_questions) = mudkip_board_with_questions(&mut conn).await;
+
+    // Create graphql schema with all queries and mutations
+    let schema = create_schema(test_db.pool.clone());
+
+    let get_board_question_query = format!(
+        r#"
+        query {{
+            boardQuestionsByBoard(boardId: {}) {{
+                board {{
+                    id
+                    title
+                }}
+                question {{
+                    id
+                    question
+                    answer
+                }}
+                category
+                dailyDouble
+                points
+                gridRow
+                gridCol
+            }}
+        }}
+        "#,
+        board.id
+    );
+
+    // Execute query and get response
+    let request: Request = Request::new(get_board_question_query);
+    let response: Response = Schema::execute(&schema, request).await;
+
+    // Print the errors to see what went wrong
+    if !response.errors.is_empty() {
+        println!("GraphQL errors: {:?}", response.errors);
+    } else {
+        println!("GraphQL data: {:?}", response.data);
+    }
+
+    // Retrieve mudkip's 10 questions
+    let data = response.data.into_json().unwrap();
+    let board_questions_array = data["boardQuestionsByBoard"].as_array().unwrap();
+
+    // Assert that the number of BoardQuestions returned matches the fixture
+    assert_eq!(
+        board_questions_array.len(),
+        board_questions.len(),
+        "Expected {} board questions, got {}",
+        board_questions.len(),
+        board_questions_array.len()
+    );
+
+    for (expected, actual) in board_questions.iter().zip(board_questions_array.iter()) {
+        // Validate board fields
+        assert_eq!(actual["board"]["id"], board.id, "Board ID mismatch");
+        assert_eq!(
+            actual["board"]["title"], board.title,
+            "Board title mismatch"
+        );
+
+        // Validate question fields
+        assert_eq!(
+            actual["question"]["id"], expected.question_id,
+            "Question ID mismatch"
+        );
+        // Optionally, validate question content and answer
+        // assert_eq!(actual["question"]["question"], "Expected Question");
+        // assert_eq!(actual["question"]["answer"], "Expected Answer");
+
+        // Validate category
+        assert_eq!(
+            actual["category"].as_str().unwrap(),
+            "Water Types",
+            "Category mismatch"
+        );
+
+        // Validate daily_double
+        assert_eq!(
+            actual["dailyDouble"].as_bool().unwrap(),
+            expected.daily_double,
+            "Daily Double mismatch"
+        );
+
+        // Validate points
+        assert_eq!(
+            actual["points"].as_i64().unwrap(),
+            expected.points as i64,
+            "Points mismatch"
+        );
+
+        // Validate grid_row
+        assert_eq!(
+            actual["gridRow"].as_i64().unwrap(),
+            expected.grid_row as i64,
+            "Grid Row mismatch"
+        );
+
+        // Validate grid_col
+        assert_eq!(
+            actual["gridCol"].as_i64().unwrap(),
+            expected.grid_col as i64,
+            "Grid Column mismatch"
         );
     }
 
