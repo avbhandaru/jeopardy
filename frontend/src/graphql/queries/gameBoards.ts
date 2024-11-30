@@ -7,8 +7,7 @@ export const ALL_GAMEBOARDS_QUERY = gql`
       createdAt
       updatedAt
       userId
-      boardName
-      grid
+      title
     }
   }
 `;
@@ -20,8 +19,7 @@ export const USER_GAMEBOARDS_QUERY = gql`
       createdAt
       updatedAt
       userId
-      boardName
-      grid
+      title
     }
   }
 `;
@@ -33,11 +31,7 @@ export const GAMEBOARD_QUERY = gql`
       createdAt
       updatedAt
       userId
-      boardName
-      grid {
-        categories
-        questions
-      }
+      title
     }
   }
 `;

@@ -37,6 +37,7 @@ const AdminUserDashboard = () => {
     updatedAt: new Date(user.updatedAt).toLocaleString(),
   }));
 
+  // TODO: Fix everything now that there's auto types
   return (
     <div>
       <Typography variant="h4" gutterBottom>

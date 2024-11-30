@@ -7,7 +7,7 @@ export const ALL_QUESTIONS_QUERY = gql`
       createdAt
       updatedAt
       userId
-      questionText
+      question
       answer
     }
   }
@@ -20,7 +20,7 @@ export const GET_QUESTIONS_FROM_IDS = gql`
       createdAt
       updatedAt
       userId
-      questionText
+      question
       answer
     }
   }

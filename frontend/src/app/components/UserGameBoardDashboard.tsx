@@ -9,16 +9,15 @@ import Link from "next/link";
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 70 },
   {
-    field: "boardName",
+    field: "title",
     headerName: "Board Name",
     width: 150,
     renderCell: (params) => (
       <Link href={`/users/${params.row.userId}/boards/${params.row.id}`}>
-        {params.row.boardName}
+        {params.row.title}
       </Link>
     ),
   },
-  { field: "grid", headerName: "Grid", width: 150 },
   { field: "userId", headerName: "User ID", width: 70 },
   { field: "createdAt", headerName: "Created At", width: 200 },
   { field: "updatedAt", headerName: "Updated At", width: 200 },
@@ -38,8 +37,7 @@ const UserGameBoardDashboard = ({ userId }: { userId: string }) => {
     createdAt: new Date(gameboard.createdAt).toLocaleString(),
     updatedAt: new Date(gameboard.updatedAt).toLocaleString(),
     userId: gameboard.userId,
-    boardName: gameboard.boardName,
-    grid: gameboard.grid,
+    title: gameboard.title,
   }));
 
   return (

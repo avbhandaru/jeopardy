@@ -2,30 +2,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { useMutation } from "@apollo/client";
 import { TextField, Button, Box, Typography } from "@mui/material";
-import { ADD_USER_MUTATION } from "@/graphql/mutations/users";
-import { ALL_USERS_QUERY } from "@/graphql/queries/users";
+import {
+  useCreateUserMutation,
+  useGetAllUsersQuery,
+  GetAllUsersDocument,
+} from "@/generated/graphql";
 
-// Define the User type
-interface User {
-  id: string;
-  username: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-const UserMutation = () => {
+const UserMutation: React.FC = () => {
   const [username, setUsername] = useState("");
-  const [addUser, { loading, error }] = useMutation<
-    { createUser: User },
-    { input: { username: string; createdAt: string; updatedAt: string } }
-  >(ADD_USER_MUTATION, {
+  const [createUser, { loading, error }] = useCreateUserMutation({
     onCompleted: () => {
       setUsername("");
     },
     // Optionally, update the cache or refetch queries here
-    refetchQueries: [{ query: ALL_USERS_QUERY }],
+    refetchQueries: [{ query: GetAllUsersDocument }],
+    awaitRefetchQueries: true,
   });
 
   const handleAddUser = async (e: React.FormEvent) => {
@@ -33,9 +25,9 @@ const UserMutation = () => {
     if (username.trim() == "") return;
     const currentTime = new Date().toISOString();
     try {
-      await addUser({
+      await createUser({
         variables: {
-          input: { username, createdAt: currentTime, updatedAt: currentTime },
+          input: { username },
         },
       });
     } catch (err) {
@@ -44,7 +36,7 @@ const UserMutation = () => {
   };
 
   return (
-    <Box display="flex" mb={2}>
+    <Box component="form" display="flex" mb={2} onSubmit={handleAddUser}>
       <TextField
         label="Username"
         value={username}
@@ -54,9 +46,9 @@ const UserMutation = () => {
         required
       />
       <Button
+        type="submit"
         variant="contained"
         color="primary"
-        onClick={handleAddUser}
         sx={{ ml: 2 }}
         disabled={loading}
       >

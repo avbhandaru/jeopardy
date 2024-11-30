@@ -1,31 +1,54 @@
 schema {
-  query: QueryRoot
-  mutation: MutationRoot
+  query: RootQuery
+  mutation: RootMutation
 }
 
 # Indicates that an Input Object is a OneOf Input Object (and thus requires
 #                         exactly one of its field be provided)
 directive @oneOf on INPUT_OBJECT
 
+type BoardQuestion {
+  boardId: Int!
+  questionId: Int!
+  category: String!
+  dailyDouble: Boolean!
+  points: Int!
+  gridRow: Int!
+  gridCol: Int!
+}
+
+type BoardQuestionGQL {
+  board: GameBoard!
+  question: Question!
+  category: String!
+  dailyDouble: Boolean!
+  points: Int!
+  gridRow: Int!
+  gridCol: Int!
+}
+
+input CreateBoardQuestionInput {
+  boardId: Int!
+  questionId: Int!
+  category: String!
+  dailyDouble: Boolean!
+  points: Int!
+  gridRow: Int!
+  gridCol: Int!
+}
+
 input CreateGameBoardInput {
-  createdAt: DateTime!
-  updatedAt: DateTime!
   userId: Int!
-  boardName: String!
-  grid: JSON!
+  title: String!
 }
 
 input CreateQuestionInput {
-  createdAt: DateTime!
-  updatedAt: DateTime!
   userId: Int!
-  questionText: String!
+  question: String!
   answer: String!
 }
 
 input CreateUserInput {
-  createdAt: DateTime!
-  updatedAt: DateTime!
   username: String!
 }
 
@@ -40,29 +63,7 @@ type GameBoard {
   createdAt: DateTime!
   updatedAt: DateTime!
   userId: Int!
-  boardName: String!
-  grid: JSON!
-}
-
-# A scalar that can represent any JSON value.
-scalar JSON
-
-type MutationRoot {
-  createUser(input: CreateUserInput!): User!
-  createGameBoard(input: CreateGameBoardInput!): GameBoard!
-  createQuestion(input: CreateQuestionInput!): Question!
-}
-
-type QueryRoot {
-  getUser(id: Int!): User!
-  allUsers: [User!]!
-  getGameBoard(id: Int!): GameBoard!
-  getGameBoardFromUser(userId: Int!): [GameBoard!]!
-  allGameBoards: [GameBoard!]!
-  getQuestion(id: Int!): Question!
-  getQuestionFromUser(userId: Int!): [Question!]!
-  allQuestions: [Question!]!
-  getQuestionsFromIds(ids: [Int!]!): [Question!]!
+  title: String!
 }
 
 # Disel Question Model with async-graphql suppport
@@ -71,8 +72,73 @@ type Question {
   createdAt: DateTime!
   updatedAt: DateTime!
   userId: Int!
-  questionText: String!
+  question: String!
   answer: String!
+}
+
+type QuestionWithAssociationGQL {
+  question: Question!
+  category: String!
+  dailyDouble: Boolean!
+  points: Int!
+  gridRow: Int!
+  gridCol: Int!
+}
+
+type RootMutation {
+  createUser(input: CreateUserInput!): User!
+
+  # Create a new gameboard
+  createGameBoard(input: CreateGameBoardInput!): GameBoard!
+  updateTitle(id: Int!, newTitle: String!): GameBoard!
+
+  # Create a new quesiton
+  createQuestion(input: CreateQuestionInput!): Question!
+
+  # Associate a question with a gameboard
+  associateQuestionWithBoard(input: CreateBoardQuestionInput!): BoardQuestion!
+}
+
+type RootQuery {
+  # Fetch user by id
+  getUser(id: Int!): User!
+
+  # Fetch all users
+  allUsers: [User!]!
+
+  # Fetch questions associated with specific gameboard, including association attributes
+  boardQuestions(gameBoardId: Int!): [QuestionWithAssociationGQL!]!
+
+  # Fetch a single gameboard by id
+  getGameBoard(id: Int!): GameBoard!
+
+  # Fetch all gameboards from user id
+  getGameBoardFromUser(userId: Int!): [GameBoard!]!
+  allGameBoards: [GameBoard!]!
+
+  # Fetch a single question by id
+  question(id: Int!): Question!
+
+  # Fetch all questions from a user
+  getQuestionFromUser(userId: Int!): [Question!]!
+
+  # Fetch all questions
+  allQuestions: [Question!]!
+
+  # Fetch questions from list of ids
+  getQuestionsFromIds(ids: [Int!]!): [Question!]!
+
+  # Fetch GameBoards associated with specific quesiton, including association attributes
+  gameBoards(questionId: Int!): [BoardQuestionGQL!]!
+
+  # Fetch a BoardQuestion by board id and question id
+  boardQuestion(boardId: Int!, questionId: Int!): BoardQuestionGQL!
+
+  # Fetch all BoardQuestions for a specific GameBoard
+  boardQuestionsByBoard(boardId: Int!): [BoardQuestionGQL!]!
+
+  # Fetch all BoardQuestions for a specific Question
+  boardQuestionsByQuestion(questionId: Int!): [BoardQuestionGQL!]!
 }
 
 type User {

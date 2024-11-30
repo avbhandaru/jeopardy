@@ -10,7 +10,7 @@ import Link from "next/link";
 // Define columns for DataGrid
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 70 },
-  { field: "boardName", headerName: "Board Name", width: 150 },
+  { field: "title", headerName: "Board Name", width: 150 },
   { field: "grid", headerName: "Grid", width: 150 },
   { field: "userId", headerName: "User ID", width: 70 },
   { field: "createdAt", headerName: "Created At", width: 200 },
@@ -30,8 +30,7 @@ const AdminGameBoardDashboard = () => {
     createdAt: new Date(gameboard.createdAt).toLocaleString(),
     updatedAt: new Date(gameboard.updatedAt).toLocaleString(),
     userId: gameboard.userId,
-    boardName: gameboard.boardName,
-    grid: JSON.stringify(gameboard.grid, null, 2), // Pretty print JSON
+    title: gameboard.title,
   }));
 
   return (

@@ -62,4 +62,17 @@ impl GameBoard {
             .get_result(conn)
             .await
     }
+
+    /// Update title of gameboard
+    pub async fn update_title(
+        conn: &mut AsyncPgConnection,
+        game_board_id: i64,
+        new_title: String,
+    ) -> Result<Self, diesel::result::Error> {
+        diesel::update(game_boards::table)
+            .filter(game_boards::id.eq(game_board_id))
+            .set(game_boards::title.eq(new_title))
+            .get_result(conn)
+            .await
+    }
 }

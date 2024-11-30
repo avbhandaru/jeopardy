@@ -7,8 +7,19 @@ export const ADD_GAMEBOARD_MUTATION = gql`
       createdAt
       updatedAt
       userId
-      boardName
-      grid
+      title
+    }
+  }
+`;
+
+export const UPDATE_GAMEBOARD_TITLE = gql`
+  mutation UpdateTitle($id: Int!, $newTitle: String!) {
+    updateTitle(id: $id, newTitle: $newTitle) {
+      id
+      createdAt
+      updatedAt
+      userId
+      title
     }
   }
 `;

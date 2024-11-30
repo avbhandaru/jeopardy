@@ -7,7 +7,7 @@ const ADD_QUESTION_MUTATION = gql`
       createdAt
       updatedAt
       userId
-      questionText
+      question
       answer
     }
   }
