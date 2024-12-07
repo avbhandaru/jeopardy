@@ -1,18 +1,16 @@
 import React from "react";
-import { Question } from "@/generated/graphql";
+import { BoardQuestionGql, Question } from "@/generated/graphql";
 import Grid from "@mui/material/Grid2";
 
 interface QuestionCellProps {
   question: Question | null;
-  points: number;
-  dailyDouble: boolean;
+  bq: BoardQuestionGql | null;
   onClick: () => void;
 }
 
 const QuestionCell: React.FC<QuestionCellProps> = ({
   question,
-  points,
-  dailyDouble,
+  bq,
   onClick,
 }) => {
   return (
@@ -22,16 +20,16 @@ const QuestionCell: React.FC<QuestionCellProps> = ({
         textAlign: "center",
         border: "1px solid #ccc",
         padding: 2,
-        backgroundColor: question ? "#de634d" : "#ffffff",
+        backgroundColor: question ? "#2d9b69" : "#de634d",
         cursor: question ? "pointer" : "default",
         "&:hover": {
-          backgroundColor: question ? "#e0e0e0" : "#ffffff",
+          backgroundColor: question ? "#2d9b32" : "#ddab4d",
         },
         transition: "background-color 0.3s ease",
       }}
       onClick={onClick}
     >
-      {question ? `$${points}` : `-`}
+      {bq ? `$${bq.points}` : `Click to create question`}
     </Grid>
   );
 };

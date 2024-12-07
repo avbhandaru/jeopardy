@@ -27,7 +27,7 @@ const AdminQuestionsDashboard = () => {
     createdAt: new Date(question.createdAt).toLocaleString(),
     updatedAt: new Date(question.updatedAt).toLocaleString(),
     userId: question.userId,
-    questionText: question.questionText,
+    questionText: question.question,
     answer: question.answer,
   }));
 

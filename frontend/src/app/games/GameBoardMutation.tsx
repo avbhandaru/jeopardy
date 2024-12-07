@@ -21,7 +21,6 @@ const GameBoardMutation: React.FC = () => {
   const handleAddBoardGame = async (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() == "") return;
-    const currentTime = new Date().toISOString();
     try {
       await createBoardGame({
         variables: {

@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-const ADD_QUESTION_MUTATION = gql`
+export const ADD_QUESTION_MUTATION = gql`
   mutation CreateQuestion($input: CreateQuestionInput!) {
     createQuestion(input: $input) {
       id
@@ -9,6 +9,19 @@ const ADD_QUESTION_MUTATION = gql`
       userId
       question
       answer
+    }
+  }
+`;
+
+export const UPDATE_QUESTION = gql`
+  mutation UpdateQuestion($input: UpdateQuestionInput!) {
+    updateQuestion(input: $input) {
+      id
+      question
+      answer
+      createdAt
+      updatedAt
+      userId
     }
   }
 `;

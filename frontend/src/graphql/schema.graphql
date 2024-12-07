@@ -88,15 +88,21 @@ type QuestionWithAssociationGQL {
 type RootMutation {
   createUser(input: CreateUserInput!): User!
 
-  # Create a new gameboard
+  # Create a new gameboard with example question
   createGameBoard(input: CreateGameBoardInput!): GameBoard!
+
+  # Update gameboard title
   updateTitle(id: Int!, newTitle: String!): GameBoard!
 
   # Create a new quesiton
   createQuestion(input: CreateQuestionInput!): Question!
 
+  # Update a question
+  updateQuestion(input: UpdateQuestionInput!): Question!
+
   # Associate a question with a gameboard
   associateQuestionWithBoard(input: CreateBoardQuestionInput!): BoardQuestion!
+  updateBoardQuestion(input: UpdateBoardQuestionInput!): BoardQuestion!
 }
 
 type RootQuery {
@@ -139,6 +145,22 @@ type RootQuery {
 
   # Fetch all BoardQuestions for a specific Question
   boardQuestionsByQuestion(questionId: Int!): [BoardQuestionGQL!]!
+}
+
+input UpdateBoardQuestionInput {
+  boardId: Int!
+  questionId: Int!
+  category: String
+  dailyDouble: Boolean
+  points: Int
+  gridRow: Int
+  gridCol: Int
+}
+
+input UpdateQuestionInput {
+  id: Int!
+  question: String
+  answer: String
 }
 
 type User {

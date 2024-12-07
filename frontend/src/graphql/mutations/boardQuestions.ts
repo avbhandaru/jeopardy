@@ -13,3 +13,17 @@ export const ADD_BOARD_QUESTION = gql`
     }
   }
 `;
+
+export const UPDATE_BOARD_QUESTION = gql`
+  mutation UpdateBoardQuestion($input: UpdateBoardQuestionInput!) {
+    updateBoardQuestion(input: $input) {
+      boardId
+      questionId
+      category
+      dailyDouble
+      points
+      gridRow
+      gridCol
+    }
+  }
+`;

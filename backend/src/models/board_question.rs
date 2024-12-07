@@ -34,6 +34,16 @@ pub struct NewBoardQuestion {
     pub grid_col: i32,
 }
 
+#[derive(Debug, AsChangeset)]
+#[diesel(table_name = board_questions)]
+pub struct UpdateBoardQuestion {
+    pub category: Option<String>,
+    pub daily_double: Option<bool>,
+    pub points: Option<i32>,
+    pub grid_row: Option<i32>,
+    pub grid_col: Option<i32>,
+}
+
 impl BoardQuestion {
     /// Create a new board_question association
     pub async fn create(
@@ -78,6 +88,18 @@ impl BoardQuestion {
             .filter(board_questions::board_id.eq(board_id))
             .filter(board_questions::question_id.eq(question_id))
             .first(conn)
+            .await
+    }
+
+    pub async fn update_board_question(
+        conn: &mut AsyncPgConnection,
+        board_id: i64,
+        question_id: i64,
+        updated_fields: UpdateBoardQuestion,
+    ) -> Result<Self, diesel::result::Error> {
+        diesel::update(board_questions::table.find((board_id, question_id)))
+            .set(&updated_fields)
+            .get_result(conn)
             .await
     }
 }

@@ -100,6 +100,8 @@ export type RootMutation = {
   createGameBoard: GameBoard;
   createQuestion: Question;
   createUser: User;
+  updateBoardQuestion: BoardQuestion;
+  updateQuestion: Question;
   updateTitle: GameBoard;
 };
 
@@ -121,6 +123,16 @@ export type RootMutationCreateQuestionArgs = {
 
 export type RootMutationCreateUserArgs = {
   input: CreateUserInput;
+};
+
+
+export type RootMutationUpdateBoardQuestionArgs = {
+  input: UpdateBoardQuestionInput;
+};
+
+
+export type RootMutationUpdateQuestionArgs = {
+  input: UpdateQuestionInput;
 };
 
 
@@ -203,6 +215,22 @@ export type RootQueryQuestionArgs = {
   id: Scalars['Int']['input'];
 };
 
+export type UpdateBoardQuestionInput = {
+  boardId: Scalars['Int']['input'];
+  category?: InputMaybe<Scalars['String']['input']>;
+  dailyDouble?: InputMaybe<Scalars['Boolean']['input']>;
+  gridCol?: InputMaybe<Scalars['Int']['input']>;
+  gridRow?: InputMaybe<Scalars['Int']['input']>;
+  points?: InputMaybe<Scalars['Int']['input']>;
+  questionId: Scalars['Int']['input'];
+};
+
+export type UpdateQuestionInput = {
+  answer?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['Int']['input'];
+  question?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type User = {
   __typename?: 'User';
   createdAt: Scalars['DateTime']['output'];
@@ -217,6 +245,13 @@ export type CreateBoardQuestionMutationVariables = Exact<{
 
 
 export type CreateBoardQuestionMutation = { __typename?: 'RootMutation', associateQuestionWithBoard: { __typename?: 'BoardQuestion', boardId: number, questionId: number, category: string, dailyDouble: boolean, points: number, gridRow: number, gridCol: number } };
+
+export type UpdateBoardQuestionMutationVariables = Exact<{
+  input: UpdateBoardQuestionInput;
+}>;
+
+
+export type UpdateBoardQuestionMutation = { __typename?: 'RootMutation', updateBoardQuestion: { __typename?: 'BoardQuestion', boardId: number, questionId: number, category: string, dailyDouble: boolean, points: number, gridRow: number, gridCol: number } };
 
 export type CreateGameBoardMutationVariables = Exact<{
   input: CreateGameBoardInput;
@@ -239,6 +274,13 @@ export type CreateQuestionMutationVariables = Exact<{
 
 
 export type CreateQuestionMutation = { __typename?: 'RootMutation', createQuestion: { __typename?: 'Question', id: number, createdAt: any, updatedAt: any, userId: number, question: string, answer: string } };
+
+export type UpdateQuestionMutationVariables = Exact<{
+  input: UpdateQuestionInput;
+}>;
+
+
+export type UpdateQuestionMutation = { __typename?: 'RootMutation', updateQuestion: { __typename?: 'Question', id: number, question: string, answer: string, createdAt: any, updatedAt: any, userId: number } };
 
 export type CreateUserMutationVariables = Exact<{
   input: CreateUserInput;
@@ -330,6 +372,45 @@ export function useCreateBoardQuestionMutation(baseOptions?: Apollo.MutationHook
 export type CreateBoardQuestionMutationHookResult = ReturnType<typeof useCreateBoardQuestionMutation>;
 export type CreateBoardQuestionMutationResult = Apollo.MutationResult<CreateBoardQuestionMutation>;
 export type CreateBoardQuestionMutationOptions = Apollo.BaseMutationOptions<CreateBoardQuestionMutation, CreateBoardQuestionMutationVariables>;
+export const UpdateBoardQuestionDocument = gql`
+    mutation UpdateBoardQuestion($input: UpdateBoardQuestionInput!) {
+  updateBoardQuestion(input: $input) {
+    boardId
+    questionId
+    category
+    dailyDouble
+    points
+    gridRow
+    gridCol
+  }
+}
+    `;
+export type UpdateBoardQuestionMutationFn = Apollo.MutationFunction<UpdateBoardQuestionMutation, UpdateBoardQuestionMutationVariables>;
+
+/**
+ * __useUpdateBoardQuestionMutation__
+ *
+ * To run a mutation, you first call `useUpdateBoardQuestionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateBoardQuestionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateBoardQuestionMutation, { data, loading, error }] = useUpdateBoardQuestionMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateBoardQuestionMutation(baseOptions?: Apollo.MutationHookOptions<UpdateBoardQuestionMutation, UpdateBoardQuestionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateBoardQuestionMutation, UpdateBoardQuestionMutationVariables>(UpdateBoardQuestionDocument, options);
+      }
+export type UpdateBoardQuestionMutationHookResult = ReturnType<typeof useUpdateBoardQuestionMutation>;
+export type UpdateBoardQuestionMutationResult = Apollo.MutationResult<UpdateBoardQuestionMutation>;
+export type UpdateBoardQuestionMutationOptions = Apollo.BaseMutationOptions<UpdateBoardQuestionMutation, UpdateBoardQuestionMutationVariables>;
 export const CreateGameBoardDocument = gql`
     mutation CreateGameBoard($input: CreateGameBoardInput!) {
   createGameBoard(input: $input) {
@@ -443,6 +524,44 @@ export function useCreateQuestionMutation(baseOptions?: Apollo.MutationHookOptio
 export type CreateQuestionMutationHookResult = ReturnType<typeof useCreateQuestionMutation>;
 export type CreateQuestionMutationResult = Apollo.MutationResult<CreateQuestionMutation>;
 export type CreateQuestionMutationOptions = Apollo.BaseMutationOptions<CreateQuestionMutation, CreateQuestionMutationVariables>;
+export const UpdateQuestionDocument = gql`
+    mutation UpdateQuestion($input: UpdateQuestionInput!) {
+  updateQuestion(input: $input) {
+    id
+    question
+    answer
+    createdAt
+    updatedAt
+    userId
+  }
+}
+    `;
+export type UpdateQuestionMutationFn = Apollo.MutationFunction<UpdateQuestionMutation, UpdateQuestionMutationVariables>;
+
+/**
+ * __useUpdateQuestionMutation__
+ *
+ * To run a mutation, you first call `useUpdateQuestionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateQuestionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateQuestionMutation, { data, loading, error }] = useUpdateQuestionMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateQuestionMutation(baseOptions?: Apollo.MutationHookOptions<UpdateQuestionMutation, UpdateQuestionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateQuestionMutation, UpdateQuestionMutationVariables>(UpdateQuestionDocument, options);
+      }
+export type UpdateQuestionMutationHookResult = ReturnType<typeof useUpdateQuestionMutation>;
+export type UpdateQuestionMutationResult = Apollo.MutationResult<UpdateQuestionMutation>;
+export type UpdateQuestionMutationOptions = Apollo.BaseMutationOptions<UpdateQuestionMutation, UpdateQuestionMutationVariables>;
 export const CreateUserDocument = gql`
     mutation CreateUser($input: CreateUserInput!) {
   createUser(input: $input) {

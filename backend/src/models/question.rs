@@ -21,12 +21,21 @@ pub struct Question {
     pub answer: String,
 }
 
+/// Struct for creating new question
 #[derive(Debug, Insertable, Builder)]
 #[diesel(table_name = questions)]
 pub struct NewQuestion {
     pub user_id: i64,
     pub question: String,
     pub answer: String,
+}
+
+/// Struct for updating a question
+#[derive(Debug, AsChangeset)]
+#[diesel(table_name = questions)]
+pub struct UpdateQuestion {
+    pub question: Option<String>,
+    pub answer: Option<String>,
 }
 
 impl Question {
@@ -67,6 +76,17 @@ impl Question {
     ) -> Result<Self, diesel::result::Error> {
         diesel::insert_into(questions::table)
             .values(&new_question)
+            .get_result(conn)
+            .await
+    }
+
+    pub async fn update_question(
+        conn: &mut AsyncPgConnection,
+        question_id: i64,
+        updated_fields: UpdateQuestion,
+    ) -> Result<Self, diesel::result::Error> {
+        diesel::update(questions::table.find(question_id))
+            .set(&updated_fields)
             .get_result(conn)
             .await
     }

@@ -2,11 +2,6 @@
 
 import styles from "./page.module.css";
 import GameBoardDisplay from "@/app/components/GameBoardDisplay";
-import {
-  useBoardQuestionsFromBoardQuery,
-  GameBoard,
-  BoardQuestionGql,
-} from "@/generated/graphql";
 
 export default async function BoardPage({
   params,
@@ -33,7 +28,7 @@ export default async function BoardPage({
             <code>src/app/users/[user_uuid]/boards/[board_uuid]/page.tsx</code>.
           </li>
           <li>
-            <GameBoardDisplay board_uuid={board_uuid} />
+            <GameBoardDisplay board_uuid={board_uuid} user_uuid={user_uuid} />
           </li>
         </ol>
       </main>
