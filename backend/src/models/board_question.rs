@@ -4,10 +4,11 @@ use crate::db::schema::board_questions;
 use crate::models::game_board::GameBoard;
 use crate::models::question::Question;
 use async_graphql::SimpleObject;
+use derive_builder::Builder;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
-#[derive(Identifiable, Associations, Queryable, Selectable, Debug, SimpleObject)]
+#[derive(Identifiable, Associations, Queryable, Selectable, Debug, SimpleObject, Builder)]
 #[diesel(primary_key(board_id, question_id))]
 #[diesel(table_name = board_questions)]
 #[diesel(belongs_to(GameBoard, foreign_key = board_id))]
@@ -22,7 +23,7 @@ pub struct BoardQuestion {
     pub grid_col: i32,
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Insertable, Builder)]
 #[diesel(table_name = board_questions)]
 pub struct NewBoardQuestion {
     pub board_id: i64,

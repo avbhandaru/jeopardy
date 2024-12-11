@@ -3,7 +3,7 @@
 use crate::models::board_question::BoardQuestion;
 use crate::models::game_board::GameBoard;
 use crate::models::question::Question;
-use crate::{db::pool::DBPool, graphql::types::board_question::BoardQuestionGQL};
+use crate::{db::pool::DBPool, graphql::types::detailed_board_question::DetailedBoardQuestion};
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]
@@ -12,12 +12,12 @@ pub struct QuestionQuery;
 #[Object]
 impl QuestionQuery {
     /// Fetch a single question by id
-    async fn question(&self, ctx: &Context<'_>, id: i64) -> Result<Question> {
+    async fn question(&self, ctx: &Context<'_>, question_id: i64) -> Result<Question> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
         let mut conn = pool.get().await?;
-        let question: Question = Question::find_by_id(&mut conn, id).await?;
+        let question: Question = Question::find_by_id(&mut conn, question_id).await?;
         Ok(question)
     }
 
@@ -45,11 +45,11 @@ impl QuestionQuery {
     async fn get_questions_from_ids(
         &self,
         ctx: &Context<'_>,
-        ids: Vec<i64>,
+        question_ids: Vec<i64>,
     ) -> Result<Vec<Question>> {
         let pool = ctx.data::<DBPool>().expect("Can't get DBPool from context");
         let mut conn = pool.get().await?;
-        let questions: Vec<Question> = Question::find_by_ids(&mut conn, ids).await?;
+        let questions: Vec<Question> = Question::find_by_ids(&mut conn, question_ids).await?;
         Ok(questions)
     }
 
@@ -58,7 +58,7 @@ impl QuestionQuery {
         &self,
         ctx: &Context<'_>,
         question_id: i64,
-    ) -> Result<Vec<BoardQuestionGQL>> {
+    ) -> Result<Vec<DetailedBoardQuestion>> {
         let pool = ctx.data::<DBPool>().expect("Can't get DBPool from context");
         let mut conn = pool.get().await?;
         let board_questions = BoardQuestion::find_by_question(&mut conn, question_id).await?;
@@ -67,7 +67,7 @@ impl QuestionQuery {
 
         for bq in board_questions {
             let game_board = GameBoard::find_by_id(&mut conn, bq.board_id).await?;
-            results.push(BoardQuestionGQL {
+            results.push(DetailedBoardQuestion {
                 board: game_board,
                 question: Question::find_by_id(&mut conn, bq.question_id).await?,
                 category: bq.category,

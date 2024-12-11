@@ -1,4 +1,4 @@
 // src/graphql/types/mod.rs
 
-pub mod board_question;
-pub mod question_with_association;
+pub mod detailed_board_question;
+pub mod question_with_board_info;

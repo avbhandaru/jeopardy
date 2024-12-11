@@ -6,7 +6,7 @@ use crate::models::question::Question;
 use async_graphql::SimpleObject;
 
 #[derive(SimpleObject, Debug)]
-pub struct BoardQuestionGQL {
+pub struct DetailedBoardQuestion {
     pub board: GameBoard,
     pub question: Question,
     pub category: String,
@@ -16,7 +16,7 @@ pub struct BoardQuestionGQL {
     pub grid_col: i32,
 }
 
-impl BoardQuestionGQL {
+impl DetailedBoardQuestion {
     pub fn new(board: GameBoard, question: Question, board_question: BoardQuestion) -> Self {
         Self {
             board,

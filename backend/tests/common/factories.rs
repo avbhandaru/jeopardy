@@ -1,5 +1,6 @@
 // tests/common/factories.rs
 
+use backend::models::board_question::{BoardQuestion, NewBoardQuestion, NewBoardQuestionBuilder};
 use backend::models::game_board::{GameBoard, NewGameBoard, NewGameBoardBuilder};
 use backend::models::question::{NewQuestion, NewQuestionBuilder, Question};
 use backend::models::user::{NewUser, NewUserBuilder, User};
@@ -126,4 +127,68 @@ pub async fn create_test_question(
     Question::create(conn, new_question)
         .await
         .expect("Failed to create test question")
+}
+
+/// Creates a new test board question with default values.
+///
+/// # Parameters
+/// - `conn`: A mutable reference to the database connection.
+/// - `board_id`: The ID of the associated game board.
+/// - `question_id`: The ID of the associated question.
+/// - `overrides`: Optional `NewBoardQuestion` struct to override default fields.
+///
+/// # Returns
+/// - `BoardQuestion`: The created `BoardQuestion` instance.
+///
+/// # Panics
+/// - If board question creation fails.
+///
+/// # Examples
+///
+/// ```rust
+/// let board_question = create_test_board_question(conn, 1, 1, None).await;
+/// let custom_board_question = create_test_board_question(conn, 1, 1, Some(NewBoardQuestion {
+///     category: "custom".to_string(),
+///     daily_double: true,
+///     points: 200,
+///     grid_row: 2,
+///     grid_col: 3,
+/// })).await;
+/// ```
+pub async fn create_test_board_question(
+    conn: &mut AsyncPgConnection,
+    board_id: i64,
+    question_id: i64,
+    overrides: Option<NewBoardQuestion>,
+) -> BoardQuestion {
+    let mut builder: NewBoardQuestionBuilder = NewBoardQuestionBuilder::default();
+
+    // Set mandatory fields
+    builder.board_id(board_id).question_id(question_id);
+
+    // Apply overrides if provided
+    if let Some(overrides) = overrides {
+        builder.category(overrides.category);
+        builder.daily_double(overrides.daily_double);
+        builder.points(overrides.points);
+        builder.grid_row(overrides.grid_row);
+        builder.grid_col(overrides.grid_col);
+
+        // Add more fields here if `BoardQuestion` has additional fields
+    } else {
+        // Set default values
+        builder
+            .category("default category".to_string())
+            .daily_double(false)
+            .points(100)
+            .grid_row(0)
+            .grid_col(0);
+    }
+
+    let new_board_question: NewBoardQuestion =
+        builder.build().expect("Failed to build new board question");
+
+    BoardQuestion::create(conn, new_board_question)
+        .await
+        .expect("Failed to create test board question")
 }

@@ -11,106 +11,163 @@ import {
   Checkbox,
 } from "@mui/material";
 import {
-  Question,
   CreateQuestionInput,
-  BoardQuestion,
+  CreateBoardQuestionInput,
+  UpdateQuestionInput,
+  UpdateBoardQuestionInput,
+  QuestionWithBoardInfo,
 } from "@/generated/graphql";
 import React, { useState, useEffect } from "react";
+import { SaveAction, SaveActionType } from "../types/SaveAction";
 
 interface EditQuestionModalProps {
   open: boolean;
   /**
-   * Question object from clicked cell, null when creating new question
+   * Question object with board info from clicked cell, null when creating new question
    */
-  question: Question | null;
-  /**
-   * BoardQuestion object from clicked cell, null when creating new question
-   */
-  boardQuestion: Partial<BoardQuestion>;
+  questionWithInfo: QuestionWithBoardInfo | null;
+  boardId: number;
   user_uuid: number;
+  gridRow: number;
+  gridCol: number;
   onClose: () => void;
-  onSave: (
-    input: Question | CreateQuestionInput,
-    boardQuestionInput: Partial<BoardQuestion>
-  ) => void;
+  onSave: (action: SaveAction) => void;
 }
 
 const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
   open,
+  questionWithInfo,
+  boardId,
   user_uuid,
-  question,
-  boardQuestion,
+  gridRow,
+  gridCol,
   onClose,
   onSave,
 }) => {
-  const [editedQuestion, setEditedQuestion] = useState(
-    question?.question || ""
-  );
-  const [editedAnswer, setEditedAnswer] = useState(question?.answer || "");
-  const [editedBoardQuestion, setEditedBoardQuestion] = useState(boardQuestion);
+  // Separate state variables for question and board question details
+  const [editedQuestion, setEditedQuestion] = useState<string>("");
+  const [editedAnswer, setEditedAnswer] = useState<string>("");
+  const [dailyDouble, setDailyDouble] = useState<boolean>(false);
+  const [points, setPoints] = useState<number>(100);
 
   // Update state when the question prop changes
   useEffect(() => {
-    if (question) {
-      setEditedQuestion(question?.question || "");
-      setEditedAnswer(question?.answer || "");
+    if (questionWithInfo) {
+      setEditedQuestion(questionWithInfo.question.question);
+      setEditedAnswer(questionWithInfo.question.answer);
+      setDailyDouble(questionWithInfo.dailyDouble);
+      setPoints(questionWithInfo.points);
+    } else {
+      // reset to defaults when creating a new question
+      setEditedQuestion("");
+      setEditedAnswer("");
+      setDailyDouble(false);
+      setPoints(100);
     }
-    if (boardQuestion) {
-      setEditedBoardQuestion(boardQuestion);
-    }
-  }, [question, boardQuestion]);
+  }, [questionWithInfo]);
 
   const handleDailyDoubleChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setEditedBoardQuestion((prev) => ({
-      ...prev,
-      dailyDouble: event.target.checked,
-    }));
+    setDailyDouble(event.target.checked);
   };
 
   const handlePointsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(event.target.value, 10);
-    setEditedBoardQuestion((prev) => ({
-      ...prev,
-      points: isNaN(val) ? 100 : val,
-    }));
+    setPoints(isNaN(val) ? 100 : val);
   };
 
   const handleSave = () => {
     // Validate input
-    if (
-      !editedQuestion ||
-      !editedAnswer ||
-      editedQuestion.trim() === "" ||
-      editedAnswer.trim() === ""
-    ) {
+    if (!editedQuestion.trim() || !editedAnswer.trim()) {
       alert("Question or Answer can't be empty dude");
       return;
     }
 
-    if (question) {
+    if (questionWithInfo) {
       // if editing, send a Question object
-      const updatedQuestion: Question = {
-        ...question,
-        question: editedQuestion,
-        answer: editedAnswer,
-      };
-      onSave(updatedQuestion, editedBoardQuestion);
+      const isQuestionChanged =
+        editedQuestion !== questionWithInfo.question.question ||
+        editedAnswer !== questionWithInfo.question.answer;
+      const isBoardQuestionChanged =
+        dailyDouble !== questionWithInfo.dailyDouble ||
+        points !== questionWithInfo.points;
+      if (isQuestionChanged && isBoardQuestionChanged) {
+        // Updating both question and boardQuestion
+        const updateQuestionInput: UpdateQuestionInput = {
+          id: questionWithInfo.question.id,
+          question: editedQuestion,
+          answer: editedAnswer,
+        };
+        const updateBoardQuestionInput: UpdateBoardQuestionInput = {
+          boardId,
+          questionId: questionWithInfo.question.id,
+          dailyDouble,
+          points,
+        };
+        onSave({
+          type: SaveActionType.UPDATE_BOTH,
+          updateQuestionInput,
+          updateBoardQuestionInput,
+        });
+      } else if (isQuestionChanged) {
+        // Updating only question
+        const updateQuestionInput: UpdateQuestionInput = {
+          id: questionWithInfo.question.id,
+          question: editedQuestion,
+          answer: editedAnswer,
+        };
+        onSave({
+          type: SaveActionType.UPDATE_QUESTION,
+          updateQuestionInput,
+        });
+      } else if (isBoardQuestionChanged) {
+        // Updating only boardQuestion
+        const updateBoardQuestionInput: UpdateBoardQuestionInput = {
+          boardId, // need to update
+          questionId: questionWithInfo.question.id,
+          dailyDouble,
+          points,
+        };
+        onSave({
+          type: SaveActionType.UPDATE_BOARDQUESTION,
+          updateBoardQuestionInput,
+        });
+      } else {
+        // No changes detected
+        alert("No changes detected.");
+        return;
+      }
     } else {
-      // if creating, send a CreateQuestionInput object
+      // Creating new question and boardQuestion
       const newQuestionInput: CreateQuestionInput = {
         userId: user_uuid,
         question: editedQuestion,
         answer: editedAnswer,
       };
-      onSave(newQuestionInput, editedBoardQuestion);
+      const createBoardQuestionInput: CreateBoardQuestionInput = {
+        boardId: 0, // Replace with actual board ID
+        questionId: -1, // Placeholder; should be replaced with the new question ID
+        dailyDouble,
+        points,
+        gridRow,
+        gridCol,
+        category: "default",
+      };
+      onSave({
+        type: SaveActionType.CREATE,
+        questionInput: newQuestionInput,
+        boardQuestionInput: createBoardQuestionInput,
+      });
     }
+    onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Edit Question</DialogTitle>
+      <DialogTitle>
+        {questionWithInfo ? "Edit Question" : "Create Question"}
+      </DialogTitle>
       <DialogContent>
         <TextField
           margin="dense"
@@ -132,7 +189,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
         <FormControlLabel
           control={
             <Checkbox
-              checked={!!editedBoardQuestion.dailyDouble}
+              checked={dailyDouble}
               onChange={handleDailyDoubleChange}
               color="primary"
             />
@@ -146,7 +203,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
           label="Points"
           type="number"
           fullWidth
-          value={editedBoardQuestion.points || 0}
+          value={points}
           onChange={handlePointsChange}
           required
         />
@@ -154,7 +211,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button onClick={handleSave} variant="contained" color="primary">
-          {question ? "Update" : "Create"}
+          {questionWithInfo ? "Update" : "Create"}
         </Button>
       </DialogActions>
     </Dialog>

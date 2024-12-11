@@ -25,13 +25,33 @@ export const USER_GAMEBOARDS_QUERY = gql`
 `;
 
 export const GAMEBOARD_QUERY = gql`
-  query GetGameBoard($id: Int!) {
-    getGameBoard(id: $id) {
+  query GetGameBoard($gameBoardId: Int!) {
+    getGameBoard(gameBoardId: $gameBoardId) {
       id
       createdAt
       updatedAt
       userId
       title
+    }
+  }
+`;
+
+export const QUESTIONS_WITH_INFO_QUERY = gql`
+  query QuestionsWithBoardInfo($gameBoardId: Int!) {
+    questionsWithBoardInfo(gameBoardId: $gameBoardId) {
+      question {
+        id
+        createdAt
+        updatedAt
+        userId
+        question
+        answer
+      }
+      category
+      dailyDouble
+      points
+      gridRow
+      gridCol
     }
   }
 `;

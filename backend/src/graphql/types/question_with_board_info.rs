@@ -1,10 +1,10 @@
-// src/graphql/types/question_with_association.rs
+// src/graphql/types/question_with_board_info.rs
 
 use crate::models::question::Question;
 use async_graphql::SimpleObject;
 
 #[derive(SimpleObject, Debug)]
-pub struct QuestionWithAssociationGQL {
+pub struct QuestionWithBoardInfo {
     pub question: Question,
     pub category: String,
     pub daily_double: bool,

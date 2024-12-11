@@ -40,7 +40,7 @@ pub struct BoardQuestionMutation;
 #[Object]
 impl BoardQuestionMutation {
     /// Associate a question with a gameboard
-    async fn associate_question_with_board(
+    async fn create_board_question(
         &self,
         ctx: &Context<'_>,
         input: CreateBoardQuestionInput,

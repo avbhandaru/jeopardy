@@ -5,24 +5,11 @@ import React, { useState } from "react";
 import { Paper, Typography, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import QuestionCell from "./QuestionCell";
-import {
-  Question,
-  BoardQuestion,
-  GameBoard,
-  BoardQuestionGql,
-  CreateQuestionInput,
-  CreateBoardQuestionInput,
-  UpdateQuestionInput,
-  UpdateBoardQuestionInput,
-  useBoardQuestionsFromBoardQuery,
-  BoardQuestionsFromBoardDocument,
-  useCreateQuestionMutation,
-  useCreateBoardQuestionMutation,
-  useUpdateBoardQuestionMutation,
-  useUpdateQuestionMutation,
-} from "@/generated/graphql";
+import { QuestionWithBoardInfo } from "@/generated/graphql";
 import EditTitleDialog from "./EditTitleDialog";
 import EditQuestionModal from "./EditQuestionModal";
+import { useGameBoardData } from "../hooks/useGameBoardData";
+import { SaveAction, SaveActionType } from "../types/SaveAction";
 
 const GameBoardDisplay = ({
   board_uuid,
@@ -31,223 +18,75 @@ const GameBoardDisplay = ({
   board_uuid: string;
   user_uuid: string;
 }) => {
+  const boardId = parseInt(board_uuid, 10);
+  const userId = parseInt(user_uuid, 10);
+
+  const {
+    loading,
+    error,
+    gameBoardMatrix,
+    displayCategories,
+    gameBoard,
+    createNewQuestionAndBoardQuestion,
+    updateExistingQuestion,
+    updateExistingBoardQuestion,
+  } = useGameBoardData({ gameBoardId: boardId });
+
+  const [currentGridRow, setCurrentGridRow] = useState<number>(0);
+  const [currentGridCol, setCurrentGridCol] = useState<number>(0);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-  const [currentBoardQuestion, setCurrentBoardQuestion] = useState<
-    Partial<BoardQuestion>
-  >({});
-
-  const { loading, error, data } = useBoardQuestionsFromBoardQuery({
-    variables: { boardId: parseInt(board_uuid, 10) },
-  });
-
-  // Initialize mutation hooks
-  const [updateQuestion, { loading: updating, error: updateError }] =
-    useUpdateQuestionMutation();
-  const [createQuestion, { loading: creating, error: createError }] =
-    useCreateQuestionMutation();
-  const [createBoardQuestion] = useCreateBoardQuestionMutation();
-  const [updateBoardQuestion] = useUpdateBoardQuestionMutation();
+  const [currentQuestionWithInfo, setCurrentQuestionWithInfo] =
+    useState<QuestionWithBoardInfo | null>(null);
 
   if (loading) return <p>Loading data...</p>;
   if (error) return <p>Error fetching data: {error.message}</p>;
-  if (!data) {
-    console.log("No gameboards found:", data);
+  if (!gameBoard) {
+    console.log("No gameboards found:");
     return <p>No gameboards found.</p>;
   }
 
-  const gameBoard: GameBoard = data.boardQuestionsByBoard[0].board;
-  const boardQuestions: BoardQuestionGql[] = data.boardQuestionsByBoard;
-
-  // Extract unique categories
-  const uniqueCategories = Array.from(
-    new Set(boardQuestions.map((bq) => bq.category))
-  );
-  const displayCategories =
-    uniqueCategories.length < 5
-      ? uniqueCategories.concat(
-          Array(5 - uniqueCategories.length).fill("Dummy Category")
-        )
-      : uniqueCategories;
-
-  // Populate the questions matrix with boardquestions
-  const maxRows = 5;
-  const boardQuestionsMatrix: (BoardQuestionGql | null)[][] = Array.from(
-    { length: maxRows },
-    () => Array(5).fill(null)
-  );
-
-  // Populate the matrix with BoardQuestions
-  boardQuestions.forEach((bq) => {
-    const row = bq.gridRow; // 0-based index (0 to 4)
-    const col = bq.gridCol; // 0-based index (0 to 4)
-
-    if (col !== -1 && row >= 0 && row < 5) {
-      boardQuestionsMatrix[row][col] = bq;
-    } else {
-      console.warn(
-        `Invalid grid position for BoardQuestion ID: ${bq.question.id}`
-      );
-    }
-  });
-
-  // Create a questions map for quick lookup
-  const questionsMap = new Map<number, Question>(
-    boardQuestions.map((bq) => [bq.question.id, bq.question])
-  );
-
   const handleOpenQuestionModal = (
-    question: Question | null,
-    boardQuestion: BoardQuestionGql | Partial<BoardQuestion>
+    questionWithInfo: QuestionWithBoardInfo | null,
+    gridRow: number,
+    gridCol: number
   ) => {
-    // Convert BoardQuestionGql to regular BoardQuestion
-    if ("board" in boardQuestion) {
-      const simpleBoardQuestion: Partial<BoardQuestion> = {
-        boardId: boardQuestion.board.id,
-        questionId: boardQuestion.question.id,
-        dailyDouble: boardQuestion.dailyDouble,
-        points: boardQuestion.points,
-        category: boardQuestion.category,
-        gridRow: boardQuestion.gridRow,
-        gridCol: boardQuestion.gridCol,
-      };
-      setCurrentBoardQuestion(simpleBoardQuestion);
-    } else {
-      // boardQuestion is Partial<BoardQuestion> with gridCol, gridRow
-      setCurrentBoardQuestion(boardQuestion);
-    }
-    setCurrentQuestion(question);
+    setCurrentQuestionWithInfo(questionWithInfo);
+    setCurrentGridRow(gridRow);
+    setCurrentGridCol(gridCol);
     setIsQuestionModalOpen(true);
   };
 
   const handleCloseQuestionModal = () => {
     setIsQuestionModalOpen(false);
-    setCurrentQuestion(null);
+    setCurrentQuestionWithInfo(null);
   };
 
-  const handleSaveQuestionModal = async (
-    questionInput: Question | CreateQuestionInput,
-    boardQuestionInput: Partial<BoardQuestion>
-  ) => {
-    if (!("id" in questionInput) || !questionInput.id) {
-      // input must be CreateQuestionInput, therefore create new question and bq
-      const newQuestion: CreateQuestionInput = {
-        userId: parseInt(user_uuid, 10), // Assuming user_uuid is stringified i64
-        question: questionInput.question || "", // Ensure non-null strings
-        answer: questionInput.answer || "",
-      };
-      try {
-        const result = await createQuestion({
-          variables: {
-            input: newQuestion,
-          },
-        });
-
-        const newQuestionId = result.data?.createQuestion.id;
-
-        // CREATE NEW BOARDQUESTION
-        if (newQuestionId && boardQuestionInput) {
-          const newBoardQuestion: CreateBoardQuestionInput = {
-            ...(boardQuestionInput as CreateBoardQuestionInput),
-            boardId: parseInt(board_uuid, 10),
-            questionId: newQuestionId,
-          };
-          try {
-            const resultBq = await createBoardQuestion({
-              variables: {
-                input: newBoardQuestion,
-              },
-              refetchQueries: [
-                {
-                  query: BoardQuestionsFromBoardDocument,
-                  variables: { boardId: parseInt(board_uuid, 10) },
-                },
-              ],
-            });
-          } catch (err) {
-            console.error("Failed to create new board question", err);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to create new question:", err);
+  const handleSaveQuestionModal = async (action: SaveAction) => {
+    try {
+      switch (action.type) {
+        case SaveActionType.CREATE:
+          // Create Question
+          createNewQuestionAndBoardQuestion(
+            action.questionInput,
+            action.boardQuestionInput
+          );
+          break;
+        case SaveActionType.UPDATE_BOARDQUESTION:
+          updateExistingBoardQuestion(action.updateBoardQuestionInput);
+          break;
+        case SaveActionType.UPDATE_QUESTION:
+          updateExistingQuestion(action.updateQuestionInput);
+          break;
+        case SaveActionType.UPDATE_BOTH:
+          updateExistingBoardQuestion(action.updateBoardQuestionInput);
+          updateExistingQuestion(action.updateQuestionInput);
+          break;
+        default:
+          throw new Error("Unknown SaveAction type.");
       }
-    } else if ("id" in questionInput && questionInput.id) {
-      // questionInput must be Question
-      // 1. update question and bq
-      // 2. update only question
-      // 3. update only bq
-
-      // Find the existing BoardQuestion for this question
-      const existingBq = boardQuestions.find(
-        (bq) => bq.question.id === questionInput.id
-      );
-      // Check if board question changed
-      if (
-        existingBq &&
-        boardQuestionInput &&
-        ((boardQuestionInput.category !== undefined &&
-          boardQuestionInput.category !== existingBq.category) ||
-          (boardQuestionInput.dailyDouble !== undefined &&
-            boardQuestionInput.dailyDouble !== existingBq.dailyDouble) ||
-          (boardQuestionInput.points !== undefined &&
-            boardQuestionInput.points !== existingBq.points))
-      ) {
-        // UPDATE EXISTING BOARDQUESTION
-        const updateBoardQuestionInput: UpdateBoardQuestionInput = {
-          boardId: parseInt(board_uuid, 10),
-          questionId: existingBq.question.id,
-          ...boardQuestionInput,
-        };
-        try {
-          updateBoardQuestion({
-            variables: { input: updateBoardQuestionInput },
-            refetchQueries: [
-              {
-                query: BoardQuestionsFromBoardDocument,
-                variables: { boardId: parseInt(board_uuid, 10) },
-              },
-            ],
-          });
-          console.log("Updated boardquestion");
-        } catch (err) {
-          console.error("Failed to update boardquestion");
-        }
-      }
-
-      // Find the existing question
-      const existingQuestion = questionsMap.get(questionInput.id);
-      // Check if question changed
-      if (
-        existingQuestion &&
-        (questionInput.question !== existingQuestion.question ||
-          questionInput.answer !== existingQuestion.answer)
-      ) {
-        //UPDATE EXISTING QUESTION
-        const updateInput: UpdateQuestionInput = {
-          id: questionInput.id,
-          question: questionInput.question,
-          answer: questionInput.answer,
-        };
-
-        try {
-          updateQuestion({
-            variables: {
-              input: updateInput,
-            },
-            refetchQueries: [
-              {
-                query: BoardQuestionsFromBoardDocument,
-                variables: { boardId: parseInt(board_uuid, 10) },
-              },
-            ],
-          });
-          console.log("Updated Question");
-        } catch (err) {
-          console.error("Failed to update question:", err);
-          // Optionally, display an error message to the user
-        }
-      }
+    } catch (error) {
+      console.error("Error saving data:", error);
     }
     handleCloseQuestionModal();
   };
@@ -291,27 +130,18 @@ const GameBoardDisplay = ({
           ))}
 
           {/* Render questions as rows */}
-          {boardQuestionsMatrix.map((row, rowIndex) => (
+          {gameBoardMatrix?.map((row, rowIndex) => (
             <React.Fragment key={rowIndex}>
-              {row.map((bq, colIndex) => {
-                const question = bq
-                  ? questionsMap.get(bq.question.id) ?? null
-                  : null;
+              {row.map((questionAndInfo, colIndex) => {
                 return (
                   <QuestionCell
                     key={`${rowIndex}-${colIndex}`}
-                    question={question}
-                    bq={bq}
+                    questionAndInfo={questionAndInfo}
                     onClick={() =>
                       handleOpenQuestionModal(
-                        question,
-                        bq ?? {
-                          dailyDouble: false,
-                          category: displayCategories[colIndex],
-                          gridCol: colIndex,
-                          gridRow: rowIndex,
-                          points: 100,
-                        }
+                        questionAndInfo,
+                        rowIndex,
+                        colIndex
                       )
                     }
                   />
@@ -322,16 +152,15 @@ const GameBoardDisplay = ({
           {isQuestionModalOpen && (
             <EditQuestionModal
               open={isQuestionModalOpen}
-              user_uuid={parseInt(user_uuid, 10)}
-              question={currentQuestion}
-              boardQuestion={currentBoardQuestion}
+              user_uuid={userId}
+              boardId={boardId}
+              questionWithInfo={currentQuestionWithInfo}
+              gridRow={currentGridRow}
+              gridCol={currentGridCol}
               onClose={handleCloseQuestionModal}
               onSave={handleSaveQuestionModal}
             />
           )}
-          {(updating || creating) && <p>Saving changes...</p>}
-          {updateError && <p>Error updating question: {updateError.message}</p>}
-          {createError && <p>Error creating question: {createError.message}</p>}
         </Grid>
       </Paper>
     </div>

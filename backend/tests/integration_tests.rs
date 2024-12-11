@@ -3,11 +3,14 @@
 mod common;
 use async_graphql::{Request, Response, Schema};
 use backend::graphql::schema::create_schema;
+use backend::models::board_question::BoardQuestion;
 use backend::models::game_board::{GameBoard, NewGameBoard};
 use backend::models::question::Question;
 use backend::models::user::{NewUser, User};
-use common::factories::{create_test_game_board, create_test_question, create_test_user};
-use common::fixtures::{mudkip_board_with_questions, mudkip_fixture};
+use common::factories::{
+    create_test_board_question, create_test_game_board, create_test_question, create_test_user,
+};
+use common::fixtures::{board_with_questions_fixture, comprehensive_fixture};
 use common::setup::{
     create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
     run_migrations_sync, TestDB,
@@ -378,16 +381,30 @@ async fn test_factory_functions() {
     // Set up test database and schema
     let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
     let mut conn = test_db.pool.get().await.unwrap();
+
+    // Create test user using factory
     let factory_user: User = create_test_user(&mut conn, None).await;
     assert_eq!(factory_user.username, "defaultuser");
 
+    // Create test game board using factory
     let factory_game_board: GameBoard =
         create_test_game_board(&mut conn, factory_user.id, None).await;
     assert_eq!(factory_game_board.title, "defaultboard");
 
+    // Create test question using factory
     let factory_question: Question = create_test_question(&mut conn, factory_user.id, None).await;
     assert_eq!(factory_question.question, "defaultquestion");
     assert_eq!(factory_question.answer, "defaultanswer");
+
+    // Create test board question using factory
+    let factory_board_question: BoardQuestion =
+        create_test_board_question(&mut conn, factory_game_board.id, factory_question.id, None)
+            .await;
+    assert_eq!(factory_board_question.category, "default category");
+    assert_eq!(factory_board_question.points, 100);
+    assert_eq!(factory_board_question.daily_double, false);
+    assert_eq!(factory_board_question.grid_row, 0);
+    assert_eq!(factory_board_question.grid_col, 0);
 
     // Tear down test_db
     let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
@@ -400,9 +417,12 @@ async fn test_mudkip_fixture() {
     let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
     let mut conn = test_db.pool.get().await.unwrap();
 
-    // Initialize mudkip fixture with user
-    let mudkip: User = mudkip_fixture(&mut conn).await;
-    assert_eq!(mudkip.username, "Mudkip");
+    // Initialize mudkip fixture with user and associated board/questions
+    let (board, board_questions, questions) =
+        board_with_questions_fixture(&mut conn, "Mudkip").await;
+    assert_eq!(board.title, "Mudkip's Board 1");
+    assert_eq!(board_questions.len(), 5);
+    assert_eq!(questions.len(), 5);
 
     // Create graphql schema with all queries and mutations
     let schema = create_schema(test_db.pool.clone());
@@ -421,7 +441,7 @@ async fn test_mudkip_fixture() {
         }}
     }}
     "#,
-        mudkip.id
+        board.user_id
     );
 
     // Execute query and get response
@@ -439,11 +459,13 @@ async fn test_mudkip_fixture() {
     let data = response.data.into_json().unwrap();
     let mudkip_questions = data["getQuestionFromUser"].as_array().unwrap();
 
-    for i in 0..10 {
+    assert_eq!(mudkip_questions.len(), 5);
+    for i in 0..5 {
         assert_eq!(
             mudkip_questions[i]["question"],
             format!("Question {}", i + 1)
         );
+        assert_eq!(mudkip_questions[i]["answer"], format!("Answer {}", i + 1));
     }
 
     // Tear down test_db
@@ -457,15 +479,17 @@ async fn test_get_question_from_ids() {
     let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
     let mut conn = test_db.pool.get().await.unwrap();
 
-    // Initialize mudkip fixture with user
-    let mudkip: User = mudkip_fixture(&mut conn).await;
-    assert_eq!(mudkip.username, "Mudkip");
+    // Initialize mudkip fixture with user and associated board/questions
+    let (_board, board_questions, questions) =
+        board_with_questions_fixture(&mut conn, "Mudkip").await;
+    assert_eq!(board_questions.len(), 5);
+    assert_eq!(questions.len(), 5);
 
     // Create graphql schema with all queries and mutations
     let schema = create_schema(test_db.pool.clone());
 
     // Create query for mudkip's questions
-    let ids: Vec<i32> = (1..=10).collect(); // Create a vector [1, 2, ..., 10]
+    let ids: Vec<i32> = questions.iter().map(|q| q.id as i32).collect();
     let ids_string = format!("{:?}", ids); // Convert vector to string "[1, 2, ..., 10]"
 
     let ten_question_query = format!(
@@ -495,11 +519,14 @@ async fn test_get_question_from_ids() {
         println!("GraphQL data: {:?}", response.data);
     }
 
-    // Retrieve mudkip's 10 questions
+    // Check that the response does not contain errors
+    assert!(response.errors.is_empty());
+
+    // Retrieve mudkip's 5 questions
     let data = response.data.into_json().unwrap();
     let ten_questions = data["getQuestionsFromIds"].as_array().unwrap();
 
-    for i in 0..10 {
+    for i in 0..5 {
         assert_eq!(ten_questions[i]["question"], format!("Question {}", i + 1));
     }
 
@@ -509,29 +536,90 @@ async fn test_get_question_from_ids() {
 }
 
 #[tokio::test]
-async fn test_get_board_question_graphql() {
+async fn test_create_game_board_graphql() {
     // Set up test database and schema
     let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+
+    // Insert test user using factory
     let mut conn = test_db.pool.get().await.unwrap();
+    let user = create_test_user(
+        &mut conn,
+        Some(NewUser {
+            username: "graphql_user".to_string(),
+        }),
+    )
+    .await;
+    assert_eq!(user.username, "graphql_user");
 
-    let (board, board_questions) = mudkip_board_with_questions(&mut conn).await;
-
-    // Create graphql schema with all queries and mutations
+    // Build graphql schema with Query and Mutation types
     let schema = create_schema(test_db.pool.clone());
 
-    let get_board_question_query = format!(
+    // Define the GraphQL mutation string for creating a game board
+    let mutation = format!(
+        r#"
+        mutation {{
+            createGameBoard(input: {{ userId: {}, title: "GraphQL Test Board" }}) {{
+                id
+                title
+                userId
+                createdAt
+                updatedAt
+            }}
+        }}
+        "#,
+        user.id
+    );
+
+    // Execute the mutation and get a response
+    let request: Request = Request::new(mutation);
+    let response: Response = Schema::execute(&schema, request).await;
+
+    // Print the errors to see what went wrong
+    if !response.errors.is_empty() {
+        println!("GraphQL errors: {:?}", response.errors);
+    } else {
+        println!("GraphQL data: {:?}", response.data);
+    }
+
+    // Check that the response does not contain errors
+    assert!(response.errors.is_empty());
+
+    // Extract the "createGameBoard" data from the response
+    let data = response.data.into_json().unwrap();
+    let created_game_board = data["createGameBoard"].clone();
+
+    // Validate that the returned game board matches what we expect
+    assert_eq!(created_game_board["title"], "GraphQL Test Board");
+    assert_eq!(created_game_board["userId"], user.id as i64);
+    assert!(created_game_board["id"].as_i64().is_some());
+
+    // Tear down test_db
+    let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
+    assert!(successfully_droppped, "Close method returned false");
+}
+
+#[tokio::test]
+async fn test_get_board_questions_graphql() {
+    // Set up test database and schema
+    let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
+
+    // Insert test user, game board, and multiple questions using fixtures
+    let mut conn = test_db.pool.get().await.unwrap();
+    let (board, board_questions, questions) =
+        board_with_questions_fixture(&mut conn, "test_board_user").await;
+    assert_eq!(board_questions.len(), 5);
+    assert_eq!(questions.len(), 5);
+
+    // Build graphql schema with Query and Mutation types
+    let schema = create_schema(test_db.pool.clone());
+
+    // Define the GraphQL query to fetch board questions with details
+    let query = format!(
         r#"
         query {{
             boardQuestionsByBoard(boardId: {}) {{
-                board {{
-                    id
-                    title
-                }}
-                question {{
-                    id
-                    question
-                    answer
-                }}
+                boardId
+                questionId
                 category
                 dailyDouble
                 points
@@ -543,8 +631,8 @@ async fn test_get_board_question_graphql() {
         board.id
     );
 
-    // Execute query and get response
-    let request: Request = Request::new(get_board_question_query);
+    // Execute the query and get response
+    let request: Request = Request::new(query);
     let response: Response = Schema::execute(&schema, request).await;
 
     // Print the errors to see what went wrong
@@ -554,68 +642,45 @@ async fn test_get_board_question_graphql() {
         println!("GraphQL data: {:?}", response.data);
     }
 
-    // Retrieve mudkip's 10 questions
+    // Check that the response does not contain errors
+    assert!(response.errors.is_empty());
+
+    // Retrieve board questions
     let data = response.data.into_json().unwrap();
-    let board_questions_array = data["boardQuestionsByBoard"].as_array().unwrap();
+    let fetched_board_questions = data["boardQuestionsByBoard"].as_array().unwrap();
 
-    // Assert that the number of BoardQuestions returned matches the fixture
-    assert_eq!(
-        board_questions_array.len(),
-        board_questions.len(),
-        "Expected {} board questions, got {}",
-        board_questions.len(),
-        board_questions_array.len()
-    );
+    // Validate that the number of board questions matches
+    assert_eq!(fetched_board_questions.len(), board_questions.len());
 
-    for (expected, actual) in board_questions.iter().zip(board_questions_array.iter()) {
-        // Validate board fields
-        assert_eq!(actual["board"]["id"], board.id, "Board ID mismatch");
+    for (expected, actual) in board_questions.iter().zip(fetched_board_questions.iter()) {
+        // Validate board and question Ids
+        assert_eq!(actual["boardId"], board.id as i64, "Board ID mismatch");
         assert_eq!(
-            actual["board"]["title"], board.title,
-            "Board title mismatch"
-        );
-
-        // Validate question fields
-        assert_eq!(
-            actual["question"]["id"], expected.question_id,
+            actual["questionId"], expected.question_id as i64,
             "Question ID mismatch"
         );
-        // Optionally, validate question content and answer
-        // assert_eq!(actual["question"]["question"], "Expected Question");
-        // assert_eq!(actual["question"]["answer"], "Expected Answer");
 
         // Validate category
-        assert_eq!(
-            actual["category"].as_str().unwrap(),
-            "Water Types",
-            "Category mismatch"
-        );
+        assert_eq!(actual["category"], expected.category, "Category mismatch");
 
         // Validate daily_double
         assert_eq!(
-            actual["dailyDouble"].as_bool().unwrap(),
-            expected.daily_double,
+            actual["dailyDouble"], expected.daily_double,
             "Daily Double mismatch"
         );
 
         // Validate points
-        assert_eq!(
-            actual["points"].as_i64().unwrap(),
-            expected.points as i64,
-            "Points mismatch"
-        );
+        assert_eq!(actual["points"], expected.points as i64, "Points mismatch");
 
         // Validate grid_row
         assert_eq!(
-            actual["gridRow"].as_i64().unwrap(),
-            expected.grid_row as i64,
+            actual["gridRow"], expected.grid_row as i64,
             "Grid Row mismatch"
         );
 
         // Validate grid_col
         assert_eq!(
-            actual["gridCol"].as_i64().unwrap(),
-            expected.grid_col as i64,
+            actual["gridCol"], expected.grid_col as i64,
             "Grid Column mismatch"
         );
     }

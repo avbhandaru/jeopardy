@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const ADD_BOARD_QUESTION = gql`
-  mutation createBoardQuestion($input: CreateBoardQuestionInput!) {
-    associateQuestionWithBoard(input: $input) {
+  mutation CreateBoardQuestion($input: CreateBoardQuestionInput!) {
+    createBoardQuestion(input: $input) {
       boardId
       questionId
       category

@@ -9,7 +9,9 @@ use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 /// Disel Question Model with async-graphql suppport
-#[derive(Identifiable, Associations, Queryable, SimpleObject, Selectable, Debug, Builder)]
+#[derive(
+    Identifiable, Associations, Queryable, SimpleObject, Selectable, Debug, Builder, Clone,
+)]
 #[diesel(table_name = questions)]
 #[diesel(belongs_to(User))]
 pub struct Question {

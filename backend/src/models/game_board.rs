@@ -9,7 +9,9 @@ use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 /// Diesel Game Board model with async-graphql support
-#[derive(Identifiable, Associations, Queryable, Selectable, Debug, SimpleObject, Builder)]
+#[derive(
+    Identifiable, Associations, Queryable, Selectable, Debug, SimpleObject, Builder, Clone,
+)]
 #[diesel(table_name = game_boards)]
 #[diesel(belongs_to(User))]
 pub struct GameBoard {
