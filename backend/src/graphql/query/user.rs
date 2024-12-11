@@ -11,16 +11,18 @@ pub struct UserQuery;
 
 #[Object]
 impl UserQuery {
-    async fn get_user(&self, ctx: &Context<'_>, id: i64) -> Result<User> {
+    /// Fetch user by id
+    async fn get_user(&self, ctx: &Context<'_>, user_id: i64) -> Result<User> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
         let mut conn = pool.get().await.expect("Failed to get connection");
 
-        let user: User = User::find_by_id(&mut conn, id).await?;
+        let user: User = User::find_by_id(&mut conn, user_id).await?;
         Ok(user)
     }
 
+    /// Fetch all users
     async fn all_users(&self, ctx: &Context<'_>) -> Result<Vec<User>> {
         let pool = ctx
             .data::<DBPool>()

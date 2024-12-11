@@ -22,6 +22,7 @@ pub fn run_migrations_sync(database_url: &str) {
     let _ = conn.run_pending_migrations(MIGRATIONS);
 }
 
+#[allow(dead_code)]
 pub fn rollback_migrations(database_url: &str) {
     println!("Rolling back test setup migrations");
     let mut conn: PgConnection =
@@ -56,6 +57,7 @@ pub fn get_test_database_url(test_db: &str) -> String {
     re.replace(&url, format!("/{}", test_db)).to_string()
 }
 
+#[allow(dead_code)]
 pub async fn drop_test_database(
     super_conn: &mut AsyncPgConnection,
     test_db: &str,
@@ -127,11 +129,5 @@ impl TestDB {
     pub async fn close(&mut self) -> Result<bool, diesel::result::Error> {
         println!("Closing resources for {}", self.test_db_name);
         drop_test_database(&mut self.super_conn, &self.test_db_name).await
-    }
-}
-
-impl Drop for TestDB {
-    fn drop(&mut self) {
-        println!("Dropping {}", self.test_db_name)
     }
 }
