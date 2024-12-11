@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Providers from "./lib/Providers";
-import { Roboto } from 'next/font/google';
+import { Roboto } from "next/font/google";
 import NavBar from "./components/NavBar";
 
 const roboto = Roboto({
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-roboto',
+  weight: ["300", "400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-roboto",
 });
 
 const geistSans = localFont({
@@ -35,8 +35,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable}`}>
-        <Providers> {/* Wrap children with Providers */}
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable}`}
+      >
+        <Providers>
+          {" "}
+          {/* Wrap children with Providers */}
           {/* Nav Bar */}
           <NavBar />
           {/* Main Content */}

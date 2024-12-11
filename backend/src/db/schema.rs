@@ -47,9 +47,4 @@ diesel::joinable!(board_questions -> questions (question_id));
 diesel::joinable!(game_boards -> users (user_id));
 diesel::joinable!(questions -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    board_questions,
-    game_boards,
-    questions,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(board_questions, game_boards, questions, users,);

@@ -58,4 +58,14 @@ impl User {
             .get_result(conn)
             .await
     }
+
+    pub async fn find_by_username(
+        conn: &mut AsyncPgConnection,
+        username: String,
+    ) -> Result<Vec<Self>, diesel::result::Error> {
+        users::table
+            .filter(users::username.eq(username))
+            .load::<Self>(conn)
+            .await
+    }
 }
