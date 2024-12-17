@@ -56,12 +56,7 @@ export type CreateUserInput = {
 
 export type DetailedBoardQuestion = {
   __typename?: 'DetailedBoardQuestion';
-  board: GameBoard;
-  category: Scalars['String']['output'];
-  dailyDouble: Scalars['Boolean']['output'];
-  gridCol: Scalars['Int']['output'];
-  gridRow: Scalars['Int']['output'];
-  points: Scalars['Int']['output'];
+  boardQuestion: BoardQuestion;
   question: Question;
 };
 
@@ -74,6 +69,12 @@ export type GameBoard = {
   userId: Scalars['Int']['output'];
 };
 
+export type GameBoardData = {
+  __typename?: 'GameBoardData';
+  categories: Array<Scalars['String']['output']>;
+  questions: Array<DetailedBoardQuestion>;
+};
+
 export type Question = {
   __typename?: 'Question';
   answer: Scalars['String']['output'];
@@ -84,22 +85,14 @@ export type Question = {
   userId: Scalars['Int']['output'];
 };
 
-export type QuestionWithBoardInfo = {
-  __typename?: 'QuestionWithBoardInfo';
-  category: Scalars['String']['output'];
-  dailyDouble: Scalars['Boolean']['output'];
-  gridCol: Scalars['Int']['output'];
-  gridRow: Scalars['Int']['output'];
-  points: Scalars['Int']['output'];
-  question: Question;
-};
-
 export type RootMutation = {
   __typename?: 'RootMutation';
   createBoardQuestion: BoardQuestion;
   createGameBoard: GameBoard;
   createQuestion: Question;
   createUser: User;
+  deleteQuestion: Scalars['Boolean']['output'];
+  updateBoardColumnCategory: Scalars['Boolean']['output'];
   updateBoardQuestion: BoardQuestion;
   updateQuestion: Question;
   updateTitle: GameBoard;
@@ -126,6 +119,18 @@ export type RootMutationCreateUserArgs = {
 };
 
 
+export type RootMutationDeleteQuestionArgs = {
+  questionId: Scalars['Int']['input'];
+};
+
+
+export type RootMutationUpdateBoardColumnCategoryArgs = {
+  gameBoardId: Scalars['Int']['input'];
+  gridCol: Scalars['Int']['input'];
+  newCategory: Scalars['String']['input'];
+};
+
+
 export type RootMutationUpdateBoardQuestionArgs = {
   input: UpdateBoardQuestionInput;
 };
@@ -149,15 +154,13 @@ export type RootQuery = {
   boardQuestion: BoardQuestion;
   boardQuestionsByBoard: Array<BoardQuestion>;
   detailedBoardQuestion: DetailedBoardQuestion;
-  detailedBoardQuestionsByQuestion: Array<DetailedBoardQuestion>;
-  gameBoards: Array<DetailedBoardQuestion>;
+  fetchGameBoardData: GameBoardData;
   getGameBoard: GameBoard;
-  getGameBoardFromUser: Array<GameBoard>;
+  getGameBoardsFromUser: Array<GameBoard>;
   getQuestionFromUser: Array<Question>;
   getQuestionsFromIds: Array<Question>;
   getUser: User;
   question: Question;
-  questionsWithBoardInfo: Array<QuestionWithBoardInfo>;
 };
 
 
@@ -178,13 +181,8 @@ export type RootQueryDetailedBoardQuestionArgs = {
 };
 
 
-export type RootQueryDetailedBoardQuestionsByQuestionArgs = {
-  questionId: Scalars['Int']['input'];
-};
-
-
-export type RootQueryGameBoardsArgs = {
-  questionId: Scalars['Int']['input'];
+export type RootQueryFetchGameBoardDataArgs = {
+  gameBoardId: Scalars['Int']['input'];
 };
 
 
@@ -193,7 +191,7 @@ export type RootQueryGetGameBoardArgs = {
 };
 
 
-export type RootQueryGetGameBoardFromUserArgs = {
+export type RootQueryGetGameBoardsFromUserArgs = {
   userId: Scalars['Int']['input'];
 };
 
@@ -215,11 +213,6 @@ export type RootQueryGetUserArgs = {
 
 export type RootQueryQuestionArgs = {
   questionId: Scalars['Int']['input'];
-};
-
-
-export type RootQueryQuestionsWithBoardInfoArgs = {
-  gameBoardId: Scalars['Int']['input'];
 };
 
 export type UpdateBoardQuestionInput = {
@@ -260,6 +253,15 @@ export type UpdateBoardQuestionMutationVariables = Exact<{
 
 export type UpdateBoardQuestionMutation = { __typename?: 'RootMutation', updateBoardQuestion: { __typename?: 'BoardQuestion', boardId: number, questionId: number, category: string, dailyDouble: boolean, points: number, gridRow: number, gridCol: number } };
 
+export type UpdateColumnCategoryMutationVariables = Exact<{
+  gameBoardId: Scalars['Int']['input'];
+  gridCol: Scalars['Int']['input'];
+  newCategory: Scalars['String']['input'];
+}>;
+
+
+export type UpdateColumnCategoryMutation = { __typename?: 'RootMutation', updateBoardColumnCategory: boolean };
+
 export type CreateGameBoardMutationVariables = Exact<{
   input: CreateGameBoardInput;
 }>;
@@ -289,6 +291,13 @@ export type UpdateQuestionMutationVariables = Exact<{
 
 export type UpdateQuestionMutation = { __typename?: 'RootMutation', updateQuestion: { __typename?: 'Question', id: number, question: string, answer: string, createdAt: any, updatedAt: any, userId: number } };
 
+export type DeleteQuestionMutationVariables = Exact<{
+  questionId: Scalars['Int']['input'];
+}>;
+
+
+export type DeleteQuestionMutation = { __typename?: 'RootMutation', deleteQuestion: boolean };
+
 export type CreateUserMutationVariables = Exact<{
   input: CreateUserInput;
 }>;
@@ -303,17 +312,24 @@ export type BoardQuestionsFromBoardQueryVariables = Exact<{
 
 export type BoardQuestionsFromBoardQuery = { __typename?: 'RootQuery', boardQuestionsByBoard: Array<{ __typename?: 'BoardQuestion', boardId: number, questionId: number, category: string, dailyDouble: boolean, points: number, gridRow: number, gridCol: number }> };
 
+export type GameBoardDataQueryVariables = Exact<{
+  gameBoardId: Scalars['Int']['input'];
+}>;
+
+
+export type GameBoardDataQuery = { __typename?: 'RootQuery', fetchGameBoardData: { __typename?: 'GameBoardData', categories: Array<string>, questions: Array<{ __typename?: 'DetailedBoardQuestion', boardQuestion: { __typename?: 'BoardQuestion', boardId: number, questionId: number, category: string, points: number, gridRow: number, gridCol: number }, question: { __typename?: 'Question', id: number, question: string, answer: string } }> } };
+
 export type GetAllGameBoardsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetAllGameBoardsQuery = { __typename?: 'RootQuery', allGameBoards: Array<{ __typename?: 'GameBoard', id: number, createdAt: any, updatedAt: any, userId: number, title: string }> };
 
-export type GetGameBoardFromUserQueryVariables = Exact<{
+export type GetGameBoardsFromUserQueryVariables = Exact<{
   userId: Scalars['Int']['input'];
 }>;
 
 
-export type GetGameBoardFromUserQuery = { __typename?: 'RootQuery', getGameBoardFromUser: Array<{ __typename?: 'GameBoard', id: number, createdAt: any, updatedAt: any, userId: number, title: string }> };
+export type GetGameBoardsFromUserQuery = { __typename?: 'RootQuery', getGameBoardsFromUser: Array<{ __typename?: 'GameBoard', id: number, createdAt: any, updatedAt: any, userId: number, title: string }> };
 
 export type GetGameBoardQueryVariables = Exact<{
   gameBoardId: Scalars['Int']['input'];
@@ -321,13 +337,6 @@ export type GetGameBoardQueryVariables = Exact<{
 
 
 export type GetGameBoardQuery = { __typename?: 'RootQuery', getGameBoard: { __typename?: 'GameBoard', id: number, createdAt: any, updatedAt: any, userId: number, title: string } };
-
-export type QuestionsWithBoardInfoQueryVariables = Exact<{
-  gameBoardId: Scalars['Int']['input'];
-}>;
-
-
-export type QuestionsWithBoardInfoQuery = { __typename?: 'RootQuery', questionsWithBoardInfo: Array<{ __typename?: 'QuestionWithBoardInfo', category: string, dailyDouble: boolean, points: number, gridRow: number, gridCol: number, question: { __typename?: 'Question', id: number, createdAt: any, updatedAt: any, userId: number, question: string, answer: string } }> };
 
 export type GetAllQuestionsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -432,6 +441,43 @@ export function useUpdateBoardQuestionMutation(baseOptions?: Apollo.MutationHook
 export type UpdateBoardQuestionMutationHookResult = ReturnType<typeof useUpdateBoardQuestionMutation>;
 export type UpdateBoardQuestionMutationResult = Apollo.MutationResult<UpdateBoardQuestionMutation>;
 export type UpdateBoardQuestionMutationOptions = Apollo.BaseMutationOptions<UpdateBoardQuestionMutation, UpdateBoardQuestionMutationVariables>;
+export const UpdateColumnCategoryDocument = gql`
+    mutation UpdateColumnCategory($gameBoardId: Int!, $gridCol: Int!, $newCategory: String!) {
+  updateBoardColumnCategory(
+    gameBoardId: $gameBoardId
+    gridCol: $gridCol
+    newCategory: $newCategory
+  )
+}
+    `;
+export type UpdateColumnCategoryMutationFn = Apollo.MutationFunction<UpdateColumnCategoryMutation, UpdateColumnCategoryMutationVariables>;
+
+/**
+ * __useUpdateColumnCategoryMutation__
+ *
+ * To run a mutation, you first call `useUpdateColumnCategoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateColumnCategoryMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateColumnCategoryMutation, { data, loading, error }] = useUpdateColumnCategoryMutation({
+ *   variables: {
+ *      gameBoardId: // value for 'gameBoardId'
+ *      gridCol: // value for 'gridCol'
+ *      newCategory: // value for 'newCategory'
+ *   },
+ * });
+ */
+export function useUpdateColumnCategoryMutation(baseOptions?: Apollo.MutationHookOptions<UpdateColumnCategoryMutation, UpdateColumnCategoryMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateColumnCategoryMutation, UpdateColumnCategoryMutationVariables>(UpdateColumnCategoryDocument, options);
+      }
+export type UpdateColumnCategoryMutationHookResult = ReturnType<typeof useUpdateColumnCategoryMutation>;
+export type UpdateColumnCategoryMutationResult = Apollo.MutationResult<UpdateColumnCategoryMutation>;
+export type UpdateColumnCategoryMutationOptions = Apollo.BaseMutationOptions<UpdateColumnCategoryMutation, UpdateColumnCategoryMutationVariables>;
 export const CreateGameBoardDocument = gql`
     mutation CreateGameBoard($input: CreateGameBoardInput!) {
   createGameBoard(input: $input) {
@@ -583,6 +629,37 @@ export function useUpdateQuestionMutation(baseOptions?: Apollo.MutationHookOptio
 export type UpdateQuestionMutationHookResult = ReturnType<typeof useUpdateQuestionMutation>;
 export type UpdateQuestionMutationResult = Apollo.MutationResult<UpdateQuestionMutation>;
 export type UpdateQuestionMutationOptions = Apollo.BaseMutationOptions<UpdateQuestionMutation, UpdateQuestionMutationVariables>;
+export const DeleteQuestionDocument = gql`
+    mutation DeleteQuestion($questionId: Int!) {
+  deleteQuestion(questionId: $questionId)
+}
+    `;
+export type DeleteQuestionMutationFn = Apollo.MutationFunction<DeleteQuestionMutation, DeleteQuestionMutationVariables>;
+
+/**
+ * __useDeleteQuestionMutation__
+ *
+ * To run a mutation, you first call `useDeleteQuestionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteQuestionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteQuestionMutation, { data, loading, error }] = useDeleteQuestionMutation({
+ *   variables: {
+ *      questionId: // value for 'questionId'
+ *   },
+ * });
+ */
+export function useDeleteQuestionMutation(baseOptions?: Apollo.MutationHookOptions<DeleteQuestionMutation, DeleteQuestionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteQuestionMutation, DeleteQuestionMutationVariables>(DeleteQuestionDocument, options);
+      }
+export type DeleteQuestionMutationHookResult = ReturnType<typeof useDeleteQuestionMutation>;
+export type DeleteQuestionMutationResult = Apollo.MutationResult<DeleteQuestionMutation>;
+export type DeleteQuestionMutationOptions = Apollo.BaseMutationOptions<DeleteQuestionMutation, DeleteQuestionMutationVariables>;
 export const CreateUserDocument = gql`
     mutation CreateUser($input: CreateUserInput!) {
   createUser(input: $input) {
@@ -665,6 +742,61 @@ export type BoardQuestionsFromBoardQueryHookResult = ReturnType<typeof useBoardQ
 export type BoardQuestionsFromBoardLazyQueryHookResult = ReturnType<typeof useBoardQuestionsFromBoardLazyQuery>;
 export type BoardQuestionsFromBoardSuspenseQueryHookResult = ReturnType<typeof useBoardQuestionsFromBoardSuspenseQuery>;
 export type BoardQuestionsFromBoardQueryResult = Apollo.QueryResult<BoardQuestionsFromBoardQuery, BoardQuestionsFromBoardQueryVariables>;
+export const GameBoardDataDocument = gql`
+    query gameBoardData($gameBoardId: Int!) {
+  fetchGameBoardData(gameBoardId: $gameBoardId) {
+    categories
+    questions {
+      boardQuestion {
+        boardId
+        questionId
+        category
+        points
+        gridRow
+        gridCol
+      }
+      question {
+        id
+        question
+        answer
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGameBoardDataQuery__
+ *
+ * To run a query within a React component, call `useGameBoardDataQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGameBoardDataQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGameBoardDataQuery({
+ *   variables: {
+ *      gameBoardId: // value for 'gameBoardId'
+ *   },
+ * });
+ */
+export function useGameBoardDataQuery(baseOptions: Apollo.QueryHookOptions<GameBoardDataQuery, GameBoardDataQueryVariables> & ({ variables: GameBoardDataQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GameBoardDataQuery, GameBoardDataQueryVariables>(GameBoardDataDocument, options);
+      }
+export function useGameBoardDataLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GameBoardDataQuery, GameBoardDataQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GameBoardDataQuery, GameBoardDataQueryVariables>(GameBoardDataDocument, options);
+        }
+export function useGameBoardDataSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GameBoardDataQuery, GameBoardDataQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GameBoardDataQuery, GameBoardDataQueryVariables>(GameBoardDataDocument, options);
+        }
+export type GameBoardDataQueryHookResult = ReturnType<typeof useGameBoardDataQuery>;
+export type GameBoardDataLazyQueryHookResult = ReturnType<typeof useGameBoardDataLazyQuery>;
+export type GameBoardDataSuspenseQueryHookResult = ReturnType<typeof useGameBoardDataSuspenseQuery>;
+export type GameBoardDataQueryResult = Apollo.QueryResult<GameBoardDataQuery, GameBoardDataQueryVariables>;
 export const GetAllGameBoardsDocument = gql`
     query getAllGameBoards {
   allGameBoards {
@@ -708,9 +840,9 @@ export type GetAllGameBoardsQueryHookResult = ReturnType<typeof useGetAllGameBoa
 export type GetAllGameBoardsLazyQueryHookResult = ReturnType<typeof useGetAllGameBoardsLazyQuery>;
 export type GetAllGameBoardsSuspenseQueryHookResult = ReturnType<typeof useGetAllGameBoardsSuspenseQuery>;
 export type GetAllGameBoardsQueryResult = Apollo.QueryResult<GetAllGameBoardsQuery, GetAllGameBoardsQueryVariables>;
-export const GetGameBoardFromUserDocument = gql`
-    query GetGameBoardFromUser($userId: Int!) {
-  getGameBoardFromUser(userId: $userId) {
+export const GetGameBoardsFromUserDocument = gql`
+    query GetGameBoardsFromUser($userId: Int!) {
+  getGameBoardsFromUser(userId: $userId) {
     id
     createdAt
     updatedAt
@@ -721,37 +853,37 @@ export const GetGameBoardFromUserDocument = gql`
     `;
 
 /**
- * __useGetGameBoardFromUserQuery__
+ * __useGetGameBoardsFromUserQuery__
  *
- * To run a query within a React component, call `useGetGameBoardFromUserQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetGameBoardFromUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetGameBoardsFromUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetGameBoardsFromUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetGameBoardFromUserQuery({
+ * const { data, loading, error } = useGetGameBoardsFromUserQuery({
  *   variables: {
  *      userId: // value for 'userId'
  *   },
  * });
  */
-export function useGetGameBoardFromUserQuery(baseOptions: Apollo.QueryHookOptions<GetGameBoardFromUserQuery, GetGameBoardFromUserQueryVariables> & ({ variables: GetGameBoardFromUserQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useGetGameBoardsFromUserQuery(baseOptions: Apollo.QueryHookOptions<GetGameBoardsFromUserQuery, GetGameBoardsFromUserQueryVariables> & ({ variables: GetGameBoardsFromUserQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetGameBoardFromUserQuery, GetGameBoardFromUserQueryVariables>(GetGameBoardFromUserDocument, options);
+        return Apollo.useQuery<GetGameBoardsFromUserQuery, GetGameBoardsFromUserQueryVariables>(GetGameBoardsFromUserDocument, options);
       }
-export function useGetGameBoardFromUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetGameBoardFromUserQuery, GetGameBoardFromUserQueryVariables>) {
+export function useGetGameBoardsFromUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetGameBoardsFromUserQuery, GetGameBoardsFromUserQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetGameBoardFromUserQuery, GetGameBoardFromUserQueryVariables>(GetGameBoardFromUserDocument, options);
+          return Apollo.useLazyQuery<GetGameBoardsFromUserQuery, GetGameBoardsFromUserQueryVariables>(GetGameBoardsFromUserDocument, options);
         }
-export function useGetGameBoardFromUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetGameBoardFromUserQuery, GetGameBoardFromUserQueryVariables>) {
+export function useGetGameBoardsFromUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetGameBoardsFromUserQuery, GetGameBoardsFromUserQueryVariables>) {
           const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetGameBoardFromUserQuery, GetGameBoardFromUserQueryVariables>(GetGameBoardFromUserDocument, options);
+          return Apollo.useSuspenseQuery<GetGameBoardsFromUserQuery, GetGameBoardsFromUserQueryVariables>(GetGameBoardsFromUserDocument, options);
         }
-export type GetGameBoardFromUserQueryHookResult = ReturnType<typeof useGetGameBoardFromUserQuery>;
-export type GetGameBoardFromUserLazyQueryHookResult = ReturnType<typeof useGetGameBoardFromUserLazyQuery>;
-export type GetGameBoardFromUserSuspenseQueryHookResult = ReturnType<typeof useGetGameBoardFromUserSuspenseQuery>;
-export type GetGameBoardFromUserQueryResult = Apollo.QueryResult<GetGameBoardFromUserQuery, GetGameBoardFromUserQueryVariables>;
+export type GetGameBoardsFromUserQueryHookResult = ReturnType<typeof useGetGameBoardsFromUserQuery>;
+export type GetGameBoardsFromUserLazyQueryHookResult = ReturnType<typeof useGetGameBoardsFromUserLazyQuery>;
+export type GetGameBoardsFromUserSuspenseQueryHookResult = ReturnType<typeof useGetGameBoardsFromUserSuspenseQuery>;
+export type GetGameBoardsFromUserQueryResult = Apollo.QueryResult<GetGameBoardsFromUserQuery, GetGameBoardsFromUserQueryVariables>;
 export const GetGameBoardDocument = gql`
     query GetGameBoard($gameBoardId: Int!) {
   getGameBoard(gameBoardId: $gameBoardId) {
@@ -796,58 +928,6 @@ export type GetGameBoardQueryHookResult = ReturnType<typeof useGetGameBoardQuery
 export type GetGameBoardLazyQueryHookResult = ReturnType<typeof useGetGameBoardLazyQuery>;
 export type GetGameBoardSuspenseQueryHookResult = ReturnType<typeof useGetGameBoardSuspenseQuery>;
 export type GetGameBoardQueryResult = Apollo.QueryResult<GetGameBoardQuery, GetGameBoardQueryVariables>;
-export const QuestionsWithBoardInfoDocument = gql`
-    query QuestionsWithBoardInfo($gameBoardId: Int!) {
-  questionsWithBoardInfo(gameBoardId: $gameBoardId) {
-    question {
-      id
-      createdAt
-      updatedAt
-      userId
-      question
-      answer
-    }
-    category
-    dailyDouble
-    points
-    gridRow
-    gridCol
-  }
-}
-    `;
-
-/**
- * __useQuestionsWithBoardInfoQuery__
- *
- * To run a query within a React component, call `useQuestionsWithBoardInfoQuery` and pass it any options that fit your needs.
- * When your component renders, `useQuestionsWithBoardInfoQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useQuestionsWithBoardInfoQuery({
- *   variables: {
- *      gameBoardId: // value for 'gameBoardId'
- *   },
- * });
- */
-export function useQuestionsWithBoardInfoQuery(baseOptions: Apollo.QueryHookOptions<QuestionsWithBoardInfoQuery, QuestionsWithBoardInfoQueryVariables> & ({ variables: QuestionsWithBoardInfoQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<QuestionsWithBoardInfoQuery, QuestionsWithBoardInfoQueryVariables>(QuestionsWithBoardInfoDocument, options);
-      }
-export function useQuestionsWithBoardInfoLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<QuestionsWithBoardInfoQuery, QuestionsWithBoardInfoQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<QuestionsWithBoardInfoQuery, QuestionsWithBoardInfoQueryVariables>(QuestionsWithBoardInfoDocument, options);
-        }
-export function useQuestionsWithBoardInfoSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<QuestionsWithBoardInfoQuery, QuestionsWithBoardInfoQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<QuestionsWithBoardInfoQuery, QuestionsWithBoardInfoQueryVariables>(QuestionsWithBoardInfoDocument, options);
-        }
-export type QuestionsWithBoardInfoQueryHookResult = ReturnType<typeof useQuestionsWithBoardInfoQuery>;
-export type QuestionsWithBoardInfoLazyQueryHookResult = ReturnType<typeof useQuestionsWithBoardInfoLazyQuery>;
-export type QuestionsWithBoardInfoSuspenseQueryHookResult = ReturnType<typeof useQuestionsWithBoardInfoSuspenseQuery>;
-export type QuestionsWithBoardInfoQueryResult = Apollo.QueryResult<QuestionsWithBoardInfoQuery, QuestionsWithBoardInfoQueryVariables>;
 export const GetAllQuestionsDocument = gql`
     query getAllQuestions {
   allQuestions {

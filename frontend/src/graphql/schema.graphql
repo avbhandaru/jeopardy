@@ -48,13 +48,8 @@ input CreateUserInput {
 scalar DateTime
 
 type DetailedBoardQuestion {
-  board: GameBoard!
+  boardQuestion: BoardQuestion!
   question: Question!
-  category: String!
-  dailyDouble: Boolean!
-  points: Int!
-  gridRow: Int!
-  gridCol: Int!
 }
 
 # Diesel Game Board model with async-graphql support
@@ -66,6 +61,11 @@ type GameBoard {
   title: String!
 }
 
+type GameBoardData {
+  categories: [String!]!
+  questions: [DetailedBoardQuestion!]!
+}
+
 # Disel Question Model with async-graphql suppport
 type Question {
   id: Int!
@@ -74,15 +74,6 @@ type Question {
   userId: Int!
   question: String!
   answer: String!
-}
-
-type QuestionWithBoardInfo {
-  question: Question!
-  category: String!
-  dailyDouble: Boolean!
-  points: Int!
-  gridRow: Int!
-  gridCol: Int!
 }
 
 type RootMutation {
@@ -100,9 +91,19 @@ type RootMutation {
   # Update a question
   updateQuestion(input: UpdateQuestionInput!): Question!
 
+  # Delete a question by ID
+  deleteQuestion(questionId: Int!): Boolean!
+
   # Associate a question with a gameboard
   createBoardQuestion(input: CreateBoardQuestionInput!): BoardQuestion!
   updateBoardQuestion(input: UpdateBoardQuestionInput!): BoardQuestion!
+
+  # Update category for a specific column in a game board
+  updateBoardColumnCategory(
+    gameBoardId: Int!
+    gridCol: Int!
+    newCategory: String!
+  ): Boolean!
 }
 
 type RootQuery {
@@ -112,14 +113,11 @@ type RootQuery {
   # Fetch all users
   allUsers: [User!]!
 
-  # Fetch questions associated with specific gameboard, including association attributes
-  questionsWithBoardInfo(gameBoardId: Int!): [QuestionWithBoardInfo!]!
-
   # Fetch a single gameboard by id
   getGameBoard(gameBoardId: Int!): GameBoard!
 
   # Fetch all gameboards associated with a specific user
-  getGameBoardFromUser(userId: Int!): [GameBoard!]!
+  getGameBoardsFromUser(userId: Int!): [GameBoard!]!
 
   # Fetch all gameboards in the system
   allGameBoards: [GameBoard!]!
@@ -136,23 +134,20 @@ type RootQuery {
   # Fetch questions from list of ids
   getQuestionsFromIds(questionIds: [Int!]!): [Question!]!
 
-  # Fetch GameBoards associated with specific quesiton, including association attributes
-  gameBoards(questionId: Int!): [DetailedBoardQuestion!]!
-
   # Fetch a BoardQuestion by board id and question id
   boardQuestion(gameBoardId: Int!, questionId: Int!): BoardQuestion!
 
   # Fetch all BoardQuestions for a specific GameBoard
   boardQuestionsByBoard(gameBoardId: Int!): [BoardQuestion!]!
 
-  # Fetch all DetailedBoardQuestion records for a specific Question
-  detailedBoardQuestionsByQuestion(questionId: Int!): [DetailedBoardQuestion!]!
-
   # Fetch DetailedBoardQuestion from game_board_id and question_id
   detailedBoardQuestion(
     gameBoardId: Int!
     questionId: Int!
   ): DetailedBoardQuestion!
+
+  # Fetch game board data
+  fetchGameBoardData(gameBoardId: Int!): GameBoardData!
 }
 
 input UpdateBoardQuestionInput {

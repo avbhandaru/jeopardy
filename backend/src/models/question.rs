@@ -92,4 +92,13 @@ impl Question {
             .get_result(conn)
             .await
     }
+
+    pub async fn delete_by_id(
+        conn: &mut AsyncPgConnection,
+        question_id: i64,
+    ) -> Result<usize, diesel::result::Error> {
+        diesel::delete(questions::table.filter(questions::id.eq(question_id)))
+            .execute(conn)
+            .await
+    }
 }

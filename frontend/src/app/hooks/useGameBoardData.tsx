@@ -5,8 +5,8 @@ import {
   GameBoard,
   BoardQuestion,
   Question,
-  QuestionWithBoardInfo,
-  useQuestionsWithBoardInfoQuery,
+  DetailedBoardQuestion,
+  useGameBoardDataQuery,
   useCreateBoardQuestionMutation,
   useCreateQuestionMutation,
   useUpdateBoardQuestionMutation,
@@ -14,9 +14,9 @@ import {
   useGetGameBoardQuery,
   CreateQuestionInput,
   CreateBoardQuestionInput,
-  QuestionsWithBoardInfoDocument,
   UpdateQuestionInput,
   UpdateBoardQuestionInput,
+  GameBoardDataDocument,
 } from "@/generated/graphql";
 
 interface UserGameBoardDataProps {
@@ -24,7 +24,7 @@ interface UserGameBoardDataProps {
 }
 
 export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
-  const { loading, error, data } = useQuestionsWithBoardInfoQuery({
+  const { loading, error, data } = useGameBoardDataQuery({
     variables: { gameBoardId },
   });
   const {
@@ -51,34 +51,29 @@ export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
     if (!data || !dataGameBoard) {
       return {
         gameBoard: null as GameBoard | null,
-        questionsWithBoardInfo: [] as QuestionWithBoardInfo[],
+        questionsWithBoardInfo: [] as DetailedBoardQuestion[],
         questionsMap: new Map<number, Question>(),
         boardQuestionsMatrix: [] as (BoardQuestion | null)[][],
         displayCategories: [] as string[],
       };
     }
-    const questionsWithBoardInfo: QuestionWithBoardInfo[] =
-      data.questionsWithBoardInfo;
+    const questionsWithBoardInfo = data.fetchGameBoardData
+      .questions as DetailedBoardQuestion[];
 
-    const uniqueCategories = Array.from(
-      new Set(questionsWithBoardInfo.map((q) => q.category))
-    );
+    const categories = data.fetchGameBoardData.categories;
+
     const displayCategories =
-      uniqueCategories.length < 5
-        ? uniqueCategories.concat(
-            Array(5 - uniqueCategories.length).fill("Dummy Category")
-          )
-        : uniqueCategories;
+      categories.length < 5
+        ? categories.concat(Array(5 - categories.length).fill("Dummy Category"))
+        : categories;
 
-    // Populate the questions matrix with boardquestions
-    const maxRows = 5;
-    const gameBoardMatrix: (QuestionWithBoardInfo | null)[][] = Array.from(
-      { length: maxRows },
+    const gameBoardMatrix: (DetailedBoardQuestion | null)[][] = Array.from(
+      { length: 5 },
       () => Array(5).fill(null)
     );
 
     questionsWithBoardInfo.forEach((q) => {
-      const { gridRow: row, gridCol: col } = q;
+      const { gridRow: row, gridCol: col } = q.boardQuestion;
       if (col !== -1 && row >= 0 && row < 5) {
         gameBoardMatrix[row][col] = q;
       }
@@ -98,30 +93,23 @@ export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
     };
   }, [data]);
 
-  // Mutation handlers - these can be called from the component
-  async function createNewQuestionAndBoardQuestion(
-    questionInput: CreateQuestionInput,
-    boardQuestionInput: CreateBoardQuestionInput
-  ) {
+  async function createNewQuestion(questionInput: CreateQuestionInput) {
     const result = await createQuestion({
       variables: { input: questionInput },
-    });
-    const newQuestionId = result.data?.createQuestion.id;
-    if (!newQuestionId) return;
-
-    await createBoardQuestion({
-      variables: {
-        input: {
-          ...boardQuestionInput,
-          questionId: newQuestionId,
-          boardId: gameBoardId,
-        },
-      },
       refetchQueries: [
-        {
-          query: QuestionsWithBoardInfoDocument,
-          variables: { gameBoardId },
-        },
+        { query: GameBoardDataDocument, variables: { gameBoardId } },
+      ],
+    });
+    return result;
+  }
+
+  async function createNewBoardQuestion(
+    boardQuestionInput: CreateBoardQuestionInput
+  ) {
+    await createBoardQuestion({
+      variables: { input: boardQuestionInput },
+      refetchQueries: [
+        { query: GameBoardDataDocument, variables: { gameBoardId } },
       ],
     });
   }
@@ -130,7 +118,7 @@ export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
     await updateQuestion({
       variables: { input: updateInput },
       refetchQueries: [
-        { query: QuestionsWithBoardInfoDocument, variables: { gameBoardId } },
+        { query: GameBoardDataDocument, variables: { gameBoardId } },
       ],
     });
   }
@@ -141,7 +129,7 @@ export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
     await updateBoardQuestion({
       variables: { input: updateBoardQuestionInput },
       refetchQueries: [
-        { query: QuestionsWithBoardInfoDocument, variables: { gameBoardId } },
+        { query: GameBoardDataDocument, variables: { gameBoardId } },
       ],
     });
   }
@@ -154,7 +142,8 @@ export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
     gameBoardMatrix,
     displayCategories,
     gameBoard,
-    createNewQuestionAndBoardQuestion,
+    createNewQuestion,
+    createNewBoardQuestion,
     updateExistingQuestion,
     updateExistingBoardQuestion,
   };

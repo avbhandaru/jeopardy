@@ -2,14 +2,23 @@
 
 "use client";
 import React, { useState } from "react";
+import { useTheme } from "@mui/material";
 import { Paper, Typography, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import QuestionCell from "./QuestionCell";
-import { QuestionWithBoardInfo } from "@/generated/graphql";
+import {
+  UpdateBoardQuestionInput,
+  UpdateQuestionInput,
+  CreateQuestionInput,
+  CreateBoardQuestionInput,
+  DetailedBoardQuestion,
+} from "@/generated/graphql";
 import EditTitleDialog from "./EditTitleDialog";
 import EditQuestionModal from "./EditQuestionModal";
 import { useGameBoardData } from "../hooks/useGameBoardData";
-import { SaveAction, SaveActionType } from "../types/SaveAction";
+import PlaceHolderCell from "./PlaceholderCell";
+import CreateQuestionModal from "./CreateQuestionModal";
+import EditCategoryDialog from "./EditCategoryDialog";
 
 const GameBoardDisplay = ({
   board_uuid,
@@ -27,17 +36,23 @@ const GameBoardDisplay = ({
     gameBoardMatrix,
     displayCategories,
     gameBoard,
-    createNewQuestionAndBoardQuestion,
+    createNewQuestion,
+    createNewBoardQuestion,
     updateExistingQuestion,
     updateExistingBoardQuestion,
   } = useGameBoardData({ gameBoardId: boardId });
 
-  const [currentGridRow, setCurrentGridRow] = useState<number>(0);
-  const [currentGridCol, setCurrentGridCol] = useState<number>(0);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [currentGridRow, setCurrentGridRow] = useState(0);
+  const [currentGridCol, setCurrentGridCol] = useState(0);
+  const [currentCategory, setCurrentCategory] = useState("");
+  const [isEditCategoryDialogOpen, setIsEditCategoryDialogOpen] =
+    useState(false);
+  const [isCreateQuestionModalOpen, setIsCreateQuestionModalOpen] =
+    useState(false);
+  const [isEditTitleDialogOpen, setIsEditTitleDialogOpen] = useState(false);
+  const [isEditQuestionModalOpen, setIsEditQuestionModalOpen] = useState(false);
   const [currentQuestionWithInfo, setCurrentQuestionWithInfo] =
-    useState<QuestionWithBoardInfo | null>(null);
+    useState<DetailedBoardQuestion | null>(null);
 
   if (loading) return <p>Loading data...</p>;
   if (error) return <p>Error fetching data: {error.message}</p>;
@@ -46,57 +61,102 @@ const GameBoardDisplay = ({
     return <p>No gameboards found.</p>;
   }
 
-  const handleOpenQuestionModal = (
-    questionWithInfo: QuestionWithBoardInfo | null,
-    gridRow: number,
-    gridCol: number
-  ) => {
-    setCurrentQuestionWithInfo(questionWithInfo);
-    setCurrentGridRow(gridRow);
+  const handleOpenEditCategoryDialog = (category: string, gridCol: number) => {
+    setCurrentCategory(category);
     setCurrentGridCol(gridCol);
-    setIsQuestionModalOpen(true);
+    setIsEditCategoryDialogOpen(true);
+  };
+  const handleCloseEditCategoryDialog = () => {
+    setIsEditCategoryDialogOpen(false);
   };
 
-  const handleCloseQuestionModal = () => {
-    setIsQuestionModalOpen(false);
+  const handleOpenEditQuestionModal = (
+    questionWithInfo: DetailedBoardQuestion
+  ) => {
+    setCurrentQuestionWithInfo(questionWithInfo);
+    setIsEditQuestionModalOpen(true);
+  };
+
+  const handleCloseEditQuestionModal = () => {
+    setIsEditQuestionModalOpen(false);
     setCurrentQuestionWithInfo(null);
   };
 
-  const handleSaveQuestionModal = async (action: SaveAction) => {
+  const handleSaveEditQuestionModal = async (
+    updateBoardQuestionInput: UpdateBoardQuestionInput,
+    updateQuestionInput: UpdateQuestionInput
+  ) => {
     try {
-      switch (action.type) {
-        case SaveActionType.CREATE:
-          // Create Question
-          createNewQuestionAndBoardQuestion(
-            action.questionInput,
-            action.boardQuestionInput
-          );
-          break;
-        case SaveActionType.UPDATE_BOARDQUESTION:
-          updateExistingBoardQuestion(action.updateBoardQuestionInput);
-          break;
-        case SaveActionType.UPDATE_QUESTION:
-          updateExistingQuestion(action.updateQuestionInput);
-          break;
-        case SaveActionType.UPDATE_BOTH:
-          updateExistingBoardQuestion(action.updateBoardQuestionInput);
-          updateExistingQuestion(action.updateQuestionInput);
-          break;
-        default:
-          throw new Error("Unknown SaveAction type.");
-      }
+      updateExistingBoardQuestion(updateBoardQuestionInput);
+      updateExistingQuestion(updateQuestionInput);
     } catch (error) {
       console.error("Error saving data:", error);
     }
-    handleCloseQuestionModal();
+    handleCloseEditQuestionModal();
   };
 
-  const handleOpenEditDialog = () => {
-    setIsEditDialogOpen(true);
+  const handleOpenEditTitleDialog = () => {
+    setIsEditTitleDialogOpen(true);
   };
 
-  const handleCloseEditDialog = () => {
-    setIsEditDialogOpen(false);
+  const handleCloseEditTitleDialog = () => {
+    setIsEditTitleDialogOpen(false);
+  };
+
+  const handleOpenCreateQuestionModal = (
+    category: string,
+    gridRow: number,
+    gridCol: number
+  ) => {
+    setCurrentGridRow(gridRow);
+    setCurrentGridCol(gridCol);
+    setCurrentCategory(category);
+    setIsCreateQuestionModalOpen(true);
+  };
+
+  const handleCloseCreateQuestionModal = () => {
+    setIsCreateQuestionModalOpen(false);
+    setCurrentGridRow(0);
+    setCurrentGridCol(0);
+    setCurrentCategory("");
+  };
+
+  const handleSaveCreateQuestionModal = async (
+    question: string,
+    answer: string,
+    dailyDouble: boolean,
+    points: number
+  ) => {
+    try {
+      const questionInput: CreateQuestionInput = {
+        question,
+        answer,
+        userId,
+      };
+
+      const result = await createNewQuestion(questionInput);
+
+      if (!result.data?.createQuestion?.id) {
+        throw new Error("Failed to create a new question");
+      }
+
+      const newQuestionId = result.data.createQuestion.id;
+
+      const boardQuestionInput: CreateBoardQuestionInput = {
+        boardId,
+        questionId: newQuestionId,
+        category: currentCategory,
+        dailyDouble,
+        points,
+        gridRow: currentGridRow,
+        gridCol: currentGridCol,
+      };
+
+      await createNewBoardQuestion(boardQuestionInput);
+    } catch (error) {
+      console.error("Error creating question or board question:", error);
+      throw error;
+    }
   };
 
   return (
@@ -107,13 +167,13 @@ const GameBoardDisplay = ({
       <Button
         variant="contained"
         color="primary"
-        onClick={handleOpenEditDialog}
+        onClick={handleOpenEditTitleDialog}
       >
         Edit Title
       </Button>
       <EditTitleDialog
-        open={isEditDialogOpen}
-        handleClose={handleCloseEditDialog}
+        open={isEditTitleDialogOpen}
+        handleClose={handleCloseEditTitleDialog}
         gameBoard={gameBoard}
       />
       <Paper sx={{ padding: 2 }}>
@@ -126,6 +186,21 @@ const GameBoardDisplay = ({
               sx={{ textAlign: "center", fontWeight: "bold" }}
             >
               {category}
+              {index}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleOpenEditCategoryDialog(category, index)}
+              >
+                Edit Category
+              </Button>
+              <EditCategoryDialog
+                open={isEditCategoryDialogOpen}
+                handleClose={handleCloseEditCategoryDialog}
+                category={currentCategory}
+                gridCol={currentGridCol}
+                gameBoardId={gameBoard.id}
+              />
             </Grid>
           ))}
 
@@ -133,13 +208,18 @@ const GameBoardDisplay = ({
           {gameBoardMatrix?.map((row, rowIndex) => (
             <React.Fragment key={rowIndex}>
               {row.map((questionAndInfo, colIndex) => {
-                return (
+                return questionAndInfo ? (
                   <QuestionCell
                     key={`${rowIndex}-${colIndex}`}
                     questionAndInfo={questionAndInfo}
+                    onClick={() => handleOpenEditQuestionModal(questionAndInfo)}
+                  />
+                ) : (
+                  <PlaceHolderCell
+                    key={`${rowIndex}-${colIndex}`}
                     onClick={() =>
-                      handleOpenQuestionModal(
-                        questionAndInfo,
+                      handleOpenCreateQuestionModal(
+                        displayCategories[colIndex],
                         rowIndex,
                         colIndex
                       )
@@ -149,16 +229,20 @@ const GameBoardDisplay = ({
               })}
             </React.Fragment>
           ))}
-          {isQuestionModalOpen && (
+          {isEditQuestionModalOpen && currentQuestionWithInfo && (
             <EditQuestionModal
-              open={isQuestionModalOpen}
-              user_uuid={userId}
+              open={isEditQuestionModalOpen}
               boardId={boardId}
               questionWithInfo={currentQuestionWithInfo}
-              gridRow={currentGridRow}
-              gridCol={currentGridCol}
-              onClose={handleCloseQuestionModal}
-              onSave={handleSaveQuestionModal}
+              onClose={handleCloseEditQuestionModal}
+              onSave={handleSaveEditQuestionModal}
+            />
+          )}
+          {isCreateQuestionModalOpen && (
+            <CreateQuestionModal
+              open={isCreateQuestionModalOpen}
+              onClose={handleCloseCreateQuestionModal}
+              onSave={handleSaveCreateQuestionModal}
             />
           )}
         </Grid>

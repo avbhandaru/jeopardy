@@ -1,56 +1,37 @@
-// src/app/components/EditQuestionModal.tsx
+// src/app/components/CreateQuestionModal.tsx
 
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   FormControlLabel,
-  Checkbox,
+  TextField,
 } from "@mui/material";
-import {
-  UpdateQuestionInput,
-  UpdateBoardQuestionInput,
-  DetailedBoardQuestion,
-} from "@/generated/graphql";
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 
-interface EditQuestionModalProps {
+interface CreateQuestionModalProps {
   open: boolean;
-  /**
-   * Question object with board info from clicked cell, null when creating new question
-   */
-  questionWithInfo: DetailedBoardQuestion;
-  boardId: number;
   onClose: () => void;
   onSave: (
-    updateBoardQuestionInput: UpdateBoardQuestionInput,
-    updateQuestionInput: UpdateQuestionInput
+    question: string,
+    answer: string,
+    dailyDouble: boolean,
+    points: number
   ) => void;
 }
 
-const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
+const CreateQuestionModal: React.FC<CreateQuestionModalProps> = ({
   open,
-  questionWithInfo,
-  boardId,
   onClose,
   onSave,
 }) => {
-  // Separate state variables for question and board question details
   const [editedQuestion, setEditedQuestion] = useState<string>("");
   const [editedAnswer, setEditedAnswer] = useState<string>("");
   const [dailyDouble, setDailyDouble] = useState<boolean>(false);
   const [points, setPoints] = useState<number>(100);
-
-  // Update state when the question prop changes
-  useEffect(() => {
-    setEditedQuestion(questionWithInfo.question.question);
-    setEditedAnswer(questionWithInfo.question.answer);
-    setDailyDouble(questionWithInfo.boardQuestion.dailyDouble);
-    setPoints(questionWithInfo.boardQuestion.points);
-  }, [questionWithInfo]);
 
   const handleDailyDoubleChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -69,24 +50,13 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
       alert("Question or Answer can't be empty dude");
       return;
     }
-    const updateQuestionInput: UpdateQuestionInput = {
-      id: questionWithInfo.question.id,
-      question: editedQuestion,
-      answer: editedAnswer,
-    };
-    const updateBoardQuestionInput: UpdateBoardQuestionInput = {
-      boardId,
-      questionId: questionWithInfo.question.id,
-      dailyDouble,
-      points,
-    };
-    onSave(updateBoardQuestionInput, updateQuestionInput);
+    onSave(editedQuestion, editedAnswer, dailyDouble, points);
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{"Edit Question"}</DialogTitle>
+      <DialogTitle>{"Create Question"}</DialogTitle>
       <DialogContent>
         <TextField
           margin="dense"
@@ -104,7 +74,6 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
           onChange={(e) => setEditedAnswer(e.target.value)}
           required
         />
-        {/* Fields for boardQuestion data */}
         <FormControlLabel
           control={
             <Checkbox
@@ -116,7 +85,6 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
           label="Daily Double"
           sx={{ marginTop: 2 }}
         />
-
         <TextField
           margin="dense"
           label="Points"
@@ -130,11 +98,11 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button onClick={handleSave} variant="contained" color="primary">
-          {"Update"}
+          {"Create"}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default EditQuestionModal;
+export default CreateQuestionModal;
