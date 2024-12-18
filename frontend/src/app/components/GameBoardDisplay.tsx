@@ -142,6 +142,10 @@ const GameBoardDisplay = ({
 
       const newQuestionId = result.data.createQuestion.id;
 
+      if (points == 100) {
+        points = points * (currentGridRow + 1);
+      }
+
       const boardQuestionInput: CreateBoardQuestionInput = {
         boardId,
         questionId: newQuestionId,
@@ -186,7 +190,7 @@ const GameBoardDisplay = ({
               sx={{ textAlign: "center", fontWeight: "bold" }}
             >
               {category}
-              {index}
+              {/* {index} */}
               <Button
                 variant="contained"
                 color="primary"

@@ -2,7 +2,10 @@
 
 "use client";
 
-import { useUpdateColumnCategoryMutation } from "@/generated/graphql";
+import {
+  useUpdateColumnCategoryMutation,
+  GameBoardDataDocument,
+} from "@/generated/graphql";
 import {
   Button,
   Dialog,
@@ -35,6 +38,12 @@ const EditCategoryDialog: React.FC<EditCategoryDialogProps> = ({
   const [updateCategory, { loading, error, data }] =
     useUpdateColumnCategoryMutation({
       variables: { gameBoardId, gridCol, newCategory },
+      refetchQueries: [
+        {
+          query: GameBoardDataDocument,
+          variables: { gameBoardId },
+        },
+      ],
       onCompleted: () => {
         handleClose();
       },

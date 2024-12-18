@@ -2,7 +2,7 @@
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
-import { useGetGameBoardFromUserQuery } from "@/generated/graphql";
+import { useGetGameBoardsFromUserQuery } from "@/generated/graphql";
 import Link from "next/link";
 
 // Define columns for DataGrid
@@ -24,7 +24,7 @@ const columns: GridColDef[] = [
 ];
 
 const UserGameBoardDashboard = ({ userId }: { userId: string }) => {
-  const { loading, error, data } = useGetGameBoardFromUserQuery({
+  const { loading, error, data } = useGetGameBoardsFromUserQuery({
     variables: { userId: parseInt(userId, 10) },
   });
   //   console.log("Parsed userId:", parseInt(userId, 10));
@@ -32,7 +32,7 @@ const UserGameBoardDashboard = ({ userId }: { userId: string }) => {
   if (error) return <p>Error fetching data: {error.message}</p>;
   if (!data) return <p>No gameboards found.</p>;
 
-  const rows = data.getGameBoardFromUser.map((gameboard) => ({
+  const rows = data.getGameBoardsFromUser.map((gameboard) => ({
     id: gameboard.id,
     createdAt: new Date(gameboard.createdAt).toLocaleString(),
     updatedAt: new Date(gameboard.updatedAt).toLocaleString(),

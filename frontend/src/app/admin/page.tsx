@@ -6,13 +6,14 @@ import styles from "./page.module.css";
 import AdminUserDashboard from "../components/AdminUserDashboard";
 import AdminGameBoardDashboard from "../components/AdminGameBoardDashboard";
 import AdminQuestionsDashboard from "../components/AdminQuestionsDashboard";
+import { List } from "@mui/material";
 
 export default function AdminPage() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
         <h1>Admin Page</h1>
-        <ol>
+        <List>
           <li>
             <h1>Users Dashboard</h1>
             <AdminUserDashboard />
@@ -25,7 +26,7 @@ export default function AdminPage() {
             <h1>Questions Dashboard</h1>
             <AdminQuestionsDashboard />
           </li>
-        </ol>
+        </List>
       </main>
     </div>
   );

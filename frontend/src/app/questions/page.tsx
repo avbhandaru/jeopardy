@@ -1,7 +1,7 @@
 // src/app/questions/page.tsx
 "use client";
 
-import QuestionQuery from "./QuestionQuery";
+import AdminQuestionsDashboard from "../components/AdminQuestionsDashboard";
 import styles from "./page.module.css";
 
 export default function QuestionsPage() {
@@ -10,9 +10,7 @@ export default function QuestionsPage() {
       <main className={styles.main}>
         <ol>
           <h1>Questions Dashboard</h1>
-          {/* TODO create question dashboard that extends admin question */}
-          dashboard
-          <QuestionQuery />
+          <AdminQuestionsDashboard />
         </ol>
       </main>
     </div>
