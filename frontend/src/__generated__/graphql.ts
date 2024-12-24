@@ -60,6 +60,7 @@ export type DetailedBoardQuestion = {
   question: Question;
 };
 
+/** Diesel Game Board model with async-graphql support */
 export type GameBoard = {
   __typename?: 'GameBoard';
   createdAt: Scalars['DateTime']['output'];
@@ -75,6 +76,7 @@ export type GameBoardData = {
   questions: Array<DetailedBoardQuestion>;
 };
 
+/** Disel Question Model with async-graphql suppport */
 export type Question = {
   __typename?: 'Question';
   answer: Scalars['String']['output'];
@@ -87,14 +89,21 @@ export type Question = {
 
 export type RootMutation = {
   __typename?: 'RootMutation';
+  /** Associate a question with a gameboard */
   createBoardQuestion: BoardQuestion;
+  /** Create a new gameboard with example question */
   createGameBoard: GameBoard;
+  /** Create a new quesiton */
   createQuestion: Question;
   createUser: User;
+  /** Delete a question by ID */
   deleteQuestion: Scalars['Boolean']['output'];
+  /** Update category for a specific column in a game board */
   updateBoardColumnCategory: Scalars['Boolean']['output'];
   updateBoardQuestion: BoardQuestion;
+  /** Update a question */
   updateQuestion: Question;
+  /** Update gameboard title */
   updateTitle: GameBoard;
 };
 
@@ -148,18 +157,31 @@ export type RootMutationUpdateTitleArgs = {
 
 export type RootQuery = {
   __typename?: 'RootQuery';
+  /** Fetch all gameboards in the system */
   allGameBoards: Array<GameBoard>;
+  /** Fetch all questions */
   allQuestions: Array<Question>;
+  /** Fetch all users */
   allUsers: Array<User>;
+  /** Fetch a BoardQuestion by board id and question id */
   boardQuestion: BoardQuestion;
+  /** Fetch all BoardQuestions for a specific GameBoard */
   boardQuestionsByBoard: Array<BoardQuestion>;
+  /** Fetch DetailedBoardQuestion from game_board_id and question_id */
   detailedBoardQuestion: DetailedBoardQuestion;
+  /** Fetch game board data */
   fetchGameBoardData: GameBoardData;
+  /** Fetch a single gameboard by id */
   getGameBoard: GameBoard;
+  /** Fetch all gameboards associated with a specific user */
   getGameBoardsFromUser: Array<GameBoard>;
+  /** Fetch all questions from a user */
   getQuestionFromUser: Array<Question>;
+  /** Fetch questions from list of ids */
   getQuestionsFromIds: Array<Question>;
+  /** Fetch user by id */
   getUser: User;
+  /** Fetch a single question by id */
   question: Question;
 };
 

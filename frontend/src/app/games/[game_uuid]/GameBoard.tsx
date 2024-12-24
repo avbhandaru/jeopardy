@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import { Typography } from '@mui/material';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import { Typography } from "@mui/material";
 
 // Separate the Board component and question into a new Client Component
 export default function GameBoard() {
@@ -26,41 +26,41 @@ export default function GameBoard() {
 
   return (
     <Box sx={{ height: 180 }}>
-      <Box sx={{ display: 'flex' }}>
-        {question('What is a goose?')}
-        {question('What is a square?')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
+      <Box sx={{ display: "flex" }}>
+        {question("What is a goose?")}
+        {question("What is a square?")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
       </Box>
-      <Box sx={{ display: 'flex' }}>
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
+      <Box sx={{ display: "flex" }}>
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
       </Box>
-      <Box sx={{ display: 'flex' }}>
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
+      <Box sx={{ display: "flex" }}>
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
       </Box>
-      <Box sx={{ display: 'flex' }}>
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
+      <Box sx={{ display: "flex" }}>
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
       </Box>
-      <Box sx={{ display: 'flex' }}>
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
-        {question('Question goes here...')}
+      <Box sx={{ display: "flex" }}>
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
+        {question("Question goes here...")}
       </Box>
     </Box>
   );
-};
+}

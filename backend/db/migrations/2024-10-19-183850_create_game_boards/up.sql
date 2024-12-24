@@ -1,5 +1,4 @@
 -- Your SQL goes here
--- grid_cells needs to be "2 way door decision" vs 1 way
 CREATE TABLE IF NOT EXISTS game_boards (
     id BIGSERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

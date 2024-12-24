@@ -4,7 +4,7 @@
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
 import GameBoardMutation from "../games/GameBoardMutation";
-import { useGetAllGameBoardsQuery } from "@/generated/graphql";
+import { useGetAllGameBoardsQuery } from "@/__generated__/graphql";
 import Link from "next/link";
 
 // Define columns for DataGrid

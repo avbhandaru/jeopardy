@@ -2,7 +2,6 @@
 
 "use client";
 import React, { useState } from "react";
-import { useTheme } from "@mui/material";
 import { Paper, Typography, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import QuestionCell from "./QuestionCell";
@@ -12,7 +11,7 @@ import {
   CreateQuestionInput,
   CreateBoardQuestionInput,
   DetailedBoardQuestion,
-} from "@/generated/graphql";
+} from "@/__generated__/types";
 import EditTitleDialog from "./EditTitleDialog";
 import EditQuestionModal from "./EditQuestionModal";
 import { useGameBoardData } from "../hooks/useGameBoardData";
@@ -40,6 +39,7 @@ const GameBoardDisplay = ({
     createNewBoardQuestion,
     updateExistingQuestion,
     updateExistingBoardQuestion,
+    refetchGameBoardData,
   } = useGameBoardData({ gameBoardId: boardId });
 
   const [currentGridRow, setCurrentGridRow] = useState(0);
@@ -89,6 +89,8 @@ const GameBoardDisplay = ({
     try {
       updateExistingBoardQuestion(updateBoardQuestionInput);
       updateExistingQuestion(updateQuestionInput);
+      refetchGameBoardData();
+      console.log("Successfully edited question. Tried to refetch board data");
     } catch (error) {
       console.error("Error saving data:", error);
     }
@@ -157,10 +159,15 @@ const GameBoardDisplay = ({
       };
 
       await createNewBoardQuestion(boardQuestionInput);
+      refetchGameBoardData();
+      console.log(
+        "Successfully created new question. Tried to refetch board data"
+      );
     } catch (error) {
       console.error("Error creating question or board question:", error);
       throw error;
     }
+    handleCloseCreateQuestionModal();
   };
 
   return (

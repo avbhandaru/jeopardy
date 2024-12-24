@@ -14,7 +14,7 @@ import {
   UpdateQuestionInput,
   UpdateBoardQuestionInput,
   DetailedBoardQuestion,
-} from "@/generated/graphql";
+} from "@/__generated__/types";
 import React, { useState, useEffect } from "react";
 
 interface EditQuestionModalProps {

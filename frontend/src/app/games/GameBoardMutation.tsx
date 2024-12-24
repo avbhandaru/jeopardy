@@ -7,7 +7,7 @@ import { TextField, Button, Box, Typography } from "@mui/material";
 import {
   useCreateGameBoardMutation,
   GetAllGameBoardsDocument,
-} from "@/generated/graphql";
+} from "@/__generated__/graphql";
 
 const GameBoardMutation: React.FC = () => {
   const [title, setTitle] = useState("");

@@ -1,5 +1,5 @@
 import React from "react";
-import { DetailedBoardQuestion } from "@/generated/graphql";
+import { DetailedBoardQuestion } from "@/__generated__/types";
 import Grid from "@mui/material/Grid2";
 
 interface QuestionCellProps {

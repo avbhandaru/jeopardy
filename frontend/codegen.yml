@@ -1,8 +1,0 @@
-schema: "./src/graphql/schema.graphql" # Path to your schema file
-documents: "./src/graphql/**/*.ts" # Path to queries and mutations
-generates:
-  ./src/generated/graphql.tsx: # File where types and hooks will be generated
-    plugins:
-      - "typescript"
-      - "typescript-operations"
-      - "typescript-react-apollo"

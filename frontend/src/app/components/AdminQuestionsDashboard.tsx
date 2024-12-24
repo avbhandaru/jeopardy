@@ -1,10 +1,9 @@
 // src/app/components/AdminQuestionsDashboard.tsx
 "use client";
 
-import { useGetAllQuestionsQuery } from "@/generated/graphql";
+import { useGetAllQuestionsQuery } from "@/__generated__/graphql";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
-import QuestionMutation from "../questions/QuestionMutation";
 
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 70 },
@@ -36,9 +35,6 @@ const AdminQuestionsDashboard = () => {
       <Typography variant="h4" gutterBottom>
         Data from Backend:
       </Typography>
-
-      {/* Include GameBoardMutation component */}
-      <QuestionMutation />
 
       <Paper sx={{ height: 400, width: "100%" }}>
         <DataGrid

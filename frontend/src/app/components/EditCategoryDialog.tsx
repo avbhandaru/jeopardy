@@ -5,7 +5,7 @@
 import {
   useUpdateColumnCategoryMutation,
   GameBoardDataDocument,
-} from "@/generated/graphql";
+} from "@/__generated__/graphql";
 import {
   Button,
   Dialog,

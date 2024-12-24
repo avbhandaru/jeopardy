@@ -7,7 +7,7 @@ import {
   useCreateUserMutation,
   useGetAllUsersQuery,
   GetAllUsersDocument,
-} from "@/generated/graphql";
+} from "@/__generated__/graphql";
 
 const UserMutation: React.FC = () => {
   const [username, setUsername] = useState("");

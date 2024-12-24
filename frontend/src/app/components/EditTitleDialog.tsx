@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useUpdateTitleMutation, GameBoard } from "@/generated/graphql";
+import { useUpdateTitleMutation, GameBoard } from "@/__generated__/graphql";
 import {
   Button,
   Dialog,

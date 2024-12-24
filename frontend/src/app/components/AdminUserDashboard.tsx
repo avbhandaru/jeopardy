@@ -4,7 +4,7 @@
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
 import UserMutation from "../users/UserMutation";
-import { useGetAllUsersQuery } from "@/generated/graphql";
+import { useGetAllUsersQuery } from "@/__generated__/graphql";
 import Link from "next/link";
 
 // Define columns for DataGrid
