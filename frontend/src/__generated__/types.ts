@@ -41,6 +41,16 @@ export type CreateGameBoardInput = {
   userId: Scalars['Int']['input'];
 };
 
+export type CreateGameInput = {
+  gameBoardId: Scalars['Int']['input'];
+  userId: Scalars['Int']['input'];
+};
+
+export type CreatePlayerInput = {
+  gameId: Scalars['Int']['input'];
+  playerName: Scalars['String']['input'];
+};
+
 export type CreateQuestionInput = {
   answer: Scalars['String']['input'];
   question: Scalars['String']['input'];
@@ -55,6 +65,16 @@ export type DetailedBoardQuestion = {
   __typename?: 'DetailedBoardQuestion';
   boardQuestion: BoardQuestion;
   question: Question;
+};
+
+/** Diesel Game model with async-graphql support */
+export type Game = {
+  __typename?: 'Game';
+  createdAt: Scalars['DateTime']['output'];
+  gameBoardId: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  userId: Scalars['Int']['output'];
 };
 
 /** Diesel Game Board model with async-graphql support */
@@ -73,6 +93,16 @@ export type GameBoardData = {
   questions: Array<DetailedBoardQuestion>;
 };
 
+export type Player = {
+  __typename?: 'Player';
+  createdAt: Scalars['DateTime']['output'];
+  gameId: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  playerName: Scalars['String']['output'];
+  score: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
 /** Disel Question Model with async-graphql suppport */
 export type Question = {
   __typename?: 'Question';
@@ -88,16 +118,22 @@ export type RootMutation = {
   __typename?: 'RootMutation';
   /** Associate a question with a gameboard */
   createBoardQuestion: BoardQuestion;
+  createGame: Game;
   /** Create a new gameboard with example question */
   createGameBoard: GameBoard;
+  /** Create a new player */
+  createPlayer: Player;
   /** Create a new quesiton */
   createQuestion: Question;
   createUser: User;
+  deletePlayer: Player;
   /** Delete a question by ID */
   deleteQuestion: Scalars['Boolean']['output'];
   /** Update category for a specific column in a game board */
   updateBoardColumnCategory: Scalars['Boolean']['output'];
   updateBoardQuestion: BoardQuestion;
+  updatePlayerName: Player;
+  updatePlayerScore: Player;
   /** Update a question */
   updateQuestion: Question;
   /** Update gameboard title */
@@ -110,8 +146,18 @@ export type RootMutationCreateBoardQuestionArgs = {
 };
 
 
+export type RootMutationCreateGameArgs = {
+  input: CreateGameInput;
+};
+
+
 export type RootMutationCreateGameBoardArgs = {
   input: CreateGameBoardInput;
+};
+
+
+export type RootMutationCreatePlayerArgs = {
+  input: CreatePlayerInput;
 };
 
 
@@ -122,6 +168,11 @@ export type RootMutationCreateQuestionArgs = {
 
 export type RootMutationCreateUserArgs = {
   input: CreateUserInput;
+};
+
+
+export type RootMutationDeletePlayerArgs = {
+  playerId: Scalars['Int']['input'];
 };
 
 
@@ -139,6 +190,18 @@ export type RootMutationUpdateBoardColumnCategoryArgs = {
 
 export type RootMutationUpdateBoardQuestionArgs = {
   input: UpdateBoardQuestionInput;
+};
+
+
+export type RootMutationUpdatePlayerNameArgs = {
+  playerId: Scalars['Int']['input'];
+  playerName: Scalars['String']['input'];
+};
+
+
+export type RootMutationUpdatePlayerScoreArgs = {
+  playerId: Scalars['Int']['input'];
+  score: Scalars['Int']['input'];
 };
 
 
@@ -168,16 +231,24 @@ export type RootQuery = {
   detailedBoardQuestion: DetailedBoardQuestion;
   /** Fetch game board data */
   fetchGameBoardData: GameBoardData;
+  /** Fetch all players by game id */
+  fetchPlayersFromGame: Array<Player>;
+  /** Fetch a single game by id */
+  getGame: Game;
   /** Fetch a single gameboard by id */
   getGameBoard: GameBoard;
   /** Fetch all gameboards associated with a specific user */
   getGameBoardsFromUser: Array<GameBoard>;
+  /** Fetch all games from user */
+  getGamesFromUser: Array<Game>;
   /** Fetch all questions from a user */
   getQuestionFromUser: Array<Question>;
   /** Fetch questions from list of ids */
   getQuestionsFromIds: Array<Question>;
   /** Fetch user by id */
   getUser: User;
+  /** Fetch a single player by id */
+  player: Player;
   /** Fetch a single question by id */
   question: Question;
 };
@@ -205,12 +276,27 @@ export type RootQueryFetchGameBoardDataArgs = {
 };
 
 
+export type RootQueryFetchPlayersFromGameArgs = {
+  gameId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryGetGameArgs = {
+  gameId: Scalars['Int']['input'];
+};
+
+
 export type RootQueryGetGameBoardArgs = {
   gameBoardId: Scalars['Int']['input'];
 };
 
 
 export type RootQueryGetGameBoardsFromUserArgs = {
+  userId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryGetGamesFromUserArgs = {
   userId: Scalars['Int']['input'];
 };
 
@@ -227,6 +313,11 @@ export type RootQueryGetQuestionsFromIdsArgs = {
 
 export type RootQueryGetUserArgs = {
   userId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryPlayerArgs = {
+  playerId: Scalars['Int']['input'];
 };
 
 

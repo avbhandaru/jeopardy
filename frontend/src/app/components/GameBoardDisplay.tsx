@@ -18,6 +18,9 @@ import { useGameBoardData } from "../hooks/useGameBoardData";
 import PlaceHolderCell from "./PlaceholderCell";
 import CreateQuestionModal from "./CreateQuestionModal";
 import EditCategoryDialog from "./EditCategoryDialog";
+import { validateGameBoard } from "../lib/validateGameBoard";
+import { useRouter } from "next/navigation";
+import { GameBoard } from "@/__generated__/graphql";
 
 const GameBoardDisplay = ({
   board_uuid,
@@ -28,6 +31,7 @@ const GameBoardDisplay = ({
 }) => {
   const boardId = parseInt(board_uuid, 10);
   const userId = parseInt(user_uuid, 10);
+  const router = useRouter();
 
   const {
     loading,
@@ -40,6 +44,7 @@ const GameBoardDisplay = ({
     updateExistingQuestion,
     updateExistingBoardQuestion,
     refetchGameBoardData,
+    createNewGame,
   } = useGameBoardData({ gameBoardId: boardId });
 
   const [currentGridRow, setCurrentGridRow] = useState(0);
@@ -170,23 +175,53 @@ const GameBoardDisplay = ({
     handleCloseCreateQuestionModal();
   };
 
+  const handleClickNewGame = async (userId: number, gameBoard: GameBoard) => {
+    try {
+      const newGameResult = await createNewGame(userId, gameBoard);
+      const gameUuid = newGameResult?.data?.createGame.id;
+      router.push(`/games/${gameUuid}`);
+    } catch (error) {
+      console.error("Error creating new game:", error);
+      alert("An error occured while creating the game");
+      throw error;
+    }
+  };
+
   return (
     <div>
-      <Typography variant="h4" gutterBottom>
-        {gameBoard?.title || "No Title Available"}
-      </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleOpenEditTitleDialog}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "16px",
+        }}
       >
-        Edit Title
-      </Button>
-      <EditTitleDialog
-        open={isEditTitleDialogOpen}
-        handleClose={handleCloseEditTitleDialog}
-        gameBoard={gameBoard}
-      />
+        <Button
+          size="large"
+          variant="contained"
+          color="secondary"
+          onClick={() => handleClickNewGame(userId, gameBoard)}
+        >
+          New Game
+        </Button>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-evenly" }}>
+        <Typography variant="h4" gutterBottom>
+          {gameBoard?.title || "No Title Available"}
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleOpenEditTitleDialog}
+        >
+          Edit Title
+        </Button>
+        <EditTitleDialog
+          open={isEditTitleDialogOpen}
+          handleClose={handleCloseEditTitleDialog}
+          gameBoard={gameBoard}
+        />
+      </div>
       <Paper sx={{ padding: 2 }}>
         <Grid container spacing={2}>
           {/* Render categories as column headers */}

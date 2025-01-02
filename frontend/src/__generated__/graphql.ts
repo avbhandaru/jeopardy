@@ -44,6 +44,16 @@ export type CreateGameBoardInput = {
   userId: Scalars['Int']['input'];
 };
 
+export type CreateGameInput = {
+  gameBoardId: Scalars['Int']['input'];
+  userId: Scalars['Int']['input'];
+};
+
+export type CreatePlayerInput = {
+  gameId: Scalars['Int']['input'];
+  playerName: Scalars['String']['input'];
+};
+
 export type CreateQuestionInput = {
   answer: Scalars['String']['input'];
   question: Scalars['String']['input'];
@@ -58,6 +68,16 @@ export type DetailedBoardQuestion = {
   __typename?: 'DetailedBoardQuestion';
   boardQuestion: BoardQuestion;
   question: Question;
+};
+
+/** Diesel Game model with async-graphql support */
+export type Game = {
+  __typename?: 'Game';
+  createdAt: Scalars['DateTime']['output'];
+  gameBoardId: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  userId: Scalars['Int']['output'];
 };
 
 /** Diesel Game Board model with async-graphql support */
@@ -76,6 +96,16 @@ export type GameBoardData = {
   questions: Array<DetailedBoardQuestion>;
 };
 
+export type Player = {
+  __typename?: 'Player';
+  createdAt: Scalars['DateTime']['output'];
+  gameId: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  playerName: Scalars['String']['output'];
+  score: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
 /** Disel Question Model with async-graphql suppport */
 export type Question = {
   __typename?: 'Question';
@@ -91,16 +121,22 @@ export type RootMutation = {
   __typename?: 'RootMutation';
   /** Associate a question with a gameboard */
   createBoardQuestion: BoardQuestion;
+  createGame: Game;
   /** Create a new gameboard with example question */
   createGameBoard: GameBoard;
+  /** Create a new player */
+  createPlayer: Player;
   /** Create a new quesiton */
   createQuestion: Question;
   createUser: User;
+  deletePlayer: Player;
   /** Delete a question by ID */
   deleteQuestion: Scalars['Boolean']['output'];
   /** Update category for a specific column in a game board */
   updateBoardColumnCategory: Scalars['Boolean']['output'];
   updateBoardQuestion: BoardQuestion;
+  updatePlayerName: Player;
+  updatePlayerScore: Player;
   /** Update a question */
   updateQuestion: Question;
   /** Update gameboard title */
@@ -113,8 +149,18 @@ export type RootMutationCreateBoardQuestionArgs = {
 };
 
 
+export type RootMutationCreateGameArgs = {
+  input: CreateGameInput;
+};
+
+
 export type RootMutationCreateGameBoardArgs = {
   input: CreateGameBoardInput;
+};
+
+
+export type RootMutationCreatePlayerArgs = {
+  input: CreatePlayerInput;
 };
 
 
@@ -125,6 +171,11 @@ export type RootMutationCreateQuestionArgs = {
 
 export type RootMutationCreateUserArgs = {
   input: CreateUserInput;
+};
+
+
+export type RootMutationDeletePlayerArgs = {
+  playerId: Scalars['Int']['input'];
 };
 
 
@@ -142,6 +193,18 @@ export type RootMutationUpdateBoardColumnCategoryArgs = {
 
 export type RootMutationUpdateBoardQuestionArgs = {
   input: UpdateBoardQuestionInput;
+};
+
+
+export type RootMutationUpdatePlayerNameArgs = {
+  playerId: Scalars['Int']['input'];
+  playerName: Scalars['String']['input'];
+};
+
+
+export type RootMutationUpdatePlayerScoreArgs = {
+  playerId: Scalars['Int']['input'];
+  score: Scalars['Int']['input'];
 };
 
 
@@ -171,16 +234,24 @@ export type RootQuery = {
   detailedBoardQuestion: DetailedBoardQuestion;
   /** Fetch game board data */
   fetchGameBoardData: GameBoardData;
+  /** Fetch all players by game id */
+  fetchPlayersFromGame: Array<Player>;
+  /** Fetch a single game by id */
+  getGame: Game;
   /** Fetch a single gameboard by id */
   getGameBoard: GameBoard;
   /** Fetch all gameboards associated with a specific user */
   getGameBoardsFromUser: Array<GameBoard>;
+  /** Fetch all games from user */
+  getGamesFromUser: Array<Game>;
   /** Fetch all questions from a user */
   getQuestionFromUser: Array<Question>;
   /** Fetch questions from list of ids */
   getQuestionsFromIds: Array<Question>;
   /** Fetch user by id */
   getUser: User;
+  /** Fetch a single player by id */
+  player: Player;
   /** Fetch a single question by id */
   question: Question;
 };
@@ -208,12 +279,27 @@ export type RootQueryFetchGameBoardDataArgs = {
 };
 
 
+export type RootQueryFetchPlayersFromGameArgs = {
+  gameId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryGetGameArgs = {
+  gameId: Scalars['Int']['input'];
+};
+
+
 export type RootQueryGetGameBoardArgs = {
   gameBoardId: Scalars['Int']['input'];
 };
 
 
 export type RootQueryGetGameBoardsFromUserArgs = {
+  userId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryGetGamesFromUserArgs = {
   userId: Scalars['Int']['input'];
 };
 
@@ -230,6 +316,11 @@ export type RootQueryGetQuestionsFromIdsArgs = {
 
 export type RootQueryGetUserArgs = {
   userId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryPlayerArgs = {
+  playerId: Scalars['Int']['input'];
 };
 
 
@@ -299,6 +390,43 @@ export type UpdateTitleMutationVariables = Exact<{
 
 export type UpdateTitleMutation = { __typename?: 'RootMutation', updateTitle: { __typename?: 'GameBoard', id: number, createdAt: any, updatedAt: any, userId: number, title: string } };
 
+export type CreateGameMutationVariables = Exact<{
+  input: CreateGameInput;
+}>;
+
+
+export type CreateGameMutation = { __typename?: 'RootMutation', createGame: { __typename?: 'Game', id: number, createdAt: any, updatedAt: any, gameBoardId: number, userId: number } };
+
+export type CreatePlayerMutationVariables = Exact<{
+  input: CreatePlayerInput;
+}>;
+
+
+export type CreatePlayerMutation = { __typename?: 'RootMutation', createPlayer: { __typename?: 'Player', id: number, createdAt: any, updatedAt: any, gameId: number, playerName: string } };
+
+export type UpdatePlayerScoreMutationVariables = Exact<{
+  playerId: Scalars['Int']['input'];
+  newScore: Scalars['Int']['input'];
+}>;
+
+
+export type UpdatePlayerScoreMutation = { __typename?: 'RootMutation', updatePlayerScore: { __typename?: 'Player', id: number, createdAt: any, updatedAt: any, gameId: number, playerName: string, score: number } };
+
+export type UpdatePlayerNameMutationVariables = Exact<{
+  playerId: Scalars['Int']['input'];
+  newName: Scalars['String']['input'];
+}>;
+
+
+export type UpdatePlayerNameMutation = { __typename?: 'RootMutation', updatePlayerName: { __typename?: 'Player', id: number, createdAt: any, updatedAt: any, gameId: number, playerName: string, score: number } };
+
+export type DeletePlayerMutationVariables = Exact<{
+  playerId: Scalars['Int']['input'];
+}>;
+
+
+export type DeletePlayerMutation = { __typename?: 'RootMutation', deletePlayer: { __typename?: 'Player', id: number, createdAt: any, updatedAt: any, gameId: number, playerName: string, score: number } };
+
 export type CreateQuestionMutationVariables = Exact<{
   input: CreateQuestionInput;
 }>;
@@ -360,6 +488,27 @@ export type GetGameBoardQueryVariables = Exact<{
 
 export type GetGameBoardQuery = { __typename?: 'RootQuery', getGameBoard: { __typename?: 'GameBoard', id: number, createdAt: any, updatedAt: any, userId: number, title: string } };
 
+export type GetGameQueryVariables = Exact<{
+  gameId: Scalars['Int']['input'];
+}>;
+
+
+export type GetGameQuery = { __typename?: 'RootQuery', getGame: { __typename?: 'Game', id: number, createdAt: any, updatedAt: any, gameBoardId: number, userId: number } };
+
+export type GetPlayerQueryVariables = Exact<{
+  playerId: Scalars['Int']['input'];
+}>;
+
+
+export type GetPlayerQuery = { __typename?: 'RootQuery', player: { __typename?: 'Player', id: number, createdAt: any, updatedAt: any, playerName: string, gameId: number, score: number } };
+
+export type FetchPlayersFromGameQueryVariables = Exact<{
+  gameId: Scalars['Int']['input'];
+}>;
+
+
+export type FetchPlayersFromGameQuery = { __typename?: 'RootQuery', fetchPlayersFromGame: Array<{ __typename?: 'Player', id: number, createdAt: any, updatedAt: any, playerName: string, gameId: number, score: number }> };
+
 export type GetAllQuestionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -383,6 +532,13 @@ export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetAllUsersQuery = { __typename?: 'RootQuery', allUsers: Array<{ __typename?: 'User', id: number, username: string, createdAt: any, updatedAt: any }> };
+
+export type GetUserQueryVariables = Exact<{
+  userId: Scalars['Int']['input'];
+}>;
+
+
+export type GetUserQuery = { __typename?: 'RootQuery', getUser: { __typename?: 'User', id: number, username: string, createdAt: any, updatedAt: any } };
 
 
 export const CreateBoardQuestionDocument = gql`
@@ -575,6 +731,196 @@ export function useUpdateTitleMutation(baseOptions?: Apollo.MutationHookOptions<
 export type UpdateTitleMutationHookResult = ReturnType<typeof useUpdateTitleMutation>;
 export type UpdateTitleMutationResult = Apollo.MutationResult<UpdateTitleMutation>;
 export type UpdateTitleMutationOptions = Apollo.BaseMutationOptions<UpdateTitleMutation, UpdateTitleMutationVariables>;
+export const CreateGameDocument = gql`
+    mutation CreateGame($input: CreateGameInput!) {
+  createGame(input: $input) {
+    id
+    createdAt
+    updatedAt
+    gameBoardId
+    userId
+  }
+}
+    `;
+export type CreateGameMutationFn = Apollo.MutationFunction<CreateGameMutation, CreateGameMutationVariables>;
+
+/**
+ * __useCreateGameMutation__
+ *
+ * To run a mutation, you first call `useCreateGameMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateGameMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createGameMutation, { data, loading, error }] = useCreateGameMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateGameMutation(baseOptions?: Apollo.MutationHookOptions<CreateGameMutation, CreateGameMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateGameMutation, CreateGameMutationVariables>(CreateGameDocument, options);
+      }
+export type CreateGameMutationHookResult = ReturnType<typeof useCreateGameMutation>;
+export type CreateGameMutationResult = Apollo.MutationResult<CreateGameMutation>;
+export type CreateGameMutationOptions = Apollo.BaseMutationOptions<CreateGameMutation, CreateGameMutationVariables>;
+export const CreatePlayerDocument = gql`
+    mutation CreatePlayer($input: CreatePlayerInput!) {
+  createPlayer(input: $input) {
+    id
+    createdAt
+    updatedAt
+    gameId
+    playerName
+  }
+}
+    `;
+export type CreatePlayerMutationFn = Apollo.MutationFunction<CreatePlayerMutation, CreatePlayerMutationVariables>;
+
+/**
+ * __useCreatePlayerMutation__
+ *
+ * To run a mutation, you first call `useCreatePlayerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePlayerMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPlayerMutation, { data, loading, error }] = useCreatePlayerMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreatePlayerMutation(baseOptions?: Apollo.MutationHookOptions<CreatePlayerMutation, CreatePlayerMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreatePlayerMutation, CreatePlayerMutationVariables>(CreatePlayerDocument, options);
+      }
+export type CreatePlayerMutationHookResult = ReturnType<typeof useCreatePlayerMutation>;
+export type CreatePlayerMutationResult = Apollo.MutationResult<CreatePlayerMutation>;
+export type CreatePlayerMutationOptions = Apollo.BaseMutationOptions<CreatePlayerMutation, CreatePlayerMutationVariables>;
+export const UpdatePlayerScoreDocument = gql`
+    mutation UpdatePlayerScore($playerId: Int!, $newScore: Int!) {
+  updatePlayerScore(playerId: $playerId, score: $newScore) {
+    id
+    createdAt
+    updatedAt
+    gameId
+    playerName
+    score
+  }
+}
+    `;
+export type UpdatePlayerScoreMutationFn = Apollo.MutationFunction<UpdatePlayerScoreMutation, UpdatePlayerScoreMutationVariables>;
+
+/**
+ * __useUpdatePlayerScoreMutation__
+ *
+ * To run a mutation, you first call `useUpdatePlayerScoreMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePlayerScoreMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePlayerScoreMutation, { data, loading, error }] = useUpdatePlayerScoreMutation({
+ *   variables: {
+ *      playerId: // value for 'playerId'
+ *      newScore: // value for 'newScore'
+ *   },
+ * });
+ */
+export function useUpdatePlayerScoreMutation(baseOptions?: Apollo.MutationHookOptions<UpdatePlayerScoreMutation, UpdatePlayerScoreMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdatePlayerScoreMutation, UpdatePlayerScoreMutationVariables>(UpdatePlayerScoreDocument, options);
+      }
+export type UpdatePlayerScoreMutationHookResult = ReturnType<typeof useUpdatePlayerScoreMutation>;
+export type UpdatePlayerScoreMutationResult = Apollo.MutationResult<UpdatePlayerScoreMutation>;
+export type UpdatePlayerScoreMutationOptions = Apollo.BaseMutationOptions<UpdatePlayerScoreMutation, UpdatePlayerScoreMutationVariables>;
+export const UpdatePlayerNameDocument = gql`
+    mutation UpdatePlayerName($playerId: Int!, $newName: String!) {
+  updatePlayerName(playerId: $playerId, playerName: $newName) {
+    id
+    createdAt
+    updatedAt
+    gameId
+    playerName
+    score
+  }
+}
+    `;
+export type UpdatePlayerNameMutationFn = Apollo.MutationFunction<UpdatePlayerNameMutation, UpdatePlayerNameMutationVariables>;
+
+/**
+ * __useUpdatePlayerNameMutation__
+ *
+ * To run a mutation, you first call `useUpdatePlayerNameMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePlayerNameMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePlayerNameMutation, { data, loading, error }] = useUpdatePlayerNameMutation({
+ *   variables: {
+ *      playerId: // value for 'playerId'
+ *      newName: // value for 'newName'
+ *   },
+ * });
+ */
+export function useUpdatePlayerNameMutation(baseOptions?: Apollo.MutationHookOptions<UpdatePlayerNameMutation, UpdatePlayerNameMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdatePlayerNameMutation, UpdatePlayerNameMutationVariables>(UpdatePlayerNameDocument, options);
+      }
+export type UpdatePlayerNameMutationHookResult = ReturnType<typeof useUpdatePlayerNameMutation>;
+export type UpdatePlayerNameMutationResult = Apollo.MutationResult<UpdatePlayerNameMutation>;
+export type UpdatePlayerNameMutationOptions = Apollo.BaseMutationOptions<UpdatePlayerNameMutation, UpdatePlayerNameMutationVariables>;
+export const DeletePlayerDocument = gql`
+    mutation DeletePlayer($playerId: Int!) {
+  deletePlayer(playerId: $playerId) {
+    id
+    createdAt
+    updatedAt
+    gameId
+    playerName
+    score
+  }
+}
+    `;
+export type DeletePlayerMutationFn = Apollo.MutationFunction<DeletePlayerMutation, DeletePlayerMutationVariables>;
+
+/**
+ * __useDeletePlayerMutation__
+ *
+ * To run a mutation, you first call `useDeletePlayerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeletePlayerMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deletePlayerMutation, { data, loading, error }] = useDeletePlayerMutation({
+ *   variables: {
+ *      playerId: // value for 'playerId'
+ *   },
+ * });
+ */
+export function useDeletePlayerMutation(baseOptions?: Apollo.MutationHookOptions<DeletePlayerMutation, DeletePlayerMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeletePlayerMutation, DeletePlayerMutationVariables>(DeletePlayerDocument, options);
+      }
+export type DeletePlayerMutationHookResult = ReturnType<typeof useDeletePlayerMutation>;
+export type DeletePlayerMutationResult = Apollo.MutationResult<DeletePlayerMutation>;
+export type DeletePlayerMutationOptions = Apollo.BaseMutationOptions<DeletePlayerMutation, DeletePlayerMutationVariables>;
 export const CreateQuestionDocument = gql`
     mutation CreateQuestion($input: CreateQuestionInput!) {
   createQuestion(input: $input) {
@@ -950,6 +1296,140 @@ export type GetGameBoardQueryHookResult = ReturnType<typeof useGetGameBoardQuery
 export type GetGameBoardLazyQueryHookResult = ReturnType<typeof useGetGameBoardLazyQuery>;
 export type GetGameBoardSuspenseQueryHookResult = ReturnType<typeof useGetGameBoardSuspenseQuery>;
 export type GetGameBoardQueryResult = Apollo.QueryResult<GetGameBoardQuery, GetGameBoardQueryVariables>;
+export const GetGameDocument = gql`
+    query GetGame($gameId: Int!) {
+  getGame(gameId: $gameId) {
+    id
+    createdAt
+    updatedAt
+    gameBoardId
+    userId
+  }
+}
+    `;
+
+/**
+ * __useGetGameQuery__
+ *
+ * To run a query within a React component, call `useGetGameQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetGameQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetGameQuery({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *   },
+ * });
+ */
+export function useGetGameQuery(baseOptions: Apollo.QueryHookOptions<GetGameQuery, GetGameQueryVariables> & ({ variables: GetGameQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetGameQuery, GetGameQueryVariables>(GetGameDocument, options);
+      }
+export function useGetGameLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetGameQuery, GetGameQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetGameQuery, GetGameQueryVariables>(GetGameDocument, options);
+        }
+export function useGetGameSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetGameQuery, GetGameQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetGameQuery, GetGameQueryVariables>(GetGameDocument, options);
+        }
+export type GetGameQueryHookResult = ReturnType<typeof useGetGameQuery>;
+export type GetGameLazyQueryHookResult = ReturnType<typeof useGetGameLazyQuery>;
+export type GetGameSuspenseQueryHookResult = ReturnType<typeof useGetGameSuspenseQuery>;
+export type GetGameQueryResult = Apollo.QueryResult<GetGameQuery, GetGameQueryVariables>;
+export const GetPlayerDocument = gql`
+    query GetPlayer($playerId: Int!) {
+  player(playerId: $playerId) {
+    id
+    createdAt
+    updatedAt
+    playerName
+    gameId
+    score
+  }
+}
+    `;
+
+/**
+ * __useGetPlayerQuery__
+ *
+ * To run a query within a React component, call `useGetPlayerQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPlayerQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPlayerQuery({
+ *   variables: {
+ *      playerId: // value for 'playerId'
+ *   },
+ * });
+ */
+export function useGetPlayerQuery(baseOptions: Apollo.QueryHookOptions<GetPlayerQuery, GetPlayerQueryVariables> & ({ variables: GetPlayerQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPlayerQuery, GetPlayerQueryVariables>(GetPlayerDocument, options);
+      }
+export function useGetPlayerLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPlayerQuery, GetPlayerQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPlayerQuery, GetPlayerQueryVariables>(GetPlayerDocument, options);
+        }
+export function useGetPlayerSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetPlayerQuery, GetPlayerQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetPlayerQuery, GetPlayerQueryVariables>(GetPlayerDocument, options);
+        }
+export type GetPlayerQueryHookResult = ReturnType<typeof useGetPlayerQuery>;
+export type GetPlayerLazyQueryHookResult = ReturnType<typeof useGetPlayerLazyQuery>;
+export type GetPlayerSuspenseQueryHookResult = ReturnType<typeof useGetPlayerSuspenseQuery>;
+export type GetPlayerQueryResult = Apollo.QueryResult<GetPlayerQuery, GetPlayerQueryVariables>;
+export const FetchPlayersFromGameDocument = gql`
+    query FetchPlayersFromGame($gameId: Int!) {
+  fetchPlayersFromGame(gameId: $gameId) {
+    id
+    createdAt
+    updatedAt
+    playerName
+    gameId
+    score
+  }
+}
+    `;
+
+/**
+ * __useFetchPlayersFromGameQuery__
+ *
+ * To run a query within a React component, call `useFetchPlayersFromGameQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFetchPlayersFromGameQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFetchPlayersFromGameQuery({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *   },
+ * });
+ */
+export function useFetchPlayersFromGameQuery(baseOptions: Apollo.QueryHookOptions<FetchPlayersFromGameQuery, FetchPlayersFromGameQueryVariables> & ({ variables: FetchPlayersFromGameQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<FetchPlayersFromGameQuery, FetchPlayersFromGameQueryVariables>(FetchPlayersFromGameDocument, options);
+      }
+export function useFetchPlayersFromGameLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FetchPlayersFromGameQuery, FetchPlayersFromGameQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<FetchPlayersFromGameQuery, FetchPlayersFromGameQueryVariables>(FetchPlayersFromGameDocument, options);
+        }
+export function useFetchPlayersFromGameSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<FetchPlayersFromGameQuery, FetchPlayersFromGameQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<FetchPlayersFromGameQuery, FetchPlayersFromGameQueryVariables>(FetchPlayersFromGameDocument, options);
+        }
+export type FetchPlayersFromGameQueryHookResult = ReturnType<typeof useFetchPlayersFromGameQuery>;
+export type FetchPlayersFromGameLazyQueryHookResult = ReturnType<typeof useFetchPlayersFromGameLazyQuery>;
+export type FetchPlayersFromGameSuspenseQueryHookResult = ReturnType<typeof useFetchPlayersFromGameSuspenseQuery>;
+export type FetchPlayersFromGameQueryResult = Apollo.QueryResult<FetchPlayersFromGameQuery, FetchPlayersFromGameQueryVariables>;
 export const GetAllQuestionsDocument = gql`
     query getAllQuestions {
   allQuestions {
@@ -1126,3 +1606,46 @@ export type GetAllUsersQueryHookResult = ReturnType<typeof useGetAllUsersQuery>;
 export type GetAllUsersLazyQueryHookResult = ReturnType<typeof useGetAllUsersLazyQuery>;
 export type GetAllUsersSuspenseQueryHookResult = ReturnType<typeof useGetAllUsersSuspenseQuery>;
 export type GetAllUsersQueryResult = Apollo.QueryResult<GetAllUsersQuery, GetAllUsersQueryVariables>;
+export const GetUserDocument = gql`
+    query getUser($userId: Int!) {
+  getUser(userId: $userId) {
+    id
+    username
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useGetUserQuery__
+ *
+ * To run a query within a React component, call `useGetUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserQuery({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useGetUserQuery(baseOptions: Apollo.QueryHookOptions<GetUserQuery, GetUserQueryVariables> & ({ variables: GetUserQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
+      }
+export function useGetUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserQuery, GetUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
+        }
+export function useGetUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetUserQuery, GetUserQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
+        }
+export type GetUserQueryHookResult = ReturnType<typeof useGetUserQuery>;
+export type GetUserLazyQueryHookResult = ReturnType<typeof useGetUserLazyQuery>;
+export type GetUserSuspenseQueryHookResult = ReturnType<typeof useGetUserSuspenseQuery>;
+export type GetUserQueryResult = Apollo.QueryResult<GetUserQuery, GetUserQueryVariables>;

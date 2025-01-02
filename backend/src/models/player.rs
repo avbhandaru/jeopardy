@@ -75,4 +75,15 @@ impl Player {
             .get_result(conn)
             .await
     }
+
+    pub async fn delete(
+        conn: &mut AsyncPgConnection,
+        player_id: i64,
+    ) -> Result<Self, diesel::result::Error> {
+        let player = Player::find_by_id(conn, player_id).await?;
+        diesel::delete(players::table.find(player_id))
+            .execute(conn)
+            .await?;
+        Ok(player)
+    }
 }

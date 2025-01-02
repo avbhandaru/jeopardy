@@ -52,4 +52,35 @@ impl PlayerMutation {
         .await?;
         Ok(updated_player)
     }
+
+    async fn update_player_name(
+        &self,
+        ctx: &Context<'_>,
+        player_id: i64,
+        player_name: String,
+    ) -> Result<Player> {
+        let pool = ctx
+            .data::<DBPool>()
+            .expect("Cannot get DBPool from context");
+        let mut conn = pool.get().await?;
+        let updated_player = Player::update_player(
+            &mut conn,
+            player_id,
+            UpdatePlayer {
+                player_name: Some(player_name),
+                score: None,
+            },
+        )
+        .await?;
+        Ok(updated_player)
+    }
+
+    async fn delete_player(&self, ctx: &Context<'_>, player_id: i64) -> Result<Player> {
+        let pool = ctx
+            .data::<DBPool>()
+            .expect("Cannot get DBPool from context");
+        let mut conn = pool.get().await?;
+        let player = Player::delete(&mut conn, player_id).await?;
+        Ok(player)
+    }
 }

@@ -1,66 +1,138 @@
 "use client";
 
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import { Typography } from "@mui/material";
+import { useState } from "react";
+import Grid from "@mui/material/Grid2";
+import { Typography, Paper, Box } from "@mui/material";
+import QueryResult from "@/app/components/query-result";
+import {
+  useGetGameQuery,
+  useGameBoardDataQuery,
+} from "@/__generated__/graphql";
+import { DetailedBoardQuestion, BoardQuestion } from "@/__generated__/types";
+import QuestionCell from "@/app/components/QuestionCell";
+import { useGameContext } from "./GameContext";
+import DisplayQuestionModal from "./DisplayQuestionModal";
+
+interface GameBoardProps {
+  // game_uuid: string;
+}
 
 // Separate the Board component and question into a new Client Component
-export default function GameBoard() {
-  const question = (text: string) => (
-    <Paper sx={{ m: 1, width: 100, height: 100 }} elevation={4}>
-      {/* <svg>
-        <Box
-          component="polygon"
-          points="0,100 50,00, 100,100"
-          sx={(theme) => ({
-            fill: theme.palette.common.white,
-            stroke: theme.palette.divider,
-            strokeWidth: 1,
-          })}
-        />
-      </svg> */}
-      <Typography>{text}</Typography>
-    </Paper>
-  );
+const GameBoard: React.FC<GameBoardProps> = () => {
+  const {
+    game_uuid,
+    currentDetailedBoardQuestion,
+    setCurrentDetailedBoardQuestion,
+  } = useGameContext();
+  const gameId = parseInt(game_uuid, 10);
+  const {
+    data: game_data,
+    loading: loading_game,
+    error: game_error,
+  } = useGetGameQuery({
+    variables: { gameId },
+  });
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+
+  const gameBoardId = game_data?.getGame?.gameBoardId;
+
+  // Fetch gameboard data
+  const {
+    data: game_board_data,
+    loading: loading_game_board,
+    error: game_board_error,
+  } = useGameBoardDataQuery({
+    variables: { gameBoardId: gameBoardId! },
+    skip: !gameBoardId,
+  });
+
+  // Construct game board matrix
+  const gameBoardMatrix: DetailedBoardQuestion[][] = React.useMemo(() => {
+    if (!game_board_data?.fetchGameBoardData?.questions) {
+      return Array.from({ length: 5 }, () => Array(5).fill(null));
+    }
+
+    const questionsWithBoardInfo = game_board_data.fetchGameBoardData.questions;
+    const matrix = Array.from({ length: 5 }, () => Array(5).fill(null));
+
+    questionsWithBoardInfo.forEach((q) => {
+      const { gridRow: row, gridCol: col } = q.boardQuestion;
+      if (col !== -1 && row >= 0 && row < 5) {
+        matrix[row][col] = q;
+      }
+    });
+
+    return matrix;
+  }, [game_board_data]);
+
+  const handleClickQuestionCell = (questionAndInfo: DetailedBoardQuestion) => {
+    console.log("Clicked question:", questionAndInfo);
+    // Set the current question in the context
+    setCurrentDetailedBoardQuestion(questionAndInfo);
+    setIsQuestionModalOpen(true);
+  };
+
+  const handleCloseQuestionModal = () => {
+    setIsQuestionModalOpen(false);
+  };
 
   return (
-    <Box sx={{ height: 180 }}>
-      <Box sx={{ display: "flex" }}>
-        {question("What is a goose?")}
-        {question("What is a square?")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-      </Box>
-      <Box sx={{ display: "flex" }}>
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-      </Box>
-      <Box sx={{ display: "flex" }}>
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-      </Box>
-      <Box sx={{ display: "flex" }}>
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-      </Box>
-      <Box sx={{ display: "flex" }}>
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-        {question("Question goes here...")}
-      </Box>
-    </Box>
+    <div>
+      {loading_game && <div>Loading game...</div>}
+      {game_error && <div>Error loading game</div>}
+      {!game_data && <div>No game data</div>}
+
+      {loading_game_board && <div>Loading game board...</div>}
+      {game_board_error && <div>Error loading game board</div>}
+      {/* Render gameboard */}
+      <Paper sx={{ padding: 2 }}>
+        <Grid container spacing={2}>
+          {game_board_data?.fetchGameBoardData?.categories.map(
+            (category, index) => (
+              <Grid
+                key={index}
+                size={{ xs: 12 / 5 }}
+                sx={{ textAlign: "center", fontWeight: "bold" }}
+              >
+                {category}
+              </Grid>
+            )
+          )}
+          {gameBoardMatrix?.map((row, rowIndex) => (
+            <React.Fragment key={rowIndex}>
+              {row.map((questionAndInfo, colIndex) => {
+                if (!questionAndInfo) {
+                  return (
+                    <Box
+                      key={`${rowIndex}-${colIndex}`}
+                      sx={{ textAlign: "center", padding: 2 }}
+                    >
+                      <Typography variant="body2">No question</Typography>
+                    </Box>
+                  );
+                }
+                return (
+                  <QuestionCell
+                    key={`${rowIndex}-${colIndex}`}
+                    questionAndInfo={questionAndInfo!}
+                    onClick={() => handleClickQuestionCell(questionAndInfo)}
+                  />
+                );
+              })}
+            </React.Fragment>
+          ))}
+          {isQuestionModalOpen && currentDetailedBoardQuestion && (
+            <DisplayQuestionModal
+              open={isQuestionModalOpen}
+              questionAndInfo={currentDetailedBoardQuestion}
+              onClose={handleCloseQuestionModal}
+            />
+          )}
+        </Grid>
+      </Paper>
+    </div>
   );
-}
+};
+
+export default GameBoard;

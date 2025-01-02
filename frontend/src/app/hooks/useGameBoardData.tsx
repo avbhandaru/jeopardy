@@ -9,6 +9,7 @@ import {
   useGameBoardDataQuery,
   useCreateBoardQuestionMutation,
   useCreateQuestionMutation,
+  useCreateGameMutation,
   useUpdateBoardQuestionMutation,
   useUpdateQuestionMutation,
   useGetGameBoardQuery,
@@ -16,7 +17,6 @@ import {
   CreateBoardQuestionInput,
   UpdateQuestionInput,
   UpdateBoardQuestionInput,
-  GameBoardDataDocument,
 } from "@/__generated__/graphql";
 
 interface UserGameBoardDataProps {
@@ -44,6 +44,7 @@ export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
   const [createBoardQuestion] = useCreateBoardQuestionMutation();
   const [updateBoardQuestion] = useUpdateBoardQuestionMutation();
   const [updateQuestion] = useUpdateQuestionMutation();
+  const [createGame] = useCreateGameMutation();
 
   const [gameBoardMatrix, setGameBoardMatrix] = useState<
     (DetailedBoardQuestion | null)[][]
@@ -109,6 +110,18 @@ export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
     });
   }
 
+  async function createNewGame(userId: number, gameBoard: GameBoard) {
+    const result = await createGame({
+      variables: {
+        input: {
+          userId,
+          gameBoardId: gameBoard.id,
+        },
+      },
+    });
+    return result;
+  }
+
   return {
     loading: loading || loadingGameBoard,
     error: error || errorGameBoard,
@@ -120,5 +133,6 @@ export function useGameBoardData({ gameBoardId }: UserGameBoardDataProps) {
     updateExistingQuestion,
     updateExistingBoardQuestion,
     refetchGameBoardData,
+    createNewGame,
   };
 }
