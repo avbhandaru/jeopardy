@@ -1,6 +1,10 @@
+// src/app/users/[user_uuid]/page.tsx
+
 import { List, ListItem } from "@mui/material";
 import styles from "./page.module.css";
-import UserGameBoardDashboard from "@/app/components/UserGameBoardDashboard";
+import UserGameBoardDashboard from "./UserGameBoardDashboard";
+import { NewGameBoard } from "./NewGameBoard";
+import { UserGamesDasboard } from "./UserGamesDasboard";
 import UserCard from "@/app/components/UserCard";
 
 export default async function UserPage({
@@ -18,9 +22,14 @@ export default async function UserPage({
           <ListItem>
             <UserCard user_uuid={user_uuid}></UserCard>
           </ListItem>
-          <ListItem>Games</ListItem>
+          <ListItem>
+            <NewGameBoard user_uuid={user_uuid} />
+          </ListItem>
           <ListItem>
             <UserGameBoardDashboard userId={user_uuid} />
+          </ListItem>
+          <ListItem>
+            <UserGamesDasboard user_uuid={user_uuid} />
           </ListItem>
         </List>
       </main>

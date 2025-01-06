@@ -13,3 +13,15 @@ export const GAME_QUERY = gql`
     }
   }
 `;
+
+export const PLAYER_GAMES_QUERY = gql`
+  query GetGamesFromUser($userId: Int!) {
+    getGamesFromUser(userId: $userId) {
+      id
+      createdAt
+      updatedAt
+      userId
+      gameBoardId
+    }
+  }
+`;
