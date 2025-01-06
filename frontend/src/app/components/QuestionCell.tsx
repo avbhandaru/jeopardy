@@ -4,11 +4,13 @@ import Grid from "@mui/material/Grid2";
 
 interface QuestionCellProps {
   questionAndInfo: DetailedBoardQuestion;
+  isAnswered: boolean;
   onClick: () => void;
 }
 
 const QuestionCell: React.FC<QuestionCellProps> = ({
   questionAndInfo,
+  isAnswered,
   onClick,
 }) => {
   return (
@@ -18,7 +20,7 @@ const QuestionCell: React.FC<QuestionCellProps> = ({
         textAlign: "center",
         border: "1px solid #ccc",
         padding: 2,
-        backgroundColor: "#2d9b69",
+        backgroundColor: isAnswered ? "#1c4935" : "#2d9b69",
         cursor: "pointer",
         "&:hover": {
           backgroundColor: "#2d9b32",

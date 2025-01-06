@@ -258,6 +258,7 @@ const GameBoardDisplay = ({
                   <QuestionCell
                     key={`${rowIndex}-${colIndex}`}
                     questionAndInfo={questionAndInfo}
+                    isAnswered={false}
                     onClick={() => handleOpenEditQuestionModal(questionAndInfo)}
                   />
                 ) : (

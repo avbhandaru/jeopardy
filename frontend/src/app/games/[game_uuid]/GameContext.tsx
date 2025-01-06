@@ -27,6 +27,7 @@ export function GameContextProvider({
   children,
   game_uuid,
 }: GameContextProviderProps) {
+  // State to hold the current detailed board question
   const [currentDetailedBoardQuestion, setCurrentDetailedBoardQuestion] =
     useState<DetailedBoardQuestion | null>(null);
   const value: GameContextValue = {

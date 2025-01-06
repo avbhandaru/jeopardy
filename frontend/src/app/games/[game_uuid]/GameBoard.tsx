@@ -34,6 +34,9 @@ const GameBoard: React.FC<GameBoardProps> = () => {
     variables: { gameId },
   });
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(
+    new Set()
+  );
 
   const gameBoardId = game_data?.getGame?.gameBoardId;
 
@@ -70,6 +73,9 @@ const GameBoard: React.FC<GameBoardProps> = () => {
     console.log("Clicked question:", questionAndInfo);
     // Set the current question in the context
     setCurrentDetailedBoardQuestion(questionAndInfo);
+    setAnsweredQuestions((prev) =>
+      new Set(prev).add(questionAndInfo.question.id)
+    );
     setIsQuestionModalOpen(true);
   };
 
@@ -116,6 +122,9 @@ const GameBoard: React.FC<GameBoardProps> = () => {
                   <QuestionCell
                     key={`${rowIndex}-${colIndex}`}
                     questionAndInfo={questionAndInfo!}
+                    isAnswered={answeredQuestions.has(
+                      questionAndInfo.question.id
+                    )}
                     onClick={() => handleClickQuestionCell(questionAndInfo)}
                   />
                 );
