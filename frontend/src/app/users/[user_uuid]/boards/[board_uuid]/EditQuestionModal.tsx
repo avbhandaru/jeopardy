@@ -9,6 +9,7 @@ import {
   TextField,
   FormControlLabel,
   Checkbox,
+  Typography,
 } from "@mui/material";
 import {
   UpdateQuestionInput,
@@ -88,6 +89,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{"Edit Question"}</DialogTitle>
       <DialogContent>
+        <Typography>{questionWithInfo.boardQuestion.category}</Typography>
         <TextField
           margin="dense"
           label="Question"

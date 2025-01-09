@@ -43,7 +43,7 @@ const UserGameBoardDashboard = ({ userId }: { userId: string }) => {
   return (
     <div>
       <Typography variant="h4" gutterBottom>
-        My GameBoards
+        <Link href={`/users/${userId}/boards/`}>My GameBoards</Link>
       </Typography>
       <Paper sx={{ height: 400, width: "100%" }}>
         <DataGrid

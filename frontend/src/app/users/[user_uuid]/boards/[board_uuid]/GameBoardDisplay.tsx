@@ -4,7 +4,9 @@
 import React, { useState } from "react";
 import { Paper, Typography, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import QuestionCell from "./QuestionCell";
+import EditBoardCell from "./EditBoardCell";
+import EditCategory from "./EditCategory";
+import EditTitle from "./EditTitle";
 import {
   UpdateBoardQuestionInput,
   UpdateQuestionInput,
@@ -12,13 +14,10 @@ import {
   CreateBoardQuestionInput,
   DetailedBoardQuestion,
 } from "@/__generated__/types";
-import EditTitleDialog from "./EditTitleDialog";
 import EditQuestionModal from "./EditQuestionModal";
-import { useGameBoardData } from "../hooks/useGameBoardData";
-import PlaceHolderCell from "./PlaceholderCell";
+import { useGameBoardData } from "@/app/hooks/useGameBoardData";
+import PlaceHolderCell from "@/app/components/PlaceholderCell";
 import CreateQuestionModal from "./CreateQuestionModal";
-import EditCategoryDialog from "./EditCategoryDialog";
-import { validateGameBoard } from "../lib/validateGameBoard";
 import { useRouter } from "next/navigation";
 import { GameBoard } from "@/__generated__/graphql";
 
@@ -66,15 +65,6 @@ const GameBoardDisplay = ({
     return <p>No gameboards found.</p>;
   }
 
-  const handleOpenEditCategoryDialog = (category: string, gridCol: number) => {
-    setCurrentCategory(category);
-    setCurrentGridCol(gridCol);
-    setIsEditCategoryDialogOpen(true);
-  };
-  const handleCloseEditCategoryDialog = () => {
-    setIsEditCategoryDialogOpen(false);
-  };
-
   const handleOpenEditQuestionModal = (
     questionWithInfo: DetailedBoardQuestion
   ) => {
@@ -100,14 +90,6 @@ const GameBoardDisplay = ({
       console.error("Error saving data:", error);
     }
     handleCloseEditQuestionModal();
-  };
-
-  const handleOpenEditTitleDialog = () => {
-    setIsEditTitleDialogOpen(true);
-  };
-
-  const handleCloseEditTitleDialog = () => {
-    setIsEditTitleDialogOpen(false);
   };
 
   const handleOpenCreateQuestionModal = (
@@ -176,6 +158,16 @@ const GameBoardDisplay = ({
   };
 
   const handleClickNewGame = async (userId: number, gameBoard: GameBoard) => {
+    // Validate user can create new game
+    const hasPlaceholders = gameBoardMatrix.some((row) =>
+      row.some((questionAndInfo) => questionAndInfo === null)
+    );
+
+    if (hasPlaceholders) {
+      alert("Please complete all questions before creating a new game.");
+      return;
+    }
+
     try {
       const newGameResult = await createNewGame(userId, gameBoard);
       const gameUuid = newGameResult?.data?.createGame.id;
@@ -189,93 +181,66 @@ const GameBoardDisplay = ({
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: "16px",
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <EditTitle
+          title={gameBoard?.title || "New Gameboard"}
+          gameBoardId={gameBoard.id}
+        />
         <Button
           size="large"
           variant="contained"
           color="secondary"
+          sx={{ maxHeight: "80%" }}
           onClick={() => handleClickNewGame(userId, gameBoard)}
         >
           New Game
         </Button>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-evenly" }}>
-        <Typography variant="h4" gutterBottom>
-          {gameBoard?.title || "No Title Available"}
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenEditTitleDialog}
+      {/* GAMEBOARD */}
+      <Paper
+        sx={{
+          padding: 2,
+          width: "100%", // Adjust width
+          height: "80vh", // Adjust height
+          margin: "auto", // Center on the page
+        }}
+      >
+        <Grid
+          container
+          sx={{ height: "100%", textAlign: "center", alignItems: "stretch" }}
         >
-          Edit Title
-        </Button>
-        <EditTitleDialog
-          open={isEditTitleDialogOpen}
-          handleClose={handleCloseEditTitleDialog}
-          gameBoard={gameBoard}
-        />
-      </div>
-      <Paper sx={{ padding: 2 }}>
-        <Grid container spacing={2}>
-          {/* Render categories as column headers */}
+          {/* COLUMNS */}
           {displayCategories.map((category: string, index: number) => (
-            <Grid
-              key={index}
-              size={{ xs: 12 / 5 }}
-              sx={{ textAlign: "center", fontWeight: "bold" }}
-            >
-              {category}
-              {/* {index} */}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleOpenEditCategoryDialog(category, index)}
-              >
-                Edit Category
-              </Button>
-              <EditCategoryDialog
-                open={isEditCategoryDialogOpen}
-                handleClose={handleCloseEditCategoryDialog}
-                category={currentCategory}
-                gridCol={currentGridCol}
-                gameBoardId={gameBoard.id}
-              />
-            </Grid>
+            <EditCategory
+              key={`$0-${index}`}
+              category={category}
+              gameBoardId={gameBoard.id}
+              gridCol={index}
+            />
           ))}
-
-          {/* Render questions as rows */}
-          {gameBoardMatrix?.map((row, rowIndex) => (
-            <React.Fragment key={rowIndex}>
-              {row.map((questionAndInfo, colIndex) => {
-                return questionAndInfo ? (
-                  <QuestionCell
-                    key={`${rowIndex}-${colIndex}`}
-                    questionAndInfo={questionAndInfo}
-                    isAnswered={false}
-                    onClick={() => handleOpenEditQuestionModal(questionAndInfo)}
-                  />
-                ) : (
-                  <PlaceHolderCell
-                    key={`${rowIndex}-${colIndex}`}
-                    onClick={() =>
-                      handleOpenCreateQuestionModal(
-                        displayCategories[colIndex],
-                        rowIndex,
-                        colIndex
-                      )
-                    }
-                  />
-                );
-              })}
-            </React.Fragment>
-          ))}
+          {/* QUESTIONS || PLACEHOLDERS */}
+          {gameBoardMatrix?.map((row, rowIndex) =>
+            row.map((questionAndInfo, colIndex) => {
+              return questionAndInfo ? (
+                <EditBoardCell
+                  key={`${rowIndex}-${colIndex}`}
+                  questionAndInfo={questionAndInfo}
+                  onClick={() => handleOpenEditQuestionModal(questionAndInfo)}
+                />
+              ) : (
+                <PlaceHolderCell
+                  key={`${rowIndex}-${colIndex}`}
+                  onClick={() =>
+                    handleOpenCreateQuestionModal(
+                      displayCategories[colIndex],
+                      rowIndex,
+                      colIndex
+                    )
+                  }
+                />
+              );
+            })
+          )}
           {isEditQuestionModalOpen && currentQuestionWithInfo && (
             <EditQuestionModal
               open={isEditQuestionModalOpen}

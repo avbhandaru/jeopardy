@@ -1,7 +1,7 @@
 // src/app/games/page.tsx
 "use client";
 
-import AdminGameBoardDashboard from "../components/AdminGameBoardDashboard";
+import AdminGameBoardDashboard from "../admin/AdminGameBoardDashboard";
 import styles from "./page.module.css";
 
 export default function GamesPage() {

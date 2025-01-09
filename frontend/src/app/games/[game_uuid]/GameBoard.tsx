@@ -10,7 +10,7 @@ import {
   useGameBoardDataQuery,
 } from "@/__generated__/graphql";
 import { DetailedBoardQuestion, BoardQuestion } from "@/__generated__/types";
-import QuestionCell from "@/app/components/QuestionCell";
+import QuestionCell from "@/app/games/[game_uuid]/QuestionCell";
 import { useGameContext } from "./GameContext";
 import DisplayQuestionModal from "./DisplayQuestionModal";
 

@@ -10,10 +10,11 @@ const PlaceHolderCell: React.FC<PlaceholderCellProps> = ({ onClick }) => {
     <Grid
       size={{ xs: 12 / 5 }}
       sx={{
+        height: "16%",
         textAlign: "center",
-        border: "1px solid #ccc",
-        padding: 2,
+        border: "2px solid #ccc",
         backgroundColor: "#de634d",
+        padding: 2,
         cursor: "defualt",
         "&:hover": {
           backgroundColor: "#ddab4d",

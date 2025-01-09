@@ -36,6 +36,9 @@ const NavBar = () => {
           <Button color="inherit">
             <StyledLink href="/questions">Questions</StyledLink>
           </Button>
+          <Button color="inherit">
+            <StyledLink href="/users/1">My Page</StyledLink>
+          </Button>
         </Toolbar>
       </AppBar>
     </Box>

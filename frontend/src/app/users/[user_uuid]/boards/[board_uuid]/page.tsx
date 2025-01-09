@@ -1,7 +1,7 @@
 // src/app/users/[user_uuid]/board/[board_uuid]/page.tsx
 
 import styles from "./page.module.css";
-import GameBoardDisplay from "@/app/components/GameBoardDisplay";
+import GameBoardDisplay from "./GameBoardDisplay";
 
 export default async function BoardPage({
   params,

@@ -3,9 +3,9 @@
 "use client";
 
 import styles from "./page.module.css";
-import AdminUserDashboard from "../components/AdminUserDashboard";
-import AdminGameBoardDashboard from "../components/AdminGameBoardDashboard";
-import AdminQuestionsDashboard from "../components/AdminQuestionsDashboard";
+import AdminUserDashboard from "./AdminUserDashboard";
+import AdminGameBoardDashboard from "./AdminGameBoardDashboard";
+import AdminQuestionsDashboard from "./AdminQuestionsDashboard";
 import { List } from "@mui/material";
 
 export default function AdminPage() {

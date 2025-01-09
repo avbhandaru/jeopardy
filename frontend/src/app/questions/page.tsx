@@ -1,7 +1,7 @@
 // src/app/questions/page.tsx
 "use client";
 
-import AdminQuestionsDashboard from "../components/AdminQuestionsDashboard";
+import AdminQuestionsDashboard from "../admin/AdminQuestionsDashboard";
 import styles from "./page.module.css";
 
 export default function QuestionsPage() {
