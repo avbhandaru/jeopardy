@@ -52,32 +52,4 @@ impl QuestionQuery {
         let questions: Vec<Question> = Question::find_by_ids(&mut conn, question_ids).await?;
         Ok(questions)
     }
-
-    /// Fetch GameBoards associated with specific quesiton, including association attributes
-    async fn game_boards(
-        &self,
-        ctx: &Context<'_>,
-        question_id: i64,
-    ) -> Result<Vec<DetailedBoardQuestion>> {
-        let pool = ctx.data::<DBPool>().expect("Can't get DBPool from context");
-        let mut conn = pool.get().await?;
-        let board_questions = BoardQuestion::find_by_question(&mut conn, question_id).await?;
-
-        let mut results = Vec::new();
-
-        for bq in board_questions {
-            let game_board = GameBoard::find_by_id(&mut conn, bq.board_id).await?;
-            results.push(DetailedBoardQuestion {
-                board: game_board,
-                question: Question::find_by_id(&mut conn, bq.question_id).await?,
-                category: bq.category,
-                daily_double: bq.daily_double,
-                points: bq.points,
-                grid_row: bq.grid_row,
-                grid_col: bq.grid_col,
-            });
-        }
-
-        Ok(results)
-    }
 }

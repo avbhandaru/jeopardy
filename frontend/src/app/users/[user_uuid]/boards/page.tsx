@@ -1,15 +1,16 @@
 import styles from "./page.module.css";
+import UserGameBoardDashboard from "../UserGameBoardDashboard";
 
-export default function BoardsPage() {
+export default async function BoardsPage({
+  params,
+}: {
+  params: { user_uuid: string };
+}) {
+  const { user_uuid } = await params;
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <ol>
-          <li><code>/users/[user_uuid]/boards</code> page</li>
-          <li>
-            Get started by editing <code>src/app/users/[user_uuid]/boards/page.tsx</code>.
-          </li>
-        </ol>
+        <UserGameBoardDashboard userId={user_uuid} />
       </main>
     </div>
   );

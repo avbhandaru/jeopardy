@@ -90,4 +90,15 @@ impl QuestionMutation {
 
         Ok(updated)
     }
+
+    /// Delete a question by ID
+    async fn delete_question(&self, ctx: &Context<'_>, question_id: i64) -> Result<bool> {
+        let pool = ctx
+            .data::<DBPool>()
+            .expect("Cannot get DBPool from context");
+        let mut conn = pool.get().await?;
+
+        let rows_deleted = Question::delete_by_id(&mut conn, question_id).await?;
+        Ok(rows_deleted > 0) // Return true if a row was deleted
+    }
 }

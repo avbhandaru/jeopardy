@@ -8,7 +8,7 @@ use diesel::sql_types::Integer;
 use diesel::QueryableByName;
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use regex::Regex;
 use std::env;
 use uuid::Uuid;

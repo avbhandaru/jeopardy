@@ -25,3 +25,9 @@ export const UPDATE_QUESTION = gql`
     }
   }
 `;
+
+export const DELETE_QUESTION = gql`
+  mutation DeleteQuestion($questionId: Int!) {
+    deleteQuestion(questionId: $questionId)
+  }
+`;

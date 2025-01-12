@@ -3,7 +3,7 @@
 use diesel_async::pooled_connection::deadpool::BuildError;
 use diesel_async::pooled_connection::{deadpool::Pool, AsyncDieselConnectionManager};
 use diesel_async::AsyncPgConnection;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use std::env;
 
 pub type DBPool = Pool<AsyncPgConnection>;

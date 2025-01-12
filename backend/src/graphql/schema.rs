@@ -5,17 +5,24 @@ use async_graphql::{EmptySubscription, MergedObject, Schema};
 
 use super::{
     mutations::{
-        board_question::BoardQuestionMutation, game_board::GameBoardMutation,
-        question::QuestionMutation, user::UserMutation,
+        board_question::BoardQuestionMutation, game::GameMutation, game_board::GameBoardMutation,
+        player::PlayerMutation, question::QuestionMutation, user::UserMutation,
     },
     query::{
-        board_question::BoardQuestionQuery, game_board::GameBoardQuery, question::QuestionQuery,
-        user::UserQuery,
+        board_question::BoardQuestionQuery, game::GameQuery, game_board::GameBoardQuery,
+        player::PlayerQuery, question::QuestionQuery, user::UserQuery,
     },
 };
 
 #[derive(MergedObject, Default)]
-pub struct RootQuery(UserQuery, GameBoardQuery, QuestionQuery, BoardQuestionQuery);
+pub struct RootQuery(
+    UserQuery,
+    GameBoardQuery,
+    QuestionQuery,
+    BoardQuestionQuery,
+    GameQuery,
+    PlayerQuery,
+);
 
 #[derive(MergedObject, Default)]
 pub struct RootMutation(
@@ -23,6 +30,8 @@ pub struct RootMutation(
     GameBoardMutation,
     QuestionMutation,
     BoardQuestionMutation,
+    GameMutation,
+    PlayerMutation,
 );
 
 pub type AppSchema = Schema<RootQuery, RootMutation, EmptySubscription>;
