@@ -1,9 +1,7 @@
 // graphql/query/question.rs
 
-use crate::models::board_question::BoardQuestion;
-use crate::models::game_board::GameBoard;
+use crate::db::pool::DBPool;
 use crate::models::question::Question;
-use crate::{db::pool::DBPool, graphql::types::detailed_board_question::DetailedBoardQuestion};
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]
