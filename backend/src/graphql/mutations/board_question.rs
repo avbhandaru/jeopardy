@@ -60,12 +60,27 @@ impl BoardQuestionMutation {
             Err(_) => return Err(async_graphql::Error::new("Question not found")),
         };
 
-        // Check for existing association
+        // Check for existing association between question and board
         if let Ok(existing_bq) =
             BoardQuestion::find_by_board_and_question(&mut conn, input.board_id, input.question_id)
                 .await
         {
             return Ok(existing_bq);
+        }
+
+        // Check for existing BoardQuestion at [row, col]
+        if let Ok(_existing_bq) = BoardQuestion::find_by_row_col(
+            &mut conn,
+            input.board_id,
+            input.grid_row,
+            input.grid_col,
+        )
+        .await
+        {
+            return Err(async_graphql::Error::new(format!(
+                "BoardQuestion already exists for [{},{}]",
+                input.grid_row, input.grid_col
+            )));
         }
 
         // Proceed with association
@@ -138,5 +153,25 @@ impl BoardQuestionMutation {
         .await?;
 
         Ok(updated)
+    }
+
+    /// Update category for a specific column in a game board
+    async fn update_board_column_category(
+        &self,
+        ctx: &Context<'_>,
+        game_board_id: i64,
+        grid_col: i32,
+        new_category: String,
+    ) -> Result<bool> {
+        let pool = ctx
+            .data::<DBPool>()
+            .expect("Cannot get DBPool from context");
+        let mut conn = pool.get().await?;
+
+        let rows_updated =
+            BoardQuestion::update_category_by_column(&mut conn, game_board_id, grid_col, &new_category)
+                .await?;
+
+        Ok(rows_updated > 0) // Return true if at least one row was updated
     }
 }

@@ -23,6 +23,27 @@ diesel::table! {
 }
 
 diesel::table! {
+    games (id) {
+        id -> Int8,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        user_id -> Int8,
+        game_board_id -> Int8,
+    }
+}
+
+diesel::table! {
+    players (id) {
+        id -> Int8,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        game_id -> Int8,
+        player_name -> Text,
+        score -> Int4,
+    }
+}
+
+diesel::table! {
     questions (id) {
         id -> Int8,
         created_at -> Timestamptz,
@@ -45,6 +66,16 @@ diesel::table! {
 diesel::joinable!(board_questions -> game_boards (board_id));
 diesel::joinable!(board_questions -> questions (question_id));
 diesel::joinable!(game_boards -> users (user_id));
+diesel::joinable!(games -> game_boards (game_board_id));
+diesel::joinable!(games -> users (user_id));
+diesel::joinable!(players -> games (game_id));
 diesel::joinable!(questions -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(board_questions, game_boards, questions, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    board_questions,
+    game_boards,
+    games,
+    players,
+    questions,
+    users,
+);

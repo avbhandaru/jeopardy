@@ -1,14 +1,16 @@
 // src/models/board_question.rs
 
-use crate::db::schema::board_questions;
 use crate::models::game_board::GameBoard;
 use crate::models::question::Question;
+use crate::{db::schema::board_questions, graphql::types::game_board_types::DetailedBoardQuestion};
 use async_graphql::SimpleObject;
 use derive_builder::Builder;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
-#[derive(Identifiable, Associations, Queryable, Selectable, Debug, SimpleObject, Builder)]
+#[derive(
+    Identifiable, Associations, Queryable, Selectable, Debug, SimpleObject, Builder, Clone,
+)]
 #[diesel(primary_key(board_id, question_id))]
 #[diesel(table_name = board_questions)]
 #[diesel(belongs_to(GameBoard, foreign_key = board_id))]
@@ -92,6 +94,22 @@ impl BoardQuestion {
             .await
     }
 
+    /// Find a boardquestion by board id, row, and column
+    pub async fn find_by_row_col(
+        conn: &mut AsyncPgConnection,
+        game_board_id: i64,
+        row: i32,
+        col: i32,
+    ) -> Result<Self, diesel::result::Error> {
+        board_questions::table
+            .filter(board_questions::board_id.eq(game_board_id))
+            .filter(board_questions::grid_row.eq(row))
+            .filter(board_questions::grid_col.eq(col))
+            .first(conn)
+            .await
+    }
+
+    /// Update boardquestion fields from board_id and question_id
     pub async fn update_board_question(
         conn: &mut AsyncPgConnection,
         board_id: i64,
@@ -102,5 +120,68 @@ impl BoardQuestion {
             .set(&updated_fields)
             .get_result(conn)
             .await
+    }
+
+    /// find game board categories
+    pub async fn fetch_game_board_categories(
+        conn: &mut AsyncPgConnection,
+        game_board_id: i64,
+    ) -> Result<Vec<String>, diesel::result::Error> {
+        let categories: Vec<(i32, String)> = board_questions::table
+            .select((board_questions::grid_col, board_questions::category))
+            .filter(board_questions::board_id.eq(game_board_id))
+            .distinct_on(board_questions::grid_col)
+            .order(board_questions::grid_col)
+            .load(conn)
+            .await?;
+
+        Ok(categories.into_iter().map(|(_, cat)| cat).collect())
+    }
+
+    /// find game board data with questions
+    pub async fn fetch_game_board_data_with_questions(
+        conn: &mut AsyncPgConnection,
+        game_board_id: i64,
+    ) -> Result<(Vec<String>, Vec<DetailedBoardQuestion>), diesel::result::Error> {
+        // Fetch categories
+        let categories = Self::fetch_game_board_categories(conn, game_board_id).await?;
+
+        // Fetch board questions
+        let board_question: Vec<BoardQuestion> = board_questions::table
+            .filter(board_questions::board_id.eq(game_board_id))
+            .order_by((board_questions::grid_col, board_questions::grid_row))
+            .load(conn)
+            .await?;
+
+        // Fetch questions for each board question
+        let mut detailed_questions = Vec::new();
+        for bq in board_question {
+            let question = Question::find_by_id(conn, bq.question_id).await?;
+            detailed_questions.push(DetailedBoardQuestion {
+                board_question: bq,
+                question,
+            });
+        }
+
+        Ok((categories, detailed_questions))
+    }
+
+    /// Update category for a specific column in a game board
+    pub async fn update_category_by_column(
+        conn: &mut AsyncPgConnection,
+        board_id: i64,
+        grid_col: i32,
+        new_category: &str,
+    ) -> Result<usize, diesel::result::Error> {
+        diesel::update(
+            board_questions::table.filter(
+                board_questions::board_id
+                    .eq(board_id)
+                    .and(board_questions::grid_col.eq(grid_col)),
+            ),
+        )
+        .set(board_questions::category.eq(new_category))
+        .execute(conn)
+        .await
     }
 }

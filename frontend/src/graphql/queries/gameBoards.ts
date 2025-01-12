@@ -13,8 +13,8 @@ export const ALL_GAMEBOARDS_QUERY = gql`
 `;
 
 export const USER_GAMEBOARDS_QUERY = gql`
-  query GetGameBoardFromUser($userId: Int!) {
-    getGameBoardFromUser(userId: $userId) {
+  query GetGameBoardsFromUser($userId: Int!) {
+    getGameBoardsFromUser(userId: $userId) {
       id
       createdAt
       updatedAt
@@ -32,26 +32,6 @@ export const GAMEBOARD_QUERY = gql`
       updatedAt
       userId
       title
-    }
-  }
-`;
-
-export const QUESTIONS_WITH_INFO_QUERY = gql`
-  query QuestionsWithBoardInfo($gameBoardId: Int!) {
-    questionsWithBoardInfo(gameBoardId: $gameBoardId) {
-      question {
-        id
-        createdAt
-        updatedAt
-        userId
-        question
-        answer
-      }
-      category
-      dailyDouble
-      points
-      gridRow
-      gridCol
     }
   }
 `;
