@@ -20,6 +20,7 @@ pub struct GameBoard {
     pub updated_at: DateTime<Utc>,
     pub user_id: i64,
     pub title: String,
+    pub categories: Vec<Option<String>>,
 }
 
 #[derive(Debug, Insertable, Builder)]
@@ -27,6 +28,13 @@ pub struct GameBoard {
 pub struct NewGameBoard {
     pub user_id: i64,
     pub title: String,
+}
+
+#[derive(Debug, AsChangeset)]
+#[diesel(table_name = game_boards)]
+pub struct UpdateGameBoard {
+    pub title: Option<String>,
+    pub categories: Option<Vec<String>>,
 }
 
 impl GameBoard {
@@ -66,14 +74,13 @@ impl GameBoard {
     }
 
     /// Update title of gameboard
-    pub async fn update_title(
+    pub async fn update_game_board(
         conn: &mut AsyncPgConnection,
         game_board_id: i64,
-        new_title: String,
+        updated_fields: UpdateGameBoard,
     ) -> Result<Self, diesel::result::Error> {
-        diesel::update(game_boards::table)
-            .filter(game_boards::id.eq(game_board_id))
-            .set(game_boards::title.eq(new_title))
+        diesel::update(game_boards::table.find(game_board_id))
+            .set(&updated_fields)
             .get_result(conn)
             .await
     }

@@ -4,7 +4,6 @@ diesel::table! {
     board_questions (board_id, question_id) {
         board_id -> Int8,
         question_id -> Int8,
-        category -> Text,
         daily_double -> Bool,
         points -> Int4,
         grid_row -> Int4,
@@ -19,6 +18,7 @@ diesel::table! {
         updated_at -> Timestamptz,
         user_id -> Int8,
         title -> Text,
+        categories -> Array<Nullable<Text>>,
     }
 }
 

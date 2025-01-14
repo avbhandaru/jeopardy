@@ -16,3 +16,16 @@ Execute the test suite using Cargo:
 
 ```bash
 cargo test -- --nocapture
+```
+
+## Deleting Test Databases
+
+In the case that runtime errors stop test database teardowns and you're left with many test databases, run the following query to generate all of the DROP statements:
+
+```sql
+SELECT 'DROP DATABASE "' || datname || '";'
+FROM pg_database
+WHERE datname LIKE 'test_db_%';
+```
+
+Copy the results of that query, then run it to delete all databases that match against `'test_db_%'`.

@@ -18,7 +18,6 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 pub struct BoardQuestion {
     pub board_id: i64,
     pub question_id: i64,
-    pub category: String,
     pub daily_double: bool,
     pub points: i32,
     pub grid_row: i32,
@@ -30,7 +29,6 @@ pub struct BoardQuestion {
 pub struct NewBoardQuestion {
     pub board_id: i64,
     pub question_id: i64,
-    pub category: String,
     pub daily_double: bool,
     pub points: i32,
     pub grid_row: i32,
@@ -40,7 +38,6 @@ pub struct NewBoardQuestion {
 #[derive(Debug, AsChangeset)]
 #[diesel(table_name = board_questions)]
 pub struct UpdateBoardQuestion {
-    pub category: Option<String>,
     pub daily_double: Option<bool>,
     pub points: Option<i32>,
     pub grid_row: Option<i32>,
@@ -122,30 +119,11 @@ impl BoardQuestion {
             .await
     }
 
-    /// find game board categories
-    pub async fn fetch_game_board_categories(
-        conn: &mut AsyncPgConnection,
-        game_board_id: i64,
-    ) -> Result<Vec<String>, diesel::result::Error> {
-        let categories: Vec<(i32, String)> = board_questions::table
-            .select((board_questions::grid_col, board_questions::category))
-            .filter(board_questions::board_id.eq(game_board_id))
-            .distinct_on(board_questions::grid_col)
-            .order(board_questions::grid_col)
-            .load(conn)
-            .await?;
-
-        Ok(categories.into_iter().map(|(_, cat)| cat).collect())
-    }
-
     /// find game board data with questions
     pub async fn fetch_game_board_data_with_questions(
         conn: &mut AsyncPgConnection,
         game_board_id: i64,
-    ) -> Result<(Vec<String>, Vec<DetailedBoardQuestion>), diesel::result::Error> {
-        // Fetch categories
-        let categories = Self::fetch_game_board_categories(conn, game_board_id).await?;
-
+    ) -> Result<Vec<DetailedBoardQuestion>, diesel::result::Error> {
         // Fetch board questions
         let board_question: Vec<BoardQuestion> = board_questions::table
             .filter(board_questions::board_id.eq(game_board_id))
@@ -163,25 +141,6 @@ impl BoardQuestion {
             });
         }
 
-        Ok((categories, detailed_questions))
-    }
-
-    /// Update category for a specific column in a game board
-    pub async fn update_category_by_column(
-        conn: &mut AsyncPgConnection,
-        board_id: i64,
-        grid_col: i32,
-        new_category: &str,
-    ) -> Result<usize, diesel::result::Error> {
-        diesel::update(
-            board_questions::table.filter(
-                board_questions::board_id
-                    .eq(board_id)
-                    .and(board_questions::grid_col.eq(grid_col)),
-            ),
-        )
-        .set(board_questions::category.eq(new_category))
-        .execute(conn)
-        .await
+        Ok(detailed_questions)
     }
 }

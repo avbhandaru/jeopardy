@@ -15,7 +15,6 @@ use crate::{
 pub struct CreateBoardQuestionInput {
     pub board_id: i64,
     pub question_id: i64,
-    pub category: String,
     pub daily_double: bool,
     pub points: i32,
     pub grid_row: i32,
@@ -26,7 +25,6 @@ pub struct CreateBoardQuestionInput {
 pub struct UpdateBoardQuestionInput {
     pub board_id: i64,
     pub question_id: i64,
-    pub category: Option<String>,
     pub daily_double: Option<bool>,
     pub points: Option<i32>,
     pub grid_row: Option<i32>,
@@ -87,7 +85,6 @@ impl BoardQuestionMutation {
         let new_board_question = NewBoardQuestion {
             board_id: input.board_id,
             question_id: input.question_id,
-            category: input.category,
             daily_double: input.daily_double,
             points: input.points,
             grid_row: input.grid_row,
@@ -124,27 +121,20 @@ impl BoardQuestionMutation {
         };
 
         // Input validation
-        if let Some(ref c) = input.category {
-            if c.trim().is_empty() {
-                return Err(async_graphql::Error::new("Category cannot be empty"));
-            }
-        }
-
         if let Some(p) = input.points {
             if p < 0 {
                 return Err(async_graphql::Error::new("Value must be between positive"));
             }
         }
 
-        let updated_fields = UpdateBoardQuestion {
-            category: input.category.clone(),
+        let updated_fields: UpdateBoardQuestion = UpdateBoardQuestion {
             daily_double: input.daily_double,
             points: input.points,
             grid_row: input.grid_row,
             grid_col: input.grid_col,
         };
 
-        let updated = BoardQuestion::update_board_question(
+        let updated: BoardQuestion = BoardQuestion::update_board_question(
             &mut conn,
             input.board_id,
             input.question_id,
@@ -153,25 +143,5 @@ impl BoardQuestionMutation {
         .await?;
 
         Ok(updated)
-    }
-
-    /// Update category for a specific column in a game board
-    async fn update_board_column_category(
-        &self,
-        ctx: &Context<'_>,
-        game_board_id: i64,
-        grid_col: i32,
-        new_category: String,
-    ) -> Result<bool> {
-        let pool = ctx
-            .data::<DBPool>()
-            .expect("Cannot get DBPool from context");
-        let mut conn = pool.get().await?;
-
-        let rows_updated =
-            BoardQuestion::update_category_by_column(&mut conn, game_board_id, grid_col, &new_category)
-                .await?;
-
-        Ok(rows_updated > 0) // Return true if at least one row was updated
     }
 }

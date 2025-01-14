@@ -81,7 +81,6 @@ pub async fn comprehensive_fixture(
     for (board_index, game_board) in game_boards.iter().enumerate() {
         for q in 0..questions_per_board {
             let question = &questions[board_index * questions_per_board + q];
-            let category = format!("Category {}", q + 1);
             let points: i32 = ((q + 1) * 100) as i32;
             let grid_row = q as i32;
             let grid_col = board_index as i32;
@@ -93,7 +92,6 @@ pub async fn comprehensive_fixture(
                 Some(NewBoardQuestion {
                     board_id: game_board.id,
                     question_id: question.id,
-                    category: category.clone(),
                     daily_double: q % 5 == 0, // Every 5th question is a Daily Double
                     points,
                     grid_row,

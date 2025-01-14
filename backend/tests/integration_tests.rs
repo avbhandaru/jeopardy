@@ -1,5 +1,6 @@
 // tests/integration_tests.rs
 
+// TODO create new tests for categories
 mod common;
 use async_graphql::{Request, Response, Schema};
 use backend::graphql::schema::create_schema;
@@ -158,7 +159,7 @@ async fn test_get_user_graphql() {
     // Define Graphql query
     let query = r#"
         query {
-            getUser(id: 1) {
+            getUser(userId: 1) {
                 id
                 username
                 createdAt
@@ -308,6 +309,15 @@ async fn test_create_game_board_model() {
     assert_eq!(created_game_board.title, "testBoard");
     assert_eq!(created_game_board.user_id, created_user.id);
 
+    let expected_categories = vec![
+        Some("Category 1".to_string()),
+        Some("Category 2".to_string()),
+        Some("Category 3".to_string()),
+        Some("Category 4".to_string()),
+        Some("Category 5".to_string()),
+    ];
+    assert_eq!(created_game_board.categories, expected_categories);
+
     // Tear down test_db
     let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
     assert!(successfully_droppped, "Close method returned false");
@@ -338,12 +348,13 @@ async fn test_get_game_board_graphql() {
     // Define the GraphQL query
     let query = r#"
         query {
-            getGameBoard(id: 1) {
+            getGameBoard(gameBoardId: 1) {
                 id
                 createdAt
                 updatedAt
                 userId
                 title            
+                categories
             }
         }
     "#;
@@ -400,7 +411,6 @@ async fn test_factory_functions() {
     let factory_board_question: BoardQuestion =
         create_test_board_question(&mut conn, factory_game_board.id, factory_question.id, None)
             .await;
-    assert_eq!(factory_board_question.category, "default category");
     assert_eq!(factory_board_question.points, 100);
     assert_eq!(factory_board_question.daily_double, false);
     assert_eq!(factory_board_question.grid_row, 0);
@@ -495,7 +505,7 @@ async fn test_get_question_from_ids() {
     let ten_question_query = format!(
         r#"
         query {{
-            getQuestionsFromIds (ids: {}) {{
+            getQuestionsFromIds (questionIds: {}) {{
                 id
                 createdAt
                 updatedAt
@@ -617,10 +627,9 @@ async fn test_get_board_questions_graphql() {
     let query = format!(
         r#"
         query {{
-            boardQuestionsByBoard(boardId: {}) {{
+            boardQuestionsByBoard(gameBoardId: {}) {{
                 boardId
                 questionId
-                category
                 dailyDouble
                 points
                 gridRow
@@ -659,9 +668,6 @@ async fn test_get_board_questions_graphql() {
             actual["questionId"], expected.question_id as i64,
             "Question ID mismatch"
         );
-
-        // Validate category
-        assert_eq!(actual["category"], expected.category, "Category mismatch");
 
         // Validate daily_double
         assert_eq!(

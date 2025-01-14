@@ -1,7 +1,7 @@
 // src/graphql/query/board_question.rs
 
 use crate::db::pool::DBPool;
-use crate::graphql::types::game_board_types::{DetailedBoardQuestion, GameBoardData};
+use crate::graphql::types::game_board_types::DetailedBoardQuestion;
 use crate::models::board_question::BoardQuestion;
 use crate::models::question::Question;
 use async_graphql::{Context, Object, Result};
@@ -70,22 +70,19 @@ impl BoardQuestionQuery {
     }
 
     /// Fetch game board data
-    async fn fetch_game_board_data(
+    async fn fetch_detailed_board_questions(
         &self,
         ctx: &Context<'_>,
         game_board_id: i64,
-    ) -> Result<GameBoardData> {
+    ) -> Result<Vec<DetailedBoardQuestion>> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
         let mut conn = pool.get().await?;
 
-        let (categories, questions) =
+        let questions =
             BoardQuestion::fetch_game_board_data_with_questions(&mut conn, game_board_id).await?;
 
-        Ok(GameBoardData {
-            categories,
-            questions,
-        })
+        Ok(questions)
     }
 }

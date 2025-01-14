@@ -148,7 +148,6 @@ pub async fn create_test_question(
 /// ```rust
 /// let board_question = create_test_board_question(conn, 1, 1, None).await;
 /// let custom_board_question = create_test_board_question(conn, 1, 1, Some(NewBoardQuestion {
-///     category: "custom".to_string(),
 ///     daily_double: true,
 ///     points: 200,
 ///     grid_row: 2,
@@ -168,7 +167,6 @@ pub async fn create_test_board_question(
 
     // Apply overrides if provided
     if let Some(overrides) = overrides {
-        builder.category(overrides.category);
         builder.daily_double(overrides.daily_double);
         builder.points(overrides.points);
         builder.grid_row(overrides.grid_row);
@@ -178,7 +176,6 @@ pub async fn create_test_board_question(
     } else {
         // Set default values
         builder
-            .category("default category".to_string())
             .daily_double(false)
             .points(100)
             .grid_row(0)

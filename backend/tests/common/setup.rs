@@ -7,27 +7,33 @@ use diesel::prelude::*;
 use diesel::sql_types::Integer;
 use diesel::QueryableByName;
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use diesel_migrations::{FileBasedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 use regex::Regex;
 use std::env;
 use uuid::Uuid;
 
-pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../backend/db/migrations");
-
 pub fn run_migrations_sync(database_url: &str) {
     println!("Running test setup migrations!");
     let mut conn: PgConnection =
         PgConnection::establish(database_url).expect("Could not connect to db");
-    let _ = conn.run_pending_migrations(MIGRATIONS);
-}
+    // Create FileBasedMigrations dynamically
+    let migrations = FileBasedMigrations::from_path("../backend/db/migrations")
+        .expect("Could not load migrations from path");
 
-#[allow(dead_code)]
-pub fn rollback_migrations(database_url: &str) {
-    println!("Rolling back test setup migrations");
-    let mut conn: PgConnection =
-        PgConnection::establish(database_url).expect("Could not connect to db");
-    let _ = conn.revert_all_migrations(MIGRATIONS);
+    // Run migrations and log the applied ones
+    match conn.run_pending_migrations(migrations) {
+        Ok(applied_migrations) => {
+            println!("Successfully applied migrations:");
+            for migration in applied_migrations {
+                println!(" - {}", migration);
+            }
+        }
+        Err(err) => {
+            eprintln!("Failed to apply migrations: {:?}", err);
+            panic!("Migration failed");
+        }
+    }
 }
 
 pub async fn establish_super_connection() -> Result<AsyncPgConnection, ConnectionError> {
@@ -63,7 +69,7 @@ pub async fn drop_test_database(
     test_db: &str,
 ) -> Result<bool, diesel::result::Error> {
     // Terminate all connections to database
-    diesel::sql_query(&format!(
+    diesel::sql_query(format!(
         "SELECT pg_terminate_backend(pg_stat_activity.pid)
         FROM pg_stat_activity
         WHERE pg_stat_activity.datname = '{}'
@@ -74,7 +80,7 @@ pub async fn drop_test_database(
     .await
     .expect("Failed to terminate connections");
 
-    diesel::sql_query(&format!("DROP DATABASE IF EXISTS \"{}\"", test_db))
+    diesel::sql_query(format!("DROP DATABASE IF EXISTS \"{}\"", test_db))
         .execute(super_conn)
         .await
         .expect("Failed to drop test database");
@@ -86,7 +92,7 @@ pub async fn drop_test_database(
     }
 
     // Check if the database still exists by counting rows in pg_database
-    let rows: Vec<One> = diesel::sql_query(&format!(
+    let rows: Vec<One> = diesel::sql_query(format!(
         "SELECT 1 FROM pg_database WHERE datname = '{}';",
         test_db
     ))
