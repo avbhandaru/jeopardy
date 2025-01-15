@@ -27,17 +27,3 @@ export const UPDATE_BOARD_QUESTION = gql`
     }
   }
 `;
-
-export const UPDATE_COLUMN_CATEGORY = gql`
-  mutation UpdateColumnCategory(
-    $gameBoardId: Int!
-    $gridCol: Int!
-    $newCategory: String!
-  ) {
-    updateBoardColumnCategory(
-      gameBoardId: $gameBoardId
-      gridCol: $gridCol
-      newCategory: $newCategory
-    )
-  }
-`;
