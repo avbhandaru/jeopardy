@@ -1,18 +1,20 @@
-// src/graphql/mutation/board_question.rs
+// src/graphql/mutation/game_board_question_mapping.rs
 
 use async_graphql::{Context, InputObject, Object, Result};
 
 use crate::{
     db::pool::DBPool,
     models::{
-        board_question::{BoardQuestion, NewBoardQuestion, UpdateBoardQuestion},
         game_board::GameBoard,
+        game_board_question_mapping::{
+            GameBoardQuestionMapping, NewGameBoardQuestionMapping, UpdateGameBoardQuestionMapping,
+        },
         question::Question,
     },
 };
 
 #[derive(InputObject)]
-pub struct CreateBoardQuestionInput {
+pub struct CreateGameBoardMappingInput {
     pub board_id: i64,
     pub question_id: i64,
     pub daily_double: bool,
@@ -22,7 +24,7 @@ pub struct CreateBoardQuestionInput {
 }
 
 #[derive(InputObject)]
-pub struct UpdateBoardQuestionInput {
+pub struct UpdateGameBoardMappingInput {
     pub board_id: i64,
     pub question_id: i64,
     pub daily_double: Option<bool>,
@@ -33,16 +35,16 @@ pub struct UpdateBoardQuestionInput {
 
 #[derive(Default)]
 
-pub struct BoardQuestionMutation;
+pub struct GameBoardMappingMutation;
 
 #[Object]
-impl BoardQuestionMutation {
+impl GameBoardMappingMutation {
     /// Associate a question with a gameboard
-    async fn create_board_question(
+    async fn create_mapping(
         &self,
         ctx: &Context<'_>,
-        input: CreateBoardQuestionInput,
-    ) -> Result<BoardQuestion> {
+        input: CreateGameBoardMappingInput,
+    ) -> Result<GameBoardQuestionMapping> {
         let pool = ctx.data::<DBPool>().expect("Can't get DBPool from context");
         let mut conn = pool.get().await.expect("Failed to get connection");
 
@@ -58,16 +60,19 @@ impl BoardQuestionMutation {
             Err(_) => return Err(async_graphql::Error::new("Question not found")),
         };
 
-        // Check for existing association between question and board
-        if let Ok(existing_bq) =
-            BoardQuestion::find_by_board_and_question(&mut conn, input.board_id, input.question_id)
-                .await
+        // Check for existing mapping between question and board
+        if let Ok(_existing_mapping) = GameBoardQuestionMapping::find_mapping_by_board_and_question(
+            &mut conn,
+            input.board_id,
+            input.question_id,
+        )
+        .await
         {
-            return Ok(existing_bq);
+            return Ok(_existing_mapping);
         }
 
         // Check for existing BoardQuestion at [row, col]
-        if let Ok(_existing_bq) = BoardQuestion::find_by_row_col(
+        if let Ok(_existing_mapping) = GameBoardQuestionMapping::find_mapping_by_row_and_col(
             &mut conn,
             input.board_id,
             input.grid_row,
@@ -76,13 +81,13 @@ impl BoardQuestionMutation {
         .await
         {
             return Err(async_graphql::Error::new(format!(
-                "BoardQuestion already exists for [{},{}]",
+                "Mapping already exists for [{},{}]",
                 input.grid_row, input.grid_col
             )));
         }
 
         // Proceed with association
-        let new_board_question = NewBoardQuestion {
+        let new_mapping = NewGameBoardQuestionMapping {
             board_id: input.board_id,
             question_id: input.question_id,
             daily_double: input.daily_double,
@@ -91,27 +96,28 @@ impl BoardQuestionMutation {
             grid_col: input.grid_col,
         };
 
-        let board_question = BoardQuestion::create(&mut conn, new_board_question).await?;
-        Ok(board_question)
+        let mapping = GameBoardQuestionMapping::create_mapping(&mut conn, new_mapping).await?;
+        Ok(mapping)
     }
 
-    async fn update_board_question(
+    async fn update_mapping(
         &self,
         ctx: &Context<'_>,
-        input: UpdateBoardQuestionInput,
-    ) -> Result<BoardQuestion> {
+        input: UpdateGameBoardMappingInput,
+    ) -> Result<GameBoardQuestionMapping> {
         let pool = ctx.data::<DBPool>().expect("Cant get DBPool from context");
         let mut conn = pool.get().await.expect("Failed to get connection");
 
-        let existing_board_question_result =
-            BoardQuestion::find_by_board_and_question(&mut conn, input.board_id, input.question_id)
-                .await;
+        let existing_mapping_result = GameBoardQuestionMapping::find_mapping_by_board_and_question(
+            &mut conn,
+            input.board_id,
+            input.question_id,
+        )
+        .await;
 
-        let _existing_board_question = match existing_board_question_result {
-            Ok(bq) => bq,
-            Err(diesel::NotFound) => {
-                return Err(async_graphql::Error::new("BoardQuestion not found"))
-            }
+        let _existing_mapping = match existing_mapping_result {
+            Ok(mapping) => mapping,
+            Err(diesel::NotFound) => return Err(async_graphql::Error::new("Mapping not found")),
             Err(e) => {
                 return Err(async_graphql::Error::new(format!(
                     "Database error: {:?}",
@@ -123,18 +129,18 @@ impl BoardQuestionMutation {
         // Input validation
         if let Some(p) = input.points {
             if p < 0 {
-                return Err(async_graphql::Error::new("Value must be between positive"));
+                return Err(async_graphql::Error::new("Points must be positive"));
             }
         }
 
-        let updated_fields: UpdateBoardQuestion = UpdateBoardQuestion {
+        let updated_fields: UpdateGameBoardQuestionMapping = UpdateGameBoardQuestionMapping {
             daily_double: input.daily_double,
             points: input.points,
             grid_row: input.grid_row,
             grid_col: input.grid_col,
         };
 
-        let updated: BoardQuestion = BoardQuestion::update_board_question(
+        let updated: GameBoardQuestionMapping = GameBoardQuestionMapping::update_mapping(
             &mut conn,
             input.board_id,
             input.question_id,

@@ -1,8 +1,10 @@
 // graphql/mutations/game_board.rs
 
 use crate::db::pool::DBPool;
-use crate::models::board_question::{BoardQuestion, NewBoardQuestion};
 use crate::models::game_board::{GameBoard, NewGameBoard, UpdateGameBoard};
+use crate::models::game_board_question_mapping::{
+    GameBoardQuestionMapping, NewGameBoardQuestionMapping,
+};
 use crate::models::question::{NewQuestion, Question};
 use async_graphql::{Context, InputObject, Object, Result};
 
@@ -49,23 +51,24 @@ impl GameBoardMutation {
             },
         )
         .await?;
-        // Create an example boardquestiondata association
-        let _example_board_question_data = BoardQuestion::create(
-            &mut conn,
-            NewBoardQuestion {
-                board_id: game_board.id,
-                question_id: example_question.id,
-                daily_double: false,
-                points: 100,
-                grid_row: 0,
-                grid_col: 0,
-            },
-        )
-        .await?;
+        // Create an example board game question mapping
+        let _example_board_game_question_mapping: GameBoardQuestionMapping =
+            GameBoardQuestionMapping::create_mapping(
+                &mut conn,
+                NewGameBoardQuestionMapping {
+                    board_id: game_board.id,
+                    question_id: example_question.id,
+                    daily_double: false,
+                    points: 100,
+                    grid_row: 0,
+                    grid_col: 0,
+                },
+            )
+            .await?;
         Ok(game_board)
     }
 
-    /// Update gameboard title
+    /// Update gameboard title or categories
     async fn update_game_board(
         &self,
         ctx: &Context<'_>,
@@ -105,6 +108,28 @@ impl GameBoardMutation {
 
         let updated: GameBoard =
             GameBoard::update_game_board(&mut conn, input.board_id, updated_fields).await?;
+
+        Ok(updated)
+    }
+
+    /// Update gameboard category at specific index
+    async fn update_game_board_category(
+        &self,
+        ctx: &Context<'_>,
+        game_board_id: i64,
+        index: i32,
+        category: String,
+    ) -> Result<GameBoard> {
+        if !(0..=4).contains(&index) {
+            return Err(async_graphql::Error::new("Category index must be 0 - 4"));
+        }
+
+        let pool = ctx.data::<DBPool>().expect("Expected DBPool");
+        let mut conn = pool.get().await.expect("Expected connection");
+
+        let updated: GameBoard =
+            GameBoard::update_game_board_category(&mut conn, game_board_id, index, category)
+                .await?;
 
         Ok(updated)
     }

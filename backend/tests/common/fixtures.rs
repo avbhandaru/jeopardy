@@ -1,10 +1,13 @@
 // tests/common/fixtures.rs
 
 use super::factories::{
-    create_test_board_question, create_test_game_board, create_test_question, create_test_user,
+    create_test_game_board, create_test_game_board_question_mapping, create_test_question,
+    create_test_user,
 };
-use backend::models::board_question::{BoardQuestion, NewBoardQuestion};
 use backend::models::game_board::{GameBoard, NewGameBoard};
+use backend::models::game_board_question_mapping::{
+    GameBoardQuestionMapping, NewGameBoardQuestionMapping,
+};
 use backend::models::question::{NewQuestion, Question};
 use backend::models::user::{NewUser, User};
 use diesel_async::AsyncPgConnection;
@@ -85,11 +88,11 @@ pub async fn comprehensive_fixture(
             let grid_row = q as i32;
             let grid_col = board_index as i32;
 
-            let board_question = create_test_board_question(
+            let mapping = create_test_game_board_question_mapping(
                 conn,
                 game_board.id,
                 question.id,
-                Some(NewBoardQuestion {
+                Some(NewGameBoardQuestionMapping {
                     board_id: game_board.id,
                     question_id: question.id,
                     daily_double: q % 5 == 0, // Every 5th question is a Daily Double
@@ -101,8 +104,8 @@ pub async fn comprehensive_fixture(
             .await;
 
             println!(
-                "Created BoardQuestion: Board ID {}, Question ID {}",
-                board_question.board_id, board_question.question_id
+                "Created Mapping: Board ID {}, Question ID {}",
+                mapping.board_id, mapping.question_id
             );
         }
     }
@@ -130,15 +133,15 @@ pub async fn comprehensive_fixture(
 pub async fn board_with_questions_fixture(
     conn: &mut AsyncPgConnection,
     username: &str,
-) -> (GameBoard, Vec<BoardQuestion>, Vec<Question>) {
+) -> (GameBoard, Vec<GameBoardQuestionMapping>, Vec<Question>) {
     let (_user, game_boards, questions) = comprehensive_fixture(conn, username, 1, 5).await;
 
     let game_board = &game_boards[0];
-    let board_questions = BoardQuestion::find_by_board(conn, game_board.id)
+    let mappings = GameBoardQuestionMapping::find_mappings_by_board_id(conn, game_board.id)
         .await
         .expect("Failed to fetch board questions");
 
-    let associated_questions: Vec<Question> = board_questions
+    let associated_questions: Vec<Question> = mappings
         .iter()
         .map(|bq| {
             questions
@@ -149,5 +152,5 @@ pub async fn board_with_questions_fixture(
         })
         .collect();
 
-    (game_board.clone(), board_questions, associated_questions)
+    (game_board.clone(), mappings, associated_questions)
 }

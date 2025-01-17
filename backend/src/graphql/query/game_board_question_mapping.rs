@@ -1,52 +1,56 @@
-// src/graphql/query/board_question.rs
+// src/graphql/query/game_board_question_mapping.rs
 
 use crate::db::pool::DBPool;
 use crate::graphql::types::game_board_types::DetailedBoardQuestion;
-use crate::models::board_question::BoardQuestion;
+use crate::models::game_board_question_mapping::GameBoardQuestionMapping;
 use crate::models::question::Question;
 use async_graphql::{Context, Object, Result};
 
 #[derive(Default)]
-pub struct BoardQuestionQuery;
+pub struct GameBoardMappingQuery;
 
 #[Object]
-impl BoardQuestionQuery {
-    /// Fetch a BoardQuestion by board id and question id
-    async fn board_question(
+impl GameBoardMappingQuery {
+    /// Fetch a GameBoard-Question mapping by board id and question id
+    async fn find_game_board_mapping(
         &self,
         ctx: &Context<'_>,
         game_board_id: i64,
         question_id: i64,
-    ) -> Result<BoardQuestion> {
+    ) -> Result<GameBoardQuestionMapping> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
         let mut conn = pool.get().await?;
 
-        let board_question =
-            BoardQuestion::find_by_board_and_question(&mut conn, game_board_id, question_id)
-                .await?;
-        Ok(board_question)
+        let mapping = GameBoardQuestionMapping::find_mapping_by_board_and_question(
+            &mut conn,
+            game_board_id,
+            question_id,
+        )
+        .await?;
+        Ok(mapping)
     }
 
-    /// Fetch all BoardQuestions for a specific GameBoard
-    async fn board_questions_by_board(
+    /// Fetch all GameBoard-Question mappings for a specific GameBoard
+    async fn find_game_board_mappings(
         &self,
         ctx: &Context<'_>,
         game_board_id: i64,
-    ) -> Result<Vec<BoardQuestion>> {
+    ) -> Result<Vec<GameBoardQuestionMapping>> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
         let mut conn = pool.get().await?;
 
-        let board_questions = BoardQuestion::find_by_board(&mut conn, game_board_id).await?;
+        let mappings =
+            GameBoardQuestionMapping::find_mappings_by_board_id(&mut conn, game_board_id).await?;
 
-        Ok(board_questions)
+        Ok(mappings)
     }
 
     /// Fetch DetailedBoardQuestion from game_board_id and question_id
-    async fn detailed_board_question(
+    async fn find_detailed_board_question(
         &self,
         ctx: &Context<'_>,
         game_board_id: i64,
@@ -56,21 +60,21 @@ impl BoardQuestionQuery {
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
         let mut conn = pool.get().await?;
-        let board_question =
-            BoardQuestion::find_by_board_and_question(&mut conn, game_board_id, question_id)
-                .await?;
+        let mapping = GameBoardQuestionMapping::find_mapping_by_board_and_question(
+            &mut conn,
+            game_board_id,
+            question_id,
+        )
+        .await?;
         let question = Question::find_by_id(&mut conn, question_id).await?;
 
-        let detailed_board_question = DetailedBoardQuestion {
-            board_question,
-            question,
-        };
+        let detailed_board_question = DetailedBoardQuestion { mapping, question };
 
         Ok(detailed_board_question)
     }
 
     /// Fetch game board data
-    async fn fetch_detailed_board_questions(
+    async fn find_detailed_board_questions(
         &self,
         ctx: &Context<'_>,
         game_board_id: i64,
@@ -81,7 +85,8 @@ impl BoardQuestionQuery {
         let mut conn = pool.get().await?;
 
         let questions =
-            BoardQuestion::fetch_game_board_data_with_questions(&mut conn, game_board_id).await?;
+            GameBoardQuestionMapping::find_detailed_mappings_by_board_id(&mut conn, game_board_id)
+                .await?;
 
         Ok(questions)
     }

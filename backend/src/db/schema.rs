@@ -1,7 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    board_questions (board_id, question_id) {
+    game_board_question_mappings (board_id, question_id) {
         board_id -> Int8,
         question_id -> Int8,
         daily_double -> Bool,
@@ -63,8 +63,8 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(board_questions -> game_boards (board_id));
-diesel::joinable!(board_questions -> questions (question_id));
+diesel::joinable!(game_board_question_mappings -> game_boards (board_id));
+diesel::joinable!(game_board_question_mappings -> questions (question_id));
 diesel::joinable!(game_boards -> users (user_id));
 diesel::joinable!(games -> game_boards (game_board_id));
 diesel::joinable!(games -> users (user_id));
@@ -72,7 +72,7 @@ diesel::joinable!(players -> games (game_id));
 diesel::joinable!(questions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    board_questions,
+    game_board_question_mappings,
     game_boards,
     games,
     players,

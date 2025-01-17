@@ -73,7 +73,7 @@ impl GameBoard {
             .await
     }
 
-    /// Update title of gameboard
+    /// Update title or categories of gameboard
     pub async fn update_game_board(
         conn: &mut AsyncPgConnection,
         game_board_id: i64,
@@ -82,6 +82,26 @@ impl GameBoard {
         diesel::update(game_boards::table.find(game_board_id))
             .set(&updated_fields)
             .get_result(conn)
+            .await
+    }
+
+    /// Update individual category of gameboard
+    pub async fn update_game_board_category(
+        conn: &mut AsyncPgConnection,
+        game_board_id: i64,
+        index: i32,
+        category: String,
+    ) -> Result<Self, diesel::result::Error> {
+        let mut game_board: GameBoard = game_boards::table
+            .find(game_board_id)
+            .first::<Self>(conn)
+            .await?;
+
+        game_board.categories[index as usize] = Some(category);
+
+        diesel::update(game_boards::table.find(game_board_id))
+            .set(game_boards::categories.eq(game_board.categories))
+            .get_result::<Self>(conn)
             .await
     }
 }

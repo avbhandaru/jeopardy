@@ -1,5 +1,5 @@
 // model modules
-pub mod board_question;
+pub mod game_board_question_mapping;
 pub mod game;
 pub mod game_board;
 pub mod question;

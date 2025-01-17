@@ -5,12 +5,14 @@ use async_graphql::{EmptySubscription, MergedObject, Schema};
 
 use super::{
     mutations::{
-        board_question::BoardQuestionMutation, game::GameMutation, game_board::GameBoardMutation,
-        player::PlayerMutation, question::QuestionMutation, user::UserMutation,
+        game::GameMutation, game_board::GameBoardMutation,
+        game_board_question_mapping::GameBoardMappingMutation, player::PlayerMutation,
+        question::QuestionMutation, user::UserMutation,
     },
     query::{
-        board_question::BoardQuestionQuery, game::GameQuery, game_board::GameBoardQuery,
-        player::PlayerQuery, question::QuestionQuery, user::UserQuery,
+        game::GameQuery, game_board::GameBoardQuery,
+        game_board_question_mapping::GameBoardMappingQuery, player::PlayerQuery,
+        question::QuestionQuery, user::UserQuery,
     },
 };
 
@@ -19,7 +21,7 @@ pub struct RootQuery(
     UserQuery,
     GameBoardQuery,
     QuestionQuery,
-    BoardQuestionQuery,
+    GameBoardMappingQuery,
     GameQuery,
     PlayerQuery,
 );
@@ -29,7 +31,7 @@ pub struct RootMutation(
     UserMutation,
     GameBoardMutation,
     QuestionMutation,
-    BoardQuestionMutation,
+    GameBoardMappingMutation,
     GameMutation,
     PlayerMutation,
 );

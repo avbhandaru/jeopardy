@@ -4,14 +4,15 @@
 mod common;
 use async_graphql::{Request, Response, Schema};
 use backend::graphql::schema::create_schema;
-use backend::models::board_question::BoardQuestion;
 use backend::models::game_board::{GameBoard, NewGameBoard};
+use backend::models::game_board_question_mapping::GameBoardQuestionMapping;
 use backend::models::question::Question;
 use backend::models::user::{NewUser, User};
 use common::factories::{
-    create_test_board_question, create_test_game_board, create_test_question, create_test_user,
+    create_test_game_board, create_test_game_board_question_mapping, create_test_question,
+    create_test_user,
 };
-use common::fixtures::{board_with_questions_fixture, comprehensive_fixture};
+use common::fixtures::board_with_questions_fixture;
 use common::setup::{
     create_test_database, drop_test_database, establish_super_connection, get_test_database_url,
     run_migrations_sync, TestDB,
@@ -151,22 +152,25 @@ async fn test_get_user_graphql() {
         username: "testUser".to_string(),
     };
     let mut conn = test_db.pool.get().await.unwrap();
-    User::create(&mut conn, user1).await.unwrap();
+    let created_user: User = User::create(&mut conn, user1).await.unwrap();
 
     // Only testing UserQuery, so no need for mutation or subscription
     let schema = create_schema(test_db.pool.clone());
 
     // Define Graphql query
-    let query = r#"
-        query {
-            getUser(userId: 1) {
+    let query = format!(
+        r#"
+        query {{
+            getUser(userId: {}) {{
                 id
                 username
                 createdAt
                 updatedAt
-            }
-        }
-    "#;
+            }}
+        }}
+    "#,
+        created_user.id
+    );
 
     // Execute the query and store response
     let request: Request = Request::new(query);
@@ -182,13 +186,13 @@ async fn test_get_user_graphql() {
     // Check that the response does not contain errors
     assert!(response.errors.is_empty());
 
-    // Extract the "createUser" data from the response
+    // Extract the "getUser" data from the response
     let data = response.data.into_json().unwrap();
     let user = data["getUser"].clone();
 
     // Validate that the returned user matches what we expect
     assert_eq!(user["username"], "testUser");
-    assert_eq!(user["id"], 1); // Ensure an ID was returned
+    assert_eq!(user["id"], created_user.id); // Ensure an ID was returned
 
     // Tear down test_db
     let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
@@ -248,17 +252,18 @@ async fn test_all_users_graphql() {
     let users_data = data["allUsers"].as_array().unwrap();
 
     // Validate returned users matches what we expect
-    assert_eq!(users_data.len(), 2);
+    // Migrations create 6, tests add 2
+    assert_eq!(users_data.len(), 8);
 
     // Check the first user
-    let user1_data = &users_data[0];
+    let user1_data = &users_data[6];
     assert_eq!(user1_data["username"], "user1");
     assert!(user1_data["id"].as_i64().is_some());
     assert!(user1_data["createdAt"].as_str().is_some());
     assert!(user1_data["updatedAt"].as_str().is_some());
 
     // Check the second user
-    let user2_data = &users_data[1];
+    let user2_data = &users_data[7];
     assert_eq!(user2_data["username"], "user2");
     assert!(user2_data["id"].as_i64().is_some());
     assert!(user2_data["createdAt"].as_str().is_some());
@@ -379,7 +384,7 @@ async fn test_get_game_board_graphql() {
 
     // Validate game_board
     assert_eq!(game_board["id"], 1);
-    assert_eq!(game_board["title"], "test_board");
+    assert_eq!(game_board["title"], "General Knowledge Board");
     assert_eq!(game_board["userId"], 1);
 
     // Tear down test_db
@@ -408,13 +413,17 @@ async fn test_factory_functions() {
     assert_eq!(factory_question.answer, "defaultanswer");
 
     // Create test board question using factory
-    let factory_board_question: BoardQuestion =
-        create_test_board_question(&mut conn, factory_game_board.id, factory_question.id, None)
-            .await;
-    assert_eq!(factory_board_question.points, 100);
-    assert_eq!(factory_board_question.daily_double, false);
-    assert_eq!(factory_board_question.grid_row, 0);
-    assert_eq!(factory_board_question.grid_col, 0);
+    let factory_mapping: GameBoardQuestionMapping = create_test_game_board_question_mapping(
+        &mut conn,
+        factory_game_board.id,
+        factory_question.id,
+        None,
+    )
+    .await;
+    assert_eq!(factory_mapping.points, 100);
+    assert!(!factory_mapping.daily_double);
+    assert_eq!(factory_mapping.grid_row, 0);
+    assert_eq!(factory_mapping.grid_col, 0);
 
     // Tear down test_db
     let successfully_droppped: bool = test_db.close().await.expect("Failed to close test_db");
@@ -609,15 +618,18 @@ async fn test_create_game_board_graphql() {
 }
 
 #[tokio::test]
-async fn test_get_board_questions_graphql() {
+async fn test_get_board_question_mappings_graphql() {
     // Set up test database and schema
     let mut test_db: TestDB = TestDB::new().await.expect("Failed to initialize test_db");
 
     // Insert test user, game board, and multiple questions using fixtures
     let mut conn = test_db.pool.get().await.unwrap();
-    let (board, board_questions, questions) =
-        board_with_questions_fixture(&mut conn, "test_board_user").await;
-    assert_eq!(board_questions.len(), 5);
+    let (board, board_mappings, questions): (
+        GameBoard,
+        Vec<GameBoardQuestionMapping>,
+        Vec<Question>,
+    ) = board_with_questions_fixture(&mut conn, "test_board_user").await;
+    assert_eq!(board_mappings.len(), 5);
     assert_eq!(questions.len(), 5);
 
     // Build graphql schema with Query and Mutation types
@@ -627,7 +639,7 @@ async fn test_get_board_questions_graphql() {
     let query = format!(
         r#"
         query {{
-            boardQuestionsByBoard(gameBoardId: {}) {{
+            findGameBoardMappings(gameBoardId: {}) {{
                 boardId
                 questionId
                 dailyDouble
@@ -656,16 +668,18 @@ async fn test_get_board_questions_graphql() {
 
     // Retrieve board questions
     let data = response.data.into_json().unwrap();
-    let fetched_board_questions = data["boardQuestionsByBoard"].as_array().unwrap();
+    let fetched_mappings = data["findGameBoardMappings"].as_array().unwrap();
 
     // Validate that the number of board questions matches
-    assert_eq!(fetched_board_questions.len(), board_questions.len());
+    assert_eq!(fetched_mappings.len(), board_mappings.len());
 
-    for (expected, actual) in board_questions.iter().zip(fetched_board_questions.iter()) {
+    for (expected, actual) in board_mappings.iter().zip(fetched_mappings.iter()) {
+        let expected: &GameBoardQuestionMapping = expected;
+        let actual: &serde_json::Value = actual;
         // Validate board and question Ids
-        assert_eq!(actual["boardId"], board.id as i64, "Board ID mismatch");
+        assert_eq!(actual["boardId"], board.id, "Board ID mismatch");
         assert_eq!(
-            actual["questionId"], expected.question_id as i64,
+            actual["questionId"], expected.question_id,
             "Question ID mismatch"
         );
 
@@ -676,19 +690,13 @@ async fn test_get_board_questions_graphql() {
         );
 
         // Validate points
-        assert_eq!(actual["points"], expected.points as i64, "Points mismatch");
+        assert_eq!(actual["points"], expected.points, "Points mismatch");
 
         // Validate grid_row
-        assert_eq!(
-            actual["gridRow"], expected.grid_row as i64,
-            "Grid Row mismatch"
-        );
+        assert_eq!(actual["gridRow"], expected.grid_row, "Grid Row mismatch");
 
         // Validate grid_col
-        assert_eq!(
-            actual["gridCol"], expected.grid_col as i64,
-            "Grid Column mismatch"
-        );
+        assert_eq!(actual["gridCol"], expected.grid_col, "Grid Column mismatch");
     }
 
     // Tear down test_db
