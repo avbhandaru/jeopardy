@@ -14,29 +14,36 @@ name = "backend" # Name of the binary
 
 [dependencies]
 axum = "0.7.5"
-async-graphql = { version = "7.0.9", features = ["chrono"] }
+async-graphql = { version = "7.0.9", default-features = false, features = [
+    "chrono",
+    "playground",
+] }
 async-graphql-axum = "7.0.9"
-diesel = { version = "2.0", features = ["chrono", "postgres", "serde_json"] }
-diesel-async = { version = "0.5.0", features = [
+diesel = { version = "2.0", default-features = false, features = [
+    "postgres",
+    "chrono",
+] }
+diesel-async = { version = "0.5.0", default-features = false, features = [
     "postgres",
     "deadpool",
-    "async-connection-wrapper",
 ] }
-tokio = { version = "1.40.0", features = ["macros", "rt-multi-thread"] }
-chrono = { version = "0.4", features = ["serde"] }
-serde = { version = "1.0", features = ["derive"] }
-axum-server = "0.7.1"
-hyper = "1.4.1"
-reqwest = "0.12.7"
-tower-http = { version = "0.6.1", features = ["cors"] }
-http = "1.1.0"
-serde_json = "1.0.128"
-deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
-diesel_migrations = "2.2.0"
-uuid = { version = "1.11.0", features = ["v4"] }
-regex = "1.11.1"
+tokio = { version = "1.40.0", default-features = false, features = [
+    "rt-multi-thread",
+] }
+chrono = { version = "0.4", default-features = false, features = ["serde"] }
+axum-server = { version = "0.7.1", default-features = false }
+tower-http = { version = "0.6.1", default-features = false, features = [
+    "cors",
+] }
+http = { version = "1.1.0", default-features = false }
+deadpool-diesel = { version = "0.6.1", default-features = false, features = [
+    "postgres",
+] }
 derive_builder = "0.20.2"
 dotenvy = "0.15.7"
 
 [dev-dependencies]
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["rt-multi-thread"] }
+regex = "1.11.1"
+diesel_migrations = "2.2.0"
+uuid = { version = "1.11.0", features = ["v4"] }

@@ -11,6 +11,7 @@ use diesel_migrations::{FileBasedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 use regex::Regex;
 use std::env;
+#[cfg(test)]
 use uuid::Uuid;
 
 pub fn run_migrations_sync(database_url: &str) {
