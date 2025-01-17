@@ -1,16 +1,32 @@
-// src/models/board_question.rs
+//! src/models/board_question.rs
+//! This module contains the `GameBoardQuestionMapping` struct and related logic.
+//! The struct is aliased as `GBQMapping` in the `mod.rs` file for shorter references.
 
+use crate::db::schema::game_board_question_mappings;
 use crate::models::game_board::GameBoard;
 use crate::models::question::Question;
-use crate::{
-    db::schema::game_board_question_mappings,
-    graphql::types::game_board_types::DetailedBoardQuestion,
-};
 use async_graphql::SimpleObject;
 use derive_builder::Builder;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
+/// `GBQMapping` is alias for `GameBoardQuestionMapping`.
+/// Represents the mapping between a game board and a question.
+///
+/// This struct defines the association between a game board and a question
+/// along with additional metadata such as the position of the question
+/// on the grid, points, and whether it's a daily double.
+/// # Example
+/// ```rust
+/// let mapping = GBQMapping {
+///     board_id: 1,
+///     question_id: 42,
+///     daily_double: false,
+///     points: 200,
+///     grid_row: 2,
+///     grid_col: 3,
+/// }
+/// ```
 #[derive(
     Identifiable, Associations, Queryable, Selectable, Debug, SimpleObject, Builder, Clone,
 )]
@@ -27,6 +43,9 @@ pub struct GameBoardQuestionMapping {
     pub grid_col: i32,
 }
 
+/// `NewGBQMapping` is alias for `NewGameBoardQuestionMapping`.
+///
+/// Represents a new mapping between a game board and a question.
 #[derive(Debug, Insertable, Builder)]
 #[diesel(table_name = game_board_question_mappings)]
 pub struct NewGameBoardQuestionMapping {
@@ -38,6 +57,9 @@ pub struct NewGameBoardQuestionMapping {
     pub grid_col: i32,
 }
 
+/// `UpdateGBQMapping` is alias for `UpdateGameBoardQuestionMapping`.
+///
+/// Represents the fields to update in an existing game board-question mapping.
 #[derive(Debug, AsChangeset)]
 #[diesel(table_name = game_board_question_mappings)]
 pub struct UpdateGameBoardQuestionMapping {
@@ -48,7 +70,14 @@ pub struct UpdateGameBoardQuestionMapping {
 }
 
 impl GameBoardQuestionMapping {
-    /// Create a new game board-question mapping
+    /// Create a new game board-question mapping.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `new_mapping` - A `NewGameBoardQuestionMapping` instance containing the mapping's data.
+    ///
+    /// # Returns
+    /// A `Result` containing the newly created mapping or a Diesel error.
     pub async fn create_mapping(
         conn: &mut AsyncPgConnection,
         new_mapping: NewGameBoardQuestionMapping,
@@ -59,8 +88,8 @@ impl GameBoardQuestionMapping {
             .await
     }
 
-    /// Find all mappings for a board
-    pub async fn find_mappings_by_board_id(
+    /// Fetch all mappings for a board
+    pub async fn fetch_mappings_by_board_id(
         conn: &mut AsyncPgConnection,
         board_id: i64,
     ) -> Result<Vec<Self>, diesel::result::Error> {
@@ -70,8 +99,15 @@ impl GameBoardQuestionMapping {
             .await
     }
 
-    /// Find all mappings for a question
-    pub async fn find_mappings_by_question_id(
+    /// Fetch all mappings for a specific game board.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `board_id` - The ID of the game board.
+    ///
+    /// # Returns
+    /// A `Result` containing a vector of mappings or a Diesel error.
+    pub async fn fetch_mappings_by_question_id(
         conn: &mut AsyncPgConnection,
         question_id: i64,
     ) -> Result<Vec<Self>, diesel::result::Error> {
@@ -81,7 +117,15 @@ impl GameBoardQuestionMapping {
             .await
     }
 
-    /// Find a mapping from board id and question id
+    /// Find a mapping by game board ID and question ID.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `board_id` - The ID of the game board.
+    /// * `question_id` - The ID of the question.
+    ///
+    /// # Returns
+    /// A `Result` containing the mapping or a Diesel error.
     pub async fn find_mapping_by_board_and_question(
         conn: &mut AsyncPgConnection,
         board_id: i64,
@@ -94,7 +138,16 @@ impl GameBoardQuestionMapping {
             .await
     }
 
-    /// Find a mapping by board id, row, and column
+    /// Find a mapping by game board ID, row, and column.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `game_board_id` - The ID of the game board.
+    /// * `row` - The row position on the game board grid.
+    /// * `col` - The column position on the game board grid.
+    ///
+    /// # Returns
+    /// A `Result` containing the mapping or a Diesel error.
     pub async fn find_mapping_by_row_and_col(
         conn: &mut AsyncPgConnection,
         game_board_id: i64,
@@ -109,7 +162,16 @@ impl GameBoardQuestionMapping {
             .await
     }
 
-    /// Update fields for a specific mapping
+    /// Update fields for a specific game board-question mapping.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `board_id` - The ID of the game board.
+    /// * `question_id` - The ID of the question.
+    /// * `updated_fields` - An `UpdateGameBoardQuestionMapping` instance containing the updated fields.
+    ///
+    /// # Returns
+    /// A `Result` containing the updated mapping or a Diesel error.
     pub async fn update_mapping(
         conn: &mut AsyncPgConnection,
         board_id: i64,
@@ -120,30 +182,5 @@ impl GameBoardQuestionMapping {
             .set(&updated_fields)
             .get_result(conn)
             .await
-    }
-
-    /// Fetch all mappings with questions for a gameboard
-    pub async fn find_detailed_mappings_by_board_id(
-        conn: &mut AsyncPgConnection,
-        game_board_id: i64,
-    ) -> Result<Vec<DetailedBoardQuestion>, diesel::result::Error> {
-        // Fetch mappings
-        let mappings: Vec<GameBoardQuestionMapping> = game_board_question_mappings::table
-            .filter(game_board_question_mappings::board_id.eq(game_board_id))
-            .order_by((
-                game_board_question_mappings::grid_col,
-                game_board_question_mappings::grid_row,
-            ))
-            .load(conn)
-            .await?;
-
-        // Fetch questions for each mapping
-        let mut detailed_questions = Vec::new();
-        for mapping in mappings {
-            let question = Question::find_by_id(conn, mapping.question_id).await?;
-            detailed_questions.push(DetailedBoardQuestion { mapping, question });
-        }
-
-        Ok(detailed_questions)
     }
 }

@@ -2,15 +2,9 @@
 
 use async_graphql::{Context, InputObject, Object, Result};
 
-use crate::{
-    db::pool::DBPool,
-    models::{
-        game_board::GameBoard,
-        game_board_question_mapping::{
-            GameBoardQuestionMapping, NewGameBoardQuestionMapping, UpdateGameBoardQuestionMapping,
-        },
-        question::Question,
-    },
+use crate::db::pool::DBPool;
+use crate::models::{
+    game_board::GameBoard, question::Question, GBQMapping, NewGBQMapping, UpdateGBQMapping,
 };
 
 #[derive(InputObject)]
@@ -44,7 +38,7 @@ impl GameBoardMappingMutation {
         &self,
         ctx: &Context<'_>,
         input: CreateGameBoardMappingInput,
-    ) -> Result<GameBoardQuestionMapping> {
+    ) -> Result<GBQMapping> {
         let pool = ctx.data::<DBPool>().expect("Can't get DBPool from context");
         let mut conn = pool.get().await.expect("Failed to get connection");
 
@@ -61,7 +55,7 @@ impl GameBoardMappingMutation {
         };
 
         // Check for existing mapping between question and board
-        if let Ok(_existing_mapping) = GameBoardQuestionMapping::find_mapping_by_board_and_question(
+        if let Ok(_existing_mapping) = GBQMapping::find_mapping_by_board_and_question(
             &mut conn,
             input.board_id,
             input.question_id,
@@ -72,7 +66,7 @@ impl GameBoardMappingMutation {
         }
 
         // Check for existing BoardQuestion at [row, col]
-        if let Ok(_existing_mapping) = GameBoardQuestionMapping::find_mapping_by_row_and_col(
+        if let Ok(_existing_mapping) = GBQMapping::find_mapping_by_row_and_col(
             &mut conn,
             input.board_id,
             input.grid_row,
@@ -87,7 +81,7 @@ impl GameBoardMappingMutation {
         }
 
         // Proceed with association
-        let new_mapping = NewGameBoardQuestionMapping {
+        let new_mapping = NewGBQMapping {
             board_id: input.board_id,
             question_id: input.question_id,
             daily_double: input.daily_double,
@@ -96,7 +90,7 @@ impl GameBoardMappingMutation {
             grid_col: input.grid_col,
         };
 
-        let mapping = GameBoardQuestionMapping::create_mapping(&mut conn, new_mapping).await?;
+        let mapping = GBQMapping::create_mapping(&mut conn, new_mapping).await?;
         Ok(mapping)
     }
 
@@ -104,11 +98,11 @@ impl GameBoardMappingMutation {
         &self,
         ctx: &Context<'_>,
         input: UpdateGameBoardMappingInput,
-    ) -> Result<GameBoardQuestionMapping> {
+    ) -> Result<GBQMapping> {
         let pool = ctx.data::<DBPool>().expect("Cant get DBPool from context");
         let mut conn = pool.get().await.expect("Failed to get connection");
 
-        let existing_mapping_result = GameBoardQuestionMapping::find_mapping_by_board_and_question(
+        let existing_mapping_result = GBQMapping::find_mapping_by_board_and_question(
             &mut conn,
             input.board_id,
             input.question_id,
@@ -133,14 +127,14 @@ impl GameBoardMappingMutation {
             }
         }
 
-        let updated_fields: UpdateGameBoardQuestionMapping = UpdateGameBoardQuestionMapping {
+        let updated_fields: UpdateGBQMapping = UpdateGBQMapping {
             daily_double: input.daily_double,
             points: input.points,
             grid_row: input.grid_row,
             grid_col: input.grid_col,
         };
 
-        let updated: GameBoardQuestionMapping = GameBoardQuestionMapping::update_mapping(
+        let updated: GBQMapping = GBQMapping::update_mapping(
             &mut conn,
             input.board_id,
             input.question_id,

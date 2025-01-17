@@ -161,7 +161,7 @@ async fn test_get_user_graphql() {
     let query = format!(
         r#"
         query {{
-            getUser(userId: {}) {{
+            findUser(userId: {}) {{
                 id
                 username
                 createdAt
@@ -186,9 +186,9 @@ async fn test_get_user_graphql() {
     // Check that the response does not contain errors
     assert!(response.errors.is_empty());
 
-    // Extract the "getUser" data from the response
+    // Extract the "findtUser" data from the response
     let data = response.data.into_json().unwrap();
-    let user = data["getUser"].clone();
+    let user = data["findUser"].clone();
 
     // Validate that the returned user matches what we expect
     assert_eq!(user["username"], "testUser");
@@ -224,7 +224,7 @@ async fn test_all_users_graphql() {
     // Define the GraphQL query string for allUsers
     let query = r#"
         query {
-            allUsers {
+            fetchAllUsers {
                 id
                 username
                 createdAt
@@ -249,7 +249,7 @@ async fn test_all_users_graphql() {
 
     // Extract the "allUsers" data from response
     let data = response.data.into_json().unwrap();
-    let users_data = data["allUsers"].as_array().unwrap();
+    let users_data = data["fetchAllUsers"].as_array().unwrap();
 
     // Validate returned users matches what we expect
     // Migrations create 6, tests add 2
@@ -353,7 +353,7 @@ async fn test_get_game_board_graphql() {
     // Define the GraphQL query
     let query = r#"
         query {
-            getGameBoard(gameBoardId: 1) {
+            findGameBoard(gameBoardId: 1) {
                 id
                 createdAt
                 updatedAt
@@ -380,7 +380,7 @@ async fn test_get_game_board_graphql() {
     assert!(response.errors.is_empty());
 
     let data = response.data.into_json().unwrap();
-    let game_board = data["getGameBoard"].clone();
+    let game_board = data["findGameBoard"].clone();
 
     // Validate game_board
     assert_eq!(game_board["id"], 1);
@@ -450,7 +450,7 @@ async fn test_mudkip_fixture() {
     let mudkip_question_query = format!(
         r#"
         query {{
-            getQuestionFromUser (userId: {}) {{
+            fetchQuestionsFromUser (userId: {}) {{
                 id
                 createdAt
                 updatedAt
@@ -476,7 +476,7 @@ async fn test_mudkip_fixture() {
 
     // Retrieve mudkip's 10 questions
     let data = response.data.into_json().unwrap();
-    let mudkip_questions = data["getQuestionFromUser"].as_array().unwrap();
+    let mudkip_questions = data["fetchQuestionsFromUser"].as_array().unwrap();
 
     assert_eq!(mudkip_questions.len(), 5);
     for i in 0..5 {
@@ -514,7 +514,7 @@ async fn test_get_question_from_ids() {
     let ten_question_query = format!(
         r#"
         query {{
-            getQuestionsFromIds (questionIds: {}) {{
+            fetchQuestionsFromIds (questionIds: {}) {{
                 id
                 createdAt
                 updatedAt
@@ -543,7 +543,7 @@ async fn test_get_question_from_ids() {
 
     // Retrieve mudkip's 5 questions
     let data = response.data.into_json().unwrap();
-    let ten_questions = data["getQuestionsFromIds"].as_array().unwrap();
+    let ten_questions = data["fetchQuestionsFromIds"].as_array().unwrap();
 
     for i in 0..5 {
         assert_eq!(ten_questions[i]["question"], format!("Question {}", i + 1));
@@ -639,7 +639,7 @@ async fn test_get_board_question_mappings_graphql() {
     let query = format!(
         r#"
         query {{
-            findGameBoardMappings(gameBoardId: {}) {{
+            fetchGameBoardMappings(gameBoardId: {}) {{
                 boardId
                 questionId
                 dailyDouble
@@ -668,14 +668,13 @@ async fn test_get_board_question_mappings_graphql() {
 
     // Retrieve board questions
     let data = response.data.into_json().unwrap();
-    let fetched_mappings = data["findGameBoardMappings"].as_array().unwrap();
+    let fetched_mappings = data["fetchGameBoardMappings"].as_array().unwrap();
 
     // Validate that the number of board questions matches
     assert_eq!(fetched_mappings.len(), board_mappings.len());
 
     for (expected, actual) in board_mappings.iter().zip(fetched_mappings.iter()) {
         let expected: &GameBoardQuestionMapping = expected;
-        let actual: &serde_json::Value = actual;
         // Validate board and question Ids
         assert_eq!(actual["boardId"], board.id, "Board ID mismatch");
         assert_eq!(

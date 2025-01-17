@@ -137,7 +137,7 @@ pub async fn board_with_questions_fixture(
     let (_user, game_boards, questions) = comprehensive_fixture(conn, username, 1, 5).await;
 
     let game_board = &game_boards[0];
-    let mappings = GameBoardQuestionMapping::find_mappings_by_board_id(conn, game_board.id)
+    let mappings = GameBoardQuestionMapping::fetch_mappings_by_board_id(conn, game_board.id)
         .await
         .expect("Failed to fetch board questions");
 

@@ -10,7 +10,7 @@ use super::{
         question::QuestionMutation, user::UserMutation,
     },
     query::{
-        game::GameQuery, game_board::GameBoardQuery,
+        game::GameQuery, game_board::GameBoardQuery, game_board_question::GameBoardQuestionQuery,
         game_board_question_mapping::GameBoardMappingQuery, player::PlayerQuery,
         question::QuestionQuery, user::UserQuery,
     },
@@ -21,6 +21,7 @@ pub struct RootQuery(
     UserQuery,
     GameBoardQuery,
     QuestionQuery,
+    GameBoardQuestionQuery,
     GameBoardMappingQuery,
     GameQuery,
     PlayerQuery,
