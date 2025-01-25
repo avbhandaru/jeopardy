@@ -3,8 +3,8 @@
 import { gql } from "@apollo/client";
 
 export const PLAYER_QUERY = gql`
-  query GetPlayer($playerId: Int!) {
-    player(playerId: $playerId) {
+  query FindPlayer($playerId: Int!) {
+    findPlayer(playerId: $playerId) {
       id
       createdAt
       updatedAt

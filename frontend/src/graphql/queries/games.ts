@@ -3,8 +3,8 @@
 import { gql } from "@apollo/client";
 
 export const GAME_QUERY = gql`
-  query GetGame($gameId: Int!) {
-    getGame(gameId: $gameId) {
+  query FindGame($gameId: Int!) {
+    findGame(gameId: $gameId) {
       id
       createdAt
       updatedAt
@@ -15,8 +15,8 @@ export const GAME_QUERY = gql`
 `;
 
 export const PLAYER_GAMES_QUERY = gql`
-  query GetGamesFromUser($userId: Int!) {
-    getGamesFromUser(userId: $userId) {
+  query FetchGamesFromUser($userId: Int!) {
+    fetchGamesFromUser(userId: $userId) {
       id
       createdAt
       updatedAt

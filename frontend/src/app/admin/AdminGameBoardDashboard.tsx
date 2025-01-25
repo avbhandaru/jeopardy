@@ -3,7 +3,7 @@
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
-import { useGetAllGameBoardsQuery } from "@/__generated__/graphql";
+import { useFetchAllGameBoardsQuery } from "@/__generated__/graphql";
 import Link from "next/link";
 
 // Define columns for DataGrid
@@ -25,14 +25,14 @@ const columns: GridColDef[] = [
 ];
 
 const AdminGameBoardDashboard = () => {
-  const { loading, error, data } = useGetAllGameBoardsQuery();
+  const { loading, error, data } = useFetchAllGameBoardsQuery();
 
   if (loading) return <p>Loading data...</p>;
   if (error) return <p>Error fetching data: {error.message}</p>;
   if (!data) return <p>No gameboards found.</p>;
 
   // Prepare rows for DataGrid
-  const rows = data.allGameBoards.map((gameboard) => ({
+  const rows = data.fetchAllGameBoards.map((gameboard) => ({
     id: gameboard.id,
     createdAt: new Date(gameboard.createdAt).toLocaleString(),
     updatedAt: new Date(gameboard.updatedAt).toLocaleString(),

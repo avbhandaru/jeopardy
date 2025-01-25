@@ -1,18 +1,20 @@
 import React from "react";
-import { DetailedBoardQuestion } from "@/__generated__/types";
+import { GameBoardQuestion } from "@/__generated__/types";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
+import EditQuestionModal from "./EditQuestionModal";
 
-interface EditBoardCellProps {
-  questionAndInfo: DetailedBoardQuestion;
-  onClick: () => void;
+interface GBQCellProps {
+  gameBoardQuestion: GameBoardQuestion;
 }
 
-const QuestionCell: React.FC<EditBoardCellProps> = ({
-  questionAndInfo,
-  onClick,
-}) => {
+const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   return (
     <Grid
       size={{ xs: 12 / 5 }}
@@ -32,13 +34,18 @@ const QuestionCell: React.FC<EditBoardCellProps> = ({
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={onClick}
+      onClick={handleOpen}
     >
       {isHovered
-        ? questionAndInfo.question.answer
-        : questionAndInfo.question.question}
+        ? gameBoardQuestion.question.answer
+        : gameBoardQuestion.question.question}
+      <EditQuestionModal
+        open={open}
+        gameBoardQuestion={gameBoardQuestion}
+        onClose={handleClose}
+      />
     </Grid>
   );
 };
 
-export default QuestionCell;
+export default GBQCell;

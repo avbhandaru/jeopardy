@@ -4,7 +4,7 @@
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
 import UserMutation from "../users/UserMutation";
-import { useGetAllUsersQuery } from "@/__generated__/graphql";
+import { useFetchAllUsersQuery } from "@/__generated__/graphql";
 import Link from "next/link";
 
 // Define columns for DataGrid
@@ -23,14 +23,14 @@ const columns: GridColDef[] = [
 ];
 
 const AdminUserDashboard = () => {
-  const { loading, error, data } = useGetAllUsersQuery();
+  const { loading, error, data } = useFetchAllUsersQuery();
 
   if (loading) return <p>Loading data...</p>;
   if (error) return <p>Error fetching data: {error.message}</p>;
   if (!data) return <p>No users found.</p>; // Check if data is undefined
 
   // Prepare rows for DataGrid
-  const rows = data.allUsers.map((user) => ({
+  const rows = data.fetchAllUsers.map((user) => ({
     id: user.id,
     username: user.username,
     createdAt: new Date(user.createdAt).toLocaleString(),

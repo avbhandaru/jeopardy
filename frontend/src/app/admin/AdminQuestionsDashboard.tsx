@@ -1,7 +1,7 @@
 // src/app/components/AdminQuestionsDashboard.tsx
 "use client";
 
-import { useGetAllQuestionsQuery } from "@/__generated__/graphql";
+import { useFetchAllQuestionsQuery } from "@/__generated__/graphql";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
 
@@ -15,13 +15,13 @@ const columns: GridColDef[] = [
 ];
 
 const AdminQuestionsDashboard = () => {
-  const { loading, error, data } = useGetAllQuestionsQuery();
+  const { loading, error, data } = useFetchAllQuestionsQuery();
 
   if (loading) return <p>Loading data...</p>;
   if (error) return <p>Error fetching data: {error.message}</p>;
   if (!data) return <p>No questions found.</p>;
 
-  const rows = data.allQuestions.map((question) => ({
+  const rows = data.fetchAllQuestions.map((question) => ({
     id: question.id,
     createdAt: new Date(question.createdAt).toLocaleString(),
     updatedAt: new Date(question.updatedAt).toLocaleString(),

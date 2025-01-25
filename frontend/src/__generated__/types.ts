@@ -15,30 +15,18 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
-export type BoardQuestion = {
-  __typename?: 'BoardQuestion';
-  boardId: Scalars['Int']['output'];
-  category: Scalars['String']['output'];
-  dailyDouble: Scalars['Boolean']['output'];
-  gridCol: Scalars['Int']['output'];
-  gridRow: Scalars['Int']['output'];
-  points: Scalars['Int']['output'];
-  questionId: Scalars['Int']['output'];
+export type CreateGameBoardInput = {
+  title: Scalars['String']['input'];
+  userId: Scalars['Int']['input'];
 };
 
-export type CreateBoardQuestionInput = {
+export type CreateGameBoardMappingInput = {
   boardId: Scalars['Int']['input'];
-  category: Scalars['String']['input'];
   dailyDouble: Scalars['Boolean']['input'];
   gridCol: Scalars['Int']['input'];
   gridRow: Scalars['Int']['input'];
   points: Scalars['Int']['input'];
   questionId: Scalars['Int']['input'];
-};
-
-export type CreateGameBoardInput = {
-  title: Scalars['String']['input'];
-  userId: Scalars['Int']['input'];
 };
 
 export type CreateGameInput = {
@@ -61,13 +49,13 @@ export type CreateUserInput = {
   username: Scalars['String']['input'];
 };
 
-export type DetailedBoardQuestion = {
-  __typename?: 'DetailedBoardQuestion';
-  boardQuestion: BoardQuestion;
-  question: Question;
-};
-
-/** Diesel Game model with async-graphql support */
+/**
+ * Represents a game in the application.
+ *
+ * This struct supports Diesel for database interactions
+ * and integrates with async-graphql for GraphQL APIs. It is
+ * associated with the `User` struct.
+ */
 export type Game = {
   __typename?: 'Game';
   createdAt: Scalars['DateTime']['output'];
@@ -77,22 +65,108 @@ export type Game = {
   userId: Scalars['Int']['output'];
 };
 
-/** Diesel Game Board model with async-graphql support */
+/**
+ * Represents a game board in the application.
+ *
+ * This struct supports Diesel for database interactions
+ * and integrates with async-graphql for GraphQL APIs. It is
+ * associated with the `User` struct and organizes the structure
+ * of a game with its title and categories.
+ */
 export type GameBoard = {
   __typename?: 'GameBoard';
+  /**
+   * A vector of category names for the game board. Each category
+   * is an optional string, allowing for empty or missing categories.
+   */
+  categories: Array<Maybe<Scalars['String']['output']>>;
+  /** The timestamp when the game board record was created. */
   createdAt: Scalars['DateTime']['output'];
+  /** The unique identifier for the game board. */
   id: Scalars['Int']['output'];
+  /** The title of the game board. */
   title: Scalars['String']['output'];
+  /** The timestamp when the game board record was last updated. */
   updatedAt: Scalars['DateTime']['output'];
+  /** The unique identifier of the user who created the game board. */
   userId: Scalars['Int']['output'];
 };
 
-export type GameBoardData = {
-  __typename?: 'GameBoardData';
-  categories: Array<Scalars['String']['output']>;
-  questions: Array<DetailedBoardQuestion>;
+/**
+ * `GBQ` is alias for `GameBoardQuestion`.
+ *
+ * Represents a question and its corresponding gameboard metadata
+ *
+ * GBQ := GBQMapping + Question.
+ * # Example
+ * ```rust
+ * use crate::models::{GameBoardQuestion, GBQMapping, Question};
+ * use chrono::Utc;
+ *
+ * let mapping = GBQMapping {
+ * board_id: 1,
+ * question_id: 42,
+ * daily_double: false,
+ * points: 200,
+ * grid_row: 2,
+ * grid_col: 3,
+ * };
+ *
+ * let question = Question {
+ * id: 42,
+ * created_at: Utc::now(),
+ * updated_at: Utc::now(),
+ * user_id: 1,
+ * question: String::from("What is Rust?"),
+ * answer: String::from("A programming language."),
+ * };
+ *
+ * let gbq = GameBoardQuestion::new(mapping, question);
+ * println!("{:?}", gbq);
+ * ```
+ */
+export type GameBoardQuestion = {
+  __typename?: 'GameBoardQuestion';
+  mapping: GameBoardQuestionMapping;
+  question: Question;
 };
 
+/**
+ * `GBQMapping` is alias for `GameBoardQuestionMapping`.
+ * Represents the mapping between a game board and a question.
+ *
+ * This struct defines the association between a game board and a question
+ * along with additional metadata such as the position of the question
+ * on the grid, points, and whether it's a daily double.
+ * # Example
+ * ```rust
+ * let mapping = GBQMapping {
+ * board_id: 1,
+ * question_id: 42,
+ * daily_double: false,
+ * points: 200,
+ * grid_row: 2,
+ * grid_col: 3,
+ * }
+ * ```
+ */
+export type GameBoardQuestionMapping = {
+  __typename?: 'GameBoardQuestionMapping';
+  boardId: Scalars['Int']['output'];
+  dailyDouble: Scalars['Boolean']['output'];
+  gridCol: Scalars['Int']['output'];
+  gridRow: Scalars['Int']['output'];
+  points: Scalars['Int']['output'];
+  questionId: Scalars['Int']['output'];
+};
+
+/**
+ * Represents a player in the application.
+ *
+ * This struct supports Diesel for database interactions
+ * and integrates with async-graphql for GraphQL APIs. It is
+ * associated with the `Game` struct.
+ */
 export type Player = {
   __typename?: 'Player';
   createdAt: Scalars['DateTime']['output'];
@@ -103,24 +177,36 @@ export type Player = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-/** Disel Question Model with async-graphql suppport */
+/**
+ * Represents a question in the application.
+ *
+ * This struct supports Diesel for database interactions
+ * and integrates with async-graphql for GraphQL APIs. It is
+ * associated with the `User` struct.
+ */
 export type Question = {
   __typename?: 'Question';
+  /** The answer to the question. */
   answer: Scalars['String']['output'];
+  /** The timestamp when the question was created. */
   createdAt: Scalars['DateTime']['output'];
+  /** The unique identifier for the question. */
   id: Scalars['Int']['output'];
+  /** The text of the question. */
   question: Scalars['String']['output'];
+  /** The timestamp when the question was last updated. */
   updatedAt: Scalars['DateTime']['output'];
+  /** The unique identifier of the user who created the question. */
   userId: Scalars['Int']['output'];
 };
 
 export type RootMutation = {
   __typename?: 'RootMutation';
-  /** Associate a question with a gameboard */
-  createBoardQuestion: BoardQuestion;
   createGame: Game;
   /** Create a new gameboard with example question */
   createGameBoard: GameBoard;
+  /** Associate a question with a gameboard */
+  createMapping: GameBoardQuestionMapping;
   /** Create a new player */
   createPlayer: Player;
   /** Create a new quesiton */
@@ -129,20 +215,15 @@ export type RootMutation = {
   deletePlayer: Player;
   /** Delete a question by ID */
   deleteQuestion: Scalars['Boolean']['output'];
-  /** Update category for a specific column in a game board */
-  updateBoardColumnCategory: Scalars['Boolean']['output'];
-  updateBoardQuestion: BoardQuestion;
+  /** Update gameboard title or categories */
+  updateGameBoard: GameBoard;
+  /** Update gameboard category at specific index */
+  updateGameBoardCategory: GameBoard;
+  updateMapping: GameBoardQuestionMapping;
   updatePlayerName: Player;
   updatePlayerScore: Player;
   /** Update a question */
   updateQuestion: Question;
-  /** Update gameboard title */
-  updateTitle: GameBoard;
-};
-
-
-export type RootMutationCreateBoardQuestionArgs = {
-  input: CreateBoardQuestionInput;
 };
 
 
@@ -153,6 +234,11 @@ export type RootMutationCreateGameArgs = {
 
 export type RootMutationCreateGameBoardArgs = {
   input: CreateGameBoardInput;
+};
+
+
+export type RootMutationCreateMappingArgs = {
+  input: CreateGameBoardMappingInput;
 };
 
 
@@ -181,15 +267,20 @@ export type RootMutationDeleteQuestionArgs = {
 };
 
 
-export type RootMutationUpdateBoardColumnCategoryArgs = {
-  gameBoardId: Scalars['Int']['input'];
-  gridCol: Scalars['Int']['input'];
-  newCategory: Scalars['String']['input'];
+export type RootMutationUpdateGameBoardArgs = {
+  input: UpdateGameBoardInput;
 };
 
 
-export type RootMutationUpdateBoardQuestionArgs = {
-  input: UpdateBoardQuestionInput;
+export type RootMutationUpdateGameBoardCategoryArgs = {
+  category: Scalars['String']['input'];
+  gameBoardId: Scalars['Int']['input'];
+  index: Scalars['Int']['input'];
+};
+
+
+export type RootMutationUpdateMappingArgs = {
+  input: UpdateGameBoardMappingInput;
 };
 
 
@@ -209,70 +300,62 @@ export type RootMutationUpdateQuestionArgs = {
   input: UpdateQuestionInput;
 };
 
-
-export type RootMutationUpdateTitleArgs = {
-  id: Scalars['Int']['input'];
-  newTitle: Scalars['String']['input'];
-};
-
 export type RootQuery = {
   __typename?: 'RootQuery';
-  /** Fetch all gameboards in the system */
-  allGameBoards: Array<GameBoard>;
-  /** Fetch all questions */
-  allQuestions: Array<Question>;
-  /** Fetch all users */
-  allUsers: Array<User>;
-  /** Fetch a BoardQuestion by board id and question id */
-  boardQuestion: BoardQuestion;
-  /** Fetch all BoardQuestions for a specific GameBoard */
-  boardQuestionsByBoard: Array<BoardQuestion>;
-  /** Fetch DetailedBoardQuestion from game_board_id and question_id */
-  detailedBoardQuestion: DetailedBoardQuestion;
-  /** Fetch game board data */
-  fetchGameBoardData: GameBoardData;
+  /** Fetch all gameboards in the database */
+  fetchAllGameBoards: Array<GameBoard>;
+  /** Fetch all questions in database */
+  fetchAllQuestions: Array<Question>;
+  /** Fetch all users in database */
+  fetchAllUsers: Array<User>;
+  /** Fetch all GameBoard-Question mappings for a specific GameBoard */
+  fetchGameBoardMappings: Array<GameBoardQuestionMapping>;
+  /** Fetch all GameBoardQuestions from board id */
+  fetchGameBoardQuestions: Array<GameBoardQuestion>;
+  /** Fetch all gameboards associated with a specific user */
+  fetchGameBoardsFromUser: Array<GameBoard>;
+  /** Fetch all games from user */
+  fetchGamesFromUser: Array<Game>;
   /** Fetch all players by game id */
   fetchPlayersFromGame: Array<Player>;
-  /** Fetch a single game by id */
-  getGame: Game;
-  /** Fetch a single gameboard by id */
-  getGameBoard: GameBoard;
-  /** Fetch all gameboards associated with a specific user */
-  getGameBoardsFromUser: Array<GameBoard>;
-  /** Fetch all games from user */
-  getGamesFromUser: Array<Game>;
-  /** Fetch all questions from a user */
-  getQuestionFromUser: Array<Question>;
   /** Fetch questions from list of ids */
-  getQuestionsFromIds: Array<Question>;
-  /** Fetch user by id */
-  getUser: User;
-  /** Fetch a single player by id */
-  player: Player;
-  /** Fetch a single question by id */
-  question: Question;
+  fetchQuestionsFromIds: Array<Question>;
+  /** Fetch all questions from a user */
+  fetchQuestionsFromUser: Array<Question>;
+  /** Find a single game by id */
+  findGame: Game;
+  /** Find a single gameboard by id */
+  findGameBoard: GameBoard;
+  /** Find a GameBoard-Question mapping by board id and question id */
+  findGameBoardMapping: GameBoardQuestionMapping;
+  /** Find GameBoardQuestion from game_board_id and question_id */
+  findGameBoardQuestion: GameBoardQuestion;
+  /** Find a single player by id */
+  findPlayer: Player;
+  /** Find a single question by id */
+  findQuestion: Question;
+  /** Find user by id */
+  findUser: User;
 };
 
 
-export type RootQueryBoardQuestionArgs = {
-  gameBoardId: Scalars['Int']['input'];
-  questionId: Scalars['Int']['input'];
-};
-
-
-export type RootQueryBoardQuestionsByBoardArgs = {
+export type RootQueryFetchGameBoardMappingsArgs = {
   gameBoardId: Scalars['Int']['input'];
 };
 
 
-export type RootQueryDetailedBoardQuestionArgs = {
+export type RootQueryFetchGameBoardQuestionsArgs = {
   gameBoardId: Scalars['Int']['input'];
-  questionId: Scalars['Int']['input'];
 };
 
 
-export type RootQueryFetchGameBoardDataArgs = {
-  gameBoardId: Scalars['Int']['input'];
+export type RootQueryFetchGameBoardsFromUserArgs = {
+  userId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryFetchGamesFromUserArgs = {
+  userId: Scalars['Int']['input'];
 };
 
 
@@ -281,53 +364,60 @@ export type RootQueryFetchPlayersFromGameArgs = {
 };
 
 
-export type RootQueryGetGameArgs = {
-  gameId: Scalars['Int']['input'];
-};
-
-
-export type RootQueryGetGameBoardArgs = {
-  gameBoardId: Scalars['Int']['input'];
-};
-
-
-export type RootQueryGetGameBoardsFromUserArgs = {
-  userId: Scalars['Int']['input'];
-};
-
-
-export type RootQueryGetGamesFromUserArgs = {
-  userId: Scalars['Int']['input'];
-};
-
-
-export type RootQueryGetQuestionFromUserArgs = {
-  userId: Scalars['Int']['input'];
-};
-
-
-export type RootQueryGetQuestionsFromIdsArgs = {
+export type RootQueryFetchQuestionsFromIdsArgs = {
   questionIds: Array<Scalars['Int']['input']>;
 };
 
 
-export type RootQueryGetUserArgs = {
+export type RootQueryFetchQuestionsFromUserArgs = {
   userId: Scalars['Int']['input'];
 };
 
 
-export type RootQueryPlayerArgs = {
+export type RootQueryFindGameArgs = {
+  gameId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryFindGameBoardArgs = {
+  gameBoardId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryFindGameBoardMappingArgs = {
+  gameBoardId: Scalars['Int']['input'];
+  questionId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryFindGameBoardQuestionArgs = {
+  gameBoardId: Scalars['Int']['input'];
+  questionId: Scalars['Int']['input'];
+};
+
+
+export type RootQueryFindPlayerArgs = {
   playerId: Scalars['Int']['input'];
 };
 
 
-export type RootQueryQuestionArgs = {
+export type RootQueryFindQuestionArgs = {
   questionId: Scalars['Int']['input'];
 };
 
-export type UpdateBoardQuestionInput = {
+
+export type RootQueryFindUserArgs = {
+  userId: Scalars['Int']['input'];
+};
+
+export type UpdateGameBoardInput = {
   boardId: Scalars['Int']['input'];
-  category?: InputMaybe<Scalars['String']['input']>;
+  categories?: InputMaybe<Array<Scalars['String']['input']>>;
+  title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateGameBoardMappingInput = {
+  boardId: Scalars['Int']['input'];
   dailyDouble?: InputMaybe<Scalars['Boolean']['input']>;
   gridCol?: InputMaybe<Scalars['Int']['input']>;
   gridRow?: InputMaybe<Scalars['Int']['input']>;
@@ -341,10 +431,35 @@ export type UpdateQuestionInput = {
   question?: InputMaybe<Scalars['String']['input']>;
 };
 
+/**
+ * Represents a user in the application.
+ *
+ * This struct supports Diesel for database interactions
+ * and integrates with async-graphql for GraphQL APIs.
+ * # Example
+ *
+ * ```rust
+ * use crate::models::User;
+ * use chrono::Utc;
+ *
+ * let user = User {
+ * id: 1,
+ * created_at: Utc::now(),
+ * updated_at: Utc::now(),
+ * username: String::from("johndoe"),
+ * };
+ *
+ * println!("{:?}", user);
+ * ```
+ */
 export type User = {
   __typename?: 'User';
+  /** The timestamp when the user was created. */
   createdAt: Scalars['DateTime']['output'];
+  /** The unique identifier for the user. */
   id: Scalars['Int']['output'];
+  /** The timestamp when the user was last updated. */
   updatedAt: Scalars['DateTime']['output'];
+  /** The username of the user. */
   username: Scalars['String']['output'];
 };

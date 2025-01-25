@@ -4,9 +4,9 @@
 import React, { useState } from "react";
 import { Paper, Typography, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import EditBoardCell from "./EditBoardCell";
-import EditCategory from "./EditCategory";
-import EditTitle from "./EditTitle";
+import EditBoardCell from "./GBQCell";
+import Category from "./Category";
+import Title from "./Title";
 import {
   UpdateBoardQuestionInput,
   UpdateQuestionInput,
@@ -17,7 +17,7 @@ import {
 import EditQuestionModal from "./EditQuestionModal";
 import { useGameBoardData } from "@/app/hooks/useGameBoardData";
 import PlaceHolderCell from "@/app/components/PlaceholderCell";
-import CreateQuestionModal from "./CreateQuestionModal";
+import CreateQuestionModal from "./EmptyQBQCell";
 import { useRouter } from "next/navigation";
 import { GameBoard } from "@/__generated__/graphql";
 
@@ -138,7 +138,6 @@ const GameBoardDisplay = ({
       const boardQuestionInput: CreateBoardQuestionInput = {
         boardId,
         questionId: newQuestionId,
-        category: currentCategory,
         dailyDouble,
         points,
         gridRow: currentGridRow,
@@ -182,7 +181,7 @@ const GameBoardDisplay = ({
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <EditTitle
+        <Title
           title={gameBoard?.title || "New Gameboard"}
           gameBoardId={gameBoard.id}
         />
@@ -211,11 +210,11 @@ const GameBoardDisplay = ({
         >
           {/* COLUMNS */}
           {displayCategories.map((category: string, index: number) => (
-            <EditCategory
+            <Category
               key={`$0-${index}`}
               category={category}
+              categoryIndex={index}
               gameBoardId={gameBoard.id}
-              gridCol={index}
             />
           ))}
           {/* QUESTIONS || PLACEHOLDERS */}

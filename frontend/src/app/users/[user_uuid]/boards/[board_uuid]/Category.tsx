@@ -1,34 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Typography, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import {
-  useUpdateColumnCategoryMutation,
-  GameBoardDataDocument,
+  FindGameBoardDocument,
+  useUpdateGameBoardCategoryMutation,
 } from "@/__generated__/graphql";
 
-interface EditCategoryProps {
+interface CategoryProps {
   category: string;
-  gridCol: number;
+  categoryIndex: number;
   gameBoardId: number;
+  onUpdateCategory: (newCategory: string, index: number) => void;
 }
 
-const EditCategory: React.FC<EditCategoryProps> = ({
+const Category: React.FC<CategoryProps> = ({
   category,
-  gridCol,
+  categoryIndex,
   gameBoardId,
+  onUpdateCategory,
 }) => {
   const [newCategory, setNewCategory] = useState(category);
   const [isEditing, setIsEditing] = useState(false);
   const [updateCategory, { loading, error, data }] =
-    useUpdateColumnCategoryMutation({
-      variables: { gameBoardId, gridCol, newCategory },
-      refetchQueries: [
-        {
-          query: GameBoardDataDocument,
-          variables: { gameBoardId },
-        },
-      ],
-    });
+    useUpdateGameBoardCategoryMutation();
+
+  // Update newCategory state when the category prop changes
+  useEffect(() => {
+    setNewCategory(category);
+  }, [category]);
 
   const handleTextClick = () => {
     setIsEditing(true);
@@ -36,14 +35,27 @@ const EditCategory: React.FC<EditCategoryProps> = ({
 
   const handleBlurOrEnter = async () => {
     try {
-      console.log(gameBoardId);
-      console.log(gridCol);
+      console.log("Handle blur or enter, about to update category");
       console.log(newCategory);
-      await updateCategory();
+      await updateCategory({
+        variables: { gameBoardId, index: categoryIndex, category: newCategory },
+        refetchQueries: [
+          {
+            query: FindGameBoardDocument,
+            variables: { gameBoardId },
+          },
+        ],
+      });
+      onUpdateCategory(newCategory, categoryIndex);
     } catch (e) {
       console.error("Error updating category:", e);
     }
     setIsEditing(false);
+  };
+
+  const handleEscape = () => {
+    setNewCategory(category); // Reset the category to its original value
+    setIsEditing(false); // Exit editing mode
   };
 
   return (
@@ -56,6 +68,8 @@ const EditCategory: React.FC<EditCategoryProps> = ({
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               handleBlurOrEnter();
+            } else if (e.key === "Escape") {
+              handleEscape(); // Cancel the edit on Escape
             }
           }}
           autoFocus
@@ -74,4 +88,4 @@ const EditCategory: React.FC<EditCategoryProps> = ({
   );
 };
 
-export default EditCategory;
+export default Category;

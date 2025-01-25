@@ -1,27 +1,30 @@
+
+
 import React, { useState } from "react";
 import { Typography, TextField } from "@mui/material";
 import {
-  useUpdateTitleMutation,
-  GameBoardDataDocument,
+  useUpdateGameBoardTitleMutation,
+  FindGameBoardDocument,
 } from "@/__generated__/graphql";
 
-interface EditTitleProps {
+interface TitleProps {
   title: string;
   gameBoardId: number;
 }
 
-const EditTitle: React.FC<EditTitleProps> = ({ title, gameBoardId }) => {
+const Title: React.FC<TitleProps> = ({ title, gameBoardId }) => {
   const [newTitle, setNewTitle] = useState(title);
   const [isEditing, setIsEditing] = useState(false);
-  const [updateTitle, { loading, error, data }] = useUpdateTitleMutation({
-    variables: { id: gameBoardId, newTitle },
-    refetchQueries: [
-      {
-        query: GameBoardDataDocument,
-        variables: { gameBoardId },
-      },
-    ],
-  });
+  const [updateTitle, { loading, error, data }] =
+    useUpdateGameBoardTitleMutation({
+      variables: { boardId: gameBoardId, title: newTitle },
+      refetchQueries: [
+        {
+          query: FindGameBoardDocument,
+          variables: { gameBoardId },
+        },
+      ],
+    });
 
   const handleTextClick = () => {
     setIsEditing(true);
@@ -64,4 +67,4 @@ const EditTitle: React.FC<EditTitleProps> = ({ title, gameBoardId }) => {
   );
 };
 
-export default EditTitle;
+export default Title;
