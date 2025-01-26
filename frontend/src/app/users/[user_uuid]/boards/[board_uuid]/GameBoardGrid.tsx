@@ -81,7 +81,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({ gameBoard, userId }) => {
       }}
     >
       <Title title={gameBoard.title} gameBoardId={gameBoard.id} />
-      <NewGameButton userId={userId} gameBoard={gameBoard} />
+      <NewGameButton userId={userId} gameBoard={gameBoard} gameBoardQuestions={gameBoardQuestions} />
       <Grid
         container
         sx={{ height: "100%", textAlign: "center", alignItems: "stretch" }}
