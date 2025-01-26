@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import { Typography, TextField } from "@mui/material";
 import {
@@ -39,6 +37,11 @@ const Title: React.FC<TitleProps> = ({ title, gameBoardId }) => {
     setIsEditing(false);
   };
 
+  const handleEscape = () => {
+    setNewTitle(title); // Reset the category to its original value
+    setIsEditing(false); // Exit editing mode
+  };
+
   return (
     <div>
       {isEditing ? (
@@ -49,6 +52,8 @@ const Title: React.FC<TitleProps> = ({ title, gameBoardId }) => {
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               handleBlurOrEnter();
+            } else if (e.key === "Escape") {
+              handleEscape(); // Cancel the edit on Escape
             }
           }}
           autoFocus

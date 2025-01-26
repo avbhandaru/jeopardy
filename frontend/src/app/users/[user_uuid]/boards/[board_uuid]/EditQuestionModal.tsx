@@ -104,6 +104,8 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
       <DialogContent>
         <TextField
           margin="dense"
+          multiline
+          minRows={4}
           label="Question"
           fullWidth
           value={editedQuestion}
@@ -112,6 +114,8 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
         />
         <TextField
           margin="dense"
+          multiline
+          minRows={4}
           label="Answer"
           fullWidth
           value={editedAnswer}

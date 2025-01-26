@@ -59,7 +59,19 @@ const Category: React.FC<CategoryProps> = ({
   };
 
   return (
-    <Grid size={{ xs: 12 / 5 }} sx={{ height: "8%" }}>
+    <Grid
+      size={{ xs: 12 / 5 }}
+      sx={{
+        display: "flex",
+        height: "16%",
+        alignItems: "center",
+        textAlign: "center",
+        border: "2px solid #ccc",
+        backgroundColor: "#2d9b69",
+        padding: 2,
+        justifyContent: "center",
+      }}
+    >
       {isEditing ? (
         <TextField
           value={newCategory}

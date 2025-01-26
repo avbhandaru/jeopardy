@@ -21,6 +21,9 @@ const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion }) => {
       sx={{
         height: "16%", // Fixed height of cell
         overflow: "hidden",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         textOverflow: "ellipsis", // Not working
         textAlign: "center",
         border: "2px solid #ccc",

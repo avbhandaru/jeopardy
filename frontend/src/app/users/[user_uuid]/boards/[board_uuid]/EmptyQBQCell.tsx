@@ -110,11 +110,14 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
       size={{ xs: 12 / 5 }}
       sx={{
         height: "16%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         textAlign: "center",
         border: "2px solid #ccc",
         backgroundColor: "#de634d",
         padding: 2,
-        cursor: "defualt",
+        cursor: "pointer",
         "&:hover": {
           backgroundColor: "#ddab4d",
         },
@@ -128,6 +131,8 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
         <DialogContent>
           <TextField
             margin="dense"
+            multiline
+            minRows={4}
             label="Question"
             fullWidth
             value={editedQuestion}
@@ -136,6 +141,8 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
           />
           <TextField
             margin="dense"
+            multiline
+            minRows={4}
             label="Answer"
             fullWidth
             value={editedAnswer}

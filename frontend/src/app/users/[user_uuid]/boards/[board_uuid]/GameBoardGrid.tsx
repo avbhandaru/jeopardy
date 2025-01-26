@@ -76,15 +76,32 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({ gameBoard, userId }) => {
       sx={{
         padding: 2,
         width: "100%",
-        height: "80vh",
+        height: "100vh",
         margin: "auto",
       }}
     >
-      <Title title={gameBoard.title} gameBoardId={gameBoard.id} />
-      <NewGameButton userId={userId} gameBoard={gameBoard} gameBoardQuestions={gameBoardQuestions} />
       <Grid
         container
-        sx={{ height: "100%", textAlign: "center", alignItems: "stretch" }}
+        sx={{
+          height: "10%",
+          textAlign: "center",
+          alignItems: "space-between",
+        }}
+      >
+        <Grid>
+          <Title title={gameBoard.title} gameBoardId={gameBoard.id} />
+        </Grid>
+        <Grid offset={"auto"}>
+          <NewGameButton
+            userId={userId}
+            gameBoard={gameBoard}
+            gameBoardQuestions={gameBoardQuestions}
+          />
+        </Grid>
+      </Grid>
+      <Grid
+        container
+        sx={{ height: "90%", textAlign: "center", alignItems: "stretch" }}
       >
         <QueryResult error={error} loading={loading} data={data}>
           {categories.map((category: string, index: number) => (
