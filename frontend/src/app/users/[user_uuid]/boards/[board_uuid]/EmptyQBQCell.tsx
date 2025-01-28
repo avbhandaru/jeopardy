@@ -2,6 +2,7 @@
 
 import {
   Button,
+  Box,
   Checkbox,
   Dialog,
   DialogActions,
@@ -10,6 +11,11 @@ import {
   FormControlLabel,
   TextField,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
+  MenuItem,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
@@ -38,7 +44,7 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
   const [editedQuestion, setEditedQuestion] = useState<string>("");
   const [editedAnswer, setEditedAnswer] = useState<string>("");
   const [dailyDouble, setDailyDouble] = useState<boolean>(false);
-  const [points, setPoints] = useState<number>(100);
+  const [points, setPoints] = useState<number>((row + 1) * 100);
   const [createQuestion, { loading, error, data }] =
     useCreateQuestionMutation();
   const [
@@ -55,9 +61,8 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
     setDailyDouble(event.target.checked);
   };
 
-  const handlePointsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(event.target.value, 10);
-    setPoints(isNaN(val) ? 100 : val);
+  const handlePointsChange = (event: SelectChangeEvent<number>) => {
+    setPoints(event.target.value as number);
   };
 
   const handleSave = async () => {
@@ -108,24 +113,28 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
   return (
     <Grid
       size={{ xs: 12 / 5 }}
-      sx={{
-        height: "16%",
+      sx={(theme) => ({
+        height: "16.67%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
-        border: "2px solid #ccc",
-        backgroundColor: "#de634d",
+        border: `1px solid ${theme.palette.divider}`,
+        backgroundColor: theme.palette.secondary.main,
         padding: 2,
         cursor: "pointer",
         "&:hover": {
-          backgroundColor: "#ddab4d",
+          backgroundColor: theme.palette.secondary.dark,
         },
         transition: "background-color 0.3s ease",
-      }}
+      })}
       onClick={handleOpen}
     >
-      <Typography>{`Click to create question`}</Typography>
+      <Box
+        component={Typography}
+        variant="h6"
+        sx={{ margin: "auto" }}
+      >{`Click to create question`}</Box>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{"Create Question"}</DialogTitle>
         <DialogContent>
@@ -160,15 +169,23 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
             label="Daily Double"
             sx={{ marginTop: 2 }}
           />
-          <TextField
-            margin="dense"
-            label="Points"
-            type="number"
-            fullWidth
-            value={points}
-            onChange={handlePointsChange}
-            required
-          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="points-select-label">Points</InputLabel>
+            <Select
+              margin="dense"
+              label="Points"
+              fullWidth
+              value={points}
+              onChange={handlePointsChange}
+              required
+            >
+              <MenuItem value={100}>100</MenuItem>
+              <MenuItem value={200}>200</MenuItem>
+              <MenuItem value={300}>300</MenuItem>
+              <MenuItem value={400}>400</MenuItem>
+              <MenuItem value={500}>500</MenuItem>
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>

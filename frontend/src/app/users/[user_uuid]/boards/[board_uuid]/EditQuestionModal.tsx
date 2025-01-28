@@ -149,6 +149,8 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
             <MenuItem value={100}>100</MenuItem>
             <MenuItem value={200}>200</MenuItem>
             <MenuItem value={300}>300</MenuItem>
+            <MenuItem value={400}>400</MenuItem>
+            <MenuItem value={500}>500</MenuItem>
           </Select>
         </FormControl>
       </DialogContent>
