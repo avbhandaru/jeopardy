@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import EditQuestionModal from "./EditQuestionModal";
 import theme from "@/app/lib/theme";
-import { Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 interface GBQCellProps {
   gameBoardQuestion: GameBoardQuestion;
@@ -34,16 +34,20 @@ const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion }) => {
           backgroundColor: theme.palette.success.dark,
         },
         transition: "background-color 0.3s ease",
+        flexDirection: "column",
       })}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleOpen}
     >
-      <Typography variant="h6" sx={{ margin: 0 }}>
+      <Box component={Typography} variant="h6" sx={{ margin: "auto" }}>
         {isHovered
           ? gameBoardQuestion.question.answer
           : gameBoardQuestion.question.question}
-      </Typography>
+      </Box>
+      <Box component={Typography} sx={{ margin: "auto" }}>
+        {gameBoardQuestion.mapping.points}
+      </Box>
       <EditQuestionModal
         open={open}
         gameBoardQuestion={gameBoardQuestion}

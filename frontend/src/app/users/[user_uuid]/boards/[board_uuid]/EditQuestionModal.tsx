@@ -7,6 +7,11 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Select,
+  SelectChangeEvent,
+  MenuItem,
+  FormControl,
+  InputLabel,
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
@@ -62,9 +67,8 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     setDailyDouble(event.target.checked);
   };
 
-  const handlePointsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(event.target.value, 10);
-    setPoints(isNaN(val) ? 100 : val);
+  const handlePointsChange = (event: SelectChangeEvent<number>) => {
+    setPoints(event.target.value as number);
   };
 
   const handleSave = async () => {
@@ -122,7 +126,6 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
           onChange={(e) => setEditedAnswer(e.target.value)}
           required
         />
-        {/* Fields for boardQuestion data */}
         <FormControlLabel
           control={
             <Checkbox
@@ -134,16 +137,20 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
           label="Daily Double"
           sx={{ marginTop: 2 }}
         />
-
-        <TextField
-          margin="dense"
-          label="Points"
-          type="number"
-          fullWidth
-          value={points}
-          onChange={handlePointsChange}
-          required
-        />
+        <FormControl fullWidth margin="dense" required>
+          <InputLabel id="points-select-label">Points</InputLabel>
+          <Select
+            label="Points"
+            fullWidth
+            value={points}
+            required
+            onChange={handlePointsChange}
+          >
+            <MenuItem value={100}>100</MenuItem>
+            <MenuItem value={200}>200</MenuItem>
+            <MenuItem value={300}>300</MenuItem>
+          </Select>
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
