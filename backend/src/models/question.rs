@@ -8,22 +8,32 @@ use derive_builder::Builder;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
-/// Disel Question Model with async-graphql suppport
+/// Represents a question in the application.
+///
+/// This struct supports Diesel for database interactions
+/// and integrates with async-graphql for GraphQL APIs. It is
+/// associated with the `User` struct.
 #[derive(
     Identifiable, Associations, Queryable, SimpleObject, Selectable, Debug, Builder, Clone,
 )]
 #[diesel(table_name = questions)]
 #[diesel(belongs_to(User))]
 pub struct Question {
+    /// The unique identifier for the question.
     pub id: i64,
+    /// The timestamp when the question was created.
     pub created_at: DateTime<Utc>,
+    /// The timestamp when the question was last updated.
     pub updated_at: DateTime<Utc>,
+    /// The unique identifier of the user who created the question.
     pub user_id: i64,
+    /// The text of the question.
     pub question: String,
+    /// The answer to the question.
     pub answer: String,
 }
 
-/// Struct for creating new question
+/// Represents a new question to be inserted into the database.
 #[derive(Debug, Insertable, Builder)]
 #[diesel(table_name = questions)]
 pub struct NewQuestion {
@@ -32,7 +42,7 @@ pub struct NewQuestion {
     pub answer: String,
 }
 
-/// Struct for updating a question
+/// Represents the fields to update in an existing question.
 #[derive(Debug, AsChangeset)]
 #[diesel(table_name = questions)]
 pub struct UpdateQuestion {
@@ -41,6 +51,14 @@ pub struct UpdateQuestion {
 }
 
 impl Question {
+    /// Find a question by its unique ID.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `question_id` - The unique identifier of the question to fetch.
+    ///
+    /// # Returns
+    /// A `Result` containing the question or a Diesel error.
     pub async fn find_by_id(
         conn: &mut AsyncPgConnection,
         question_id: i64,
@@ -48,7 +66,15 @@ impl Question {
         questions::table.find(question_id).first(conn).await
     }
 
-    pub async fn find_by_ids(
+    /// Fetch multiple questions by their IDs.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `ids` - A vector of unique question IDs.
+    ///
+    /// # Returns
+    /// A `Result` containing a vector of questions or a Diesel error.
+    pub async fn fetch_by_ids(
         conn: &mut AsyncPgConnection,
         ids: Vec<i64>,
     ) -> Result<Vec<Self>, diesel::result::Error> {
@@ -58,11 +84,26 @@ impl Question {
             .await
     }
 
+    /// Fetch all questions from the database.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    ///
+    /// # Returns
+    /// A `Result` containing a vector of questions or a Diesel error.
     pub async fn all(conn: &mut AsyncPgConnection) -> Result<Vec<Self>, diesel::result::Error> {
         questions::table.load::<Self>(conn).await
     }
 
-    pub async fn find_by_user(
+    /// Fetch all questions created by a specific user.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `user_id` - The unique identifier of the user.
+    ///
+    /// # Returns
+    /// A `Result` containing a vector of questions or a Diesel error.
+    pub async fn fetch_by_user(
         conn: &mut AsyncPgConnection,
         user_id: i64,
     ) -> Result<Vec<Self>, diesel::result::Error> {
@@ -72,6 +113,14 @@ impl Question {
             .await
     }
 
+    /// Create a new question in the database.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `new_question` - A `NewQuestion` instance containing the question's data.
+    ///
+    /// # Returns
+    /// A `Result` containing the newly created question or a Diesel error.
     pub async fn create(
         conn: &mut AsyncPgConnection,
         new_question: NewQuestion,
@@ -82,6 +131,15 @@ impl Question {
             .await
     }
 
+    /// Update an existing question.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `question_id` - The unique identifier of the question to update.
+    /// * `updated_fields` - An `UpdateQuestion` instance containing the updated fields.
+    ///
+    /// # Returns
+    /// A `Result` containing the updated question or a Diesel error.
     pub async fn update_question(
         conn: &mut AsyncPgConnection,
         question_id: i64,
@@ -93,6 +151,14 @@ impl Question {
             .await
     }
 
+    /// Delete a question by its unique ID.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `question_id` - The unique identifier of the question to delete.
+    ///
+    /// # Returns
+    /// A `Result` containing the number of rows affected or a Diesel error.
     pub async fn delete_by_id(
         conn: &mut AsyncPgConnection,
         question_id: i64,

@@ -9,49 +9,52 @@ import {
   TextField,
   FormControlLabel,
   Checkbox,
-  Typography,
 } from "@mui/material";
 import {
   UpdateQuestionInput,
-  UpdateBoardQuestionInput,
-  DetailedBoardQuestion,
+  UpdateGameBoardMappingInput,
+  GameBoardQuestion,
 } from "@/__generated__/types";
+import {
+  useUpdateQuestionMutation,
+  useUpdateMappingMutation,
+  FetchGbQsDocument,
+} from "@/__generated__/graphql";
 import React, { useState, useEffect } from "react";
 
 interface EditQuestionModalProps {
   open: boolean;
   /**
-   * Question object with board info from clicked cell, null when creating new question
+   * GameBoardQuestion object. Contains question + mapping
    */
-  questionWithInfo: DetailedBoardQuestion;
-  boardId: number;
+  gameBoardQuestion: GameBoardQuestion;
   onClose: () => void;
-  onSave: (
-    updateBoardQuestionInput: UpdateBoardQuestionInput,
-    updateQuestionInput: UpdateQuestionInput
-  ) => void;
 }
 
 const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
   open,
-  questionWithInfo,
-  boardId,
+  gameBoardQuestion,
   onClose,
-  onSave,
 }) => {
   // Separate state variables for question and board question details
   const [editedQuestion, setEditedQuestion] = useState<string>("");
   const [editedAnswer, setEditedAnswer] = useState<string>("");
   const [dailyDouble, setDailyDouble] = useState<boolean>(false);
   const [points, setPoints] = useState<number>(100);
+  const [updateQuestion, { loading, error, data }] =
+    useUpdateQuestionMutation();
+  const [
+    updateMapping,
+    { loading: mapLoading, error: mapError, data: mapData },
+  ] = useUpdateMappingMutation();
 
-  // Update state when the question prop changes
+  // Update state when the GBQ prop changes
   useEffect(() => {
-    setEditedQuestion(questionWithInfo.question.question);
-    setEditedAnswer(questionWithInfo.question.answer);
-    setDailyDouble(questionWithInfo.boardQuestion.dailyDouble);
-    setPoints(questionWithInfo.boardQuestion.points);
-  }, [questionWithInfo]);
+    setEditedQuestion(gameBoardQuestion.question.question);
+    setEditedAnswer(gameBoardQuestion.question.answer);
+    setDailyDouble(gameBoardQuestion.mapping.dailyDouble);
+    setPoints(gameBoardQuestion.mapping.points);
+  }, [gameBoardQuestion]);
 
   const handleDailyDoubleChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -64,24 +67,34 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     setPoints(isNaN(val) ? 100 : val);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate input
     if (!editedQuestion.trim() || !editedAnswer.trim()) {
       alert("Question or Answer can't be empty dude");
       return;
     }
     const updateQuestionInput: UpdateQuestionInput = {
-      id: questionWithInfo.question.id,
+      id: gameBoardQuestion.question.id,
       question: editedQuestion,
       answer: editedAnswer,
     };
-    const updateBoardQuestionInput: UpdateBoardQuestionInput = {
-      boardId,
-      questionId: questionWithInfo.question.id,
+    const updateMappingInput: UpdateGameBoardMappingInput = {
+      boardId: gameBoardQuestion.mapping.boardId,
+      questionId: gameBoardQuestion.question.id,
       dailyDouble,
       points,
     };
-    onSave(updateBoardQuestionInput, updateQuestionInput);
+
+    await updateQuestion({ variables: { input: updateQuestionInput } });
+    await updateMapping({
+      variables: { input: updateMappingInput },
+      refetchQueries: [
+        {
+          query: FetchGbQsDocument,
+          variables: { gameBoardId: gameBoardQuestion.mapping.boardId },
+        },
+      ],
+    });
     onClose();
   };
 
@@ -89,9 +102,10 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{"Edit Question"}</DialogTitle>
       <DialogContent>
-        <Typography>{questionWithInfo.boardQuestion.category}</Typography>
         <TextField
           margin="dense"
+          multiline
+          minRows={4}
           label="Question"
           fullWidth
           value={editedQuestion}
@@ -100,6 +114,8 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
         />
         <TextField
           margin="dense"
+          multiline
+          minRows={4}
           label="Answer"
           fullWidth
           value={editedAnswer}

@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const ADD_QUESTION_MUTATION = gql`
+export const CREATE_QUESTION = gql`
   mutation CreateQuestion($input: CreateQuestionInput!) {
     createQuestion(input: $input) {
       id

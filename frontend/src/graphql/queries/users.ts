@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const ALL_USERS_QUERY = gql`
-  query getAllUsers {
-    allUsers {
+  query fetchAllUsers {
+    fetchAllUsers {
       id
       username
       createdAt
@@ -11,9 +11,9 @@ export const ALL_USERS_QUERY = gql`
   }
 `;
 
-export const GET_USER_QUERY = gql`
-  query getUser($userId: Int!) {
-    getUser(userId: $userId) {
+export const FIND_USER_QUERY = gql`
+  query findUser($userId: Int!) {
+    findUser(userId: $userId) {
       id
       username
       createdAt

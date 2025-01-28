@@ -9,8 +9,8 @@ pub struct GameBoardQuery;
 
 #[Object]
 impl GameBoardQuery {
-    /// Fetch a single gameboard by id
-    async fn get_game_board(&self, ctx: &Context<'_>, game_board_id: i64) -> Result<GameBoard> {
+    /// Find a single gameboard by id
+    async fn find_game_board(&self, ctx: &Context<'_>, game_board_id: i64) -> Result<GameBoard> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
@@ -27,7 +27,7 @@ impl GameBoardQuery {
     }
 
     /// Fetch all gameboards associated with a specific user
-    async fn get_game_boards_from_user(
+    async fn fetch_game_boards_from_user(
         &self,
         ctx: &Context<'_>,
         user_id: i64,
@@ -38,12 +38,12 @@ impl GameBoardQuery {
         let mut conn = pool.get().await.map_err(|e| {
             async_graphql::Error::new(format!("Failed to get DB connection: {}", e))
         })?;
-        let game_boards = GameBoard::find_by_user(&mut conn, user_id).await?;
+        let game_boards = GameBoard::fetch_by_user(&mut conn, user_id).await?;
         Ok(game_boards)
     }
 
-    /// Fetch all gameboards in the system
-    async fn all_game_boards(&self, ctx: &Context<'_>) -> Result<Vec<GameBoard>> {
+    /// Fetch all gameboards in the database
+    async fn fetch_all_game_boards(&self, ctx: &Context<'_>) -> Result<Vec<GameBoard>> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");

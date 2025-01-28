@@ -9,8 +9,8 @@ pub struct PlayerQuery;
 
 #[Object]
 impl PlayerQuery {
-    /// Fetch a single player by id
-    async fn player(&self, ctx: &Context<'_>, player_id: i64) -> Result<Player> {
+    /// Find a single player by id
+    async fn find_player(&self, ctx: &Context<'_>, player_id: i64) -> Result<Player> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
@@ -30,7 +30,7 @@ impl PlayerQuery {
             .expect("Cannot get DBPool from context");
         let mut conn = pool.get().await?;
 
-        let players = Player::find_by_game_id(&mut conn, game_id).await?;
+        let players = Player::fetch_by_game_id(&mut conn, game_id).await?;
         Ok(players)
     }
 }

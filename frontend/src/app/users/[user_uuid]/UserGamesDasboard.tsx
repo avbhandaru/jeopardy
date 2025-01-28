@@ -2,7 +2,7 @@
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import * as React from "react";
-import { useGetGamesFromUserQuery } from "@/__generated__/graphql";
+import { useFetchGamesFromUserQuery } from "@/__generated__/graphql";
 import { Paper, Typography } from "@mui/material";
 import Link from "next/link";
 
@@ -34,7 +34,7 @@ export const UserGamesDasboard: React.FC<UserGamesDasboardProps> = ({
 }) => {
   const userId = parseInt(user_uuid, 10);
 
-  const { loading, error, data } = useGetGamesFromUserQuery({
+  const { loading, error, data } = useFetchGamesFromUserQuery({
     variables: { userId },
   });
 
@@ -42,7 +42,7 @@ export const UserGamesDasboard: React.FC<UserGamesDasboardProps> = ({
   if (error) return <p>Error fetching data: {error.message}</p>;
   if (!data) return <p>No gameboards found.</p>;
 
-  const rows = data.getGamesFromUser.map((game) => ({
+  const rows = data.fetchGamesFromUser.map((game) => ({
     id: game.id,
     createdAt: new Date(game.createdAt).toLocaleString(),
     updatedAt: new Date(game.updatedAt).toLocaleString(),

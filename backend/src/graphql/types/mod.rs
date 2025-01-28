@@ -1,3 +1,3 @@
 // src/graphql/types/mod.rs
 
-pub mod game_board_types;
+// insert gql specific types here. So far, none relevant

@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const ALL_QUESTIONS_QUERY = gql`
-  query getAllQuestions {
-    allQuestions {
+  query fetchAllQuestions {
+    fetchAllQuestions {
       id
       createdAt
       updatedAt
@@ -13,9 +13,9 @@ export const ALL_QUESTIONS_QUERY = gql`
   }
 `;
 
-export const GET_QUESTIONS_FROM_IDS = gql`
-  query getQuestionsFromIds($questionIds: [Int!]!) {
-    getQuestionsFromIds(questionIds: $questionIds) {
+export const FETCH_QUESTIONS_FROM_IDS = gql`
+  query fetchQuestionsFromIds($questionIds: [Int!]!) {
+    fetchQuestionsFromIds(questionIds: $questionIds) {
       id
       createdAt
       updatedAt
@@ -26,9 +26,9 @@ export const GET_QUESTIONS_FROM_IDS = gql`
   }
 `;
 
-export const GET_QUESTION = gql`
-  query question($questionId: Int!) {
-    question(questionId: $questionId) {
+export const FIND_QUESTION = gql`
+  query findQuestion($questionId: Int!) {
+    findQuestion(questionId: $questionId) {
       id
       createdAt
       updatedAt

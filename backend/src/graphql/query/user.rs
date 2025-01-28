@@ -1,6 +1,4 @@
 // graphql/query/user.rs/
-// TODO first fetcher will be game_boards of user
-// Look into how RUST handles "types" and "fetchers" in graphql
 
 use crate::db::pool::DBPool;
 use crate::models::user::User;
@@ -11,8 +9,8 @@ pub struct UserQuery;
 
 #[Object]
 impl UserQuery {
-    /// Fetch user by id
-    async fn get_user(&self, ctx: &Context<'_>, user_id: i64) -> Result<User> {
+    /// Find user by id
+    async fn find_user(&self, ctx: &Context<'_>, user_id: i64) -> Result<User> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");
@@ -22,8 +20,8 @@ impl UserQuery {
         Ok(user)
     }
 
-    /// Fetch all users
-    async fn all_users(&self, ctx: &Context<'_>) -> Result<Vec<User>> {
+    /// Fetch all users in database
+    async fn fetch_all_users(&self, ctx: &Context<'_>) -> Result<Vec<User>> {
         let pool = ctx
             .data::<DBPool>()
             .expect("Cannot get DBPool from context");

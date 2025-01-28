@@ -19,11 +19,8 @@ interface ScoreboardProps {
 }
 
 const Scoreboard: React.FC<ScoreboardProps> = () => {
-  const {
-    game_uuid,
-    currentDetailedBoardQuestion,
-    setCurrentDetailedBoardQuestion,
-  } = useGameContext();
+  const { game_uuid, currentGameBoardQuestion, setCurrentGameBoardQuestion } =
+    useGameContext();
   const gameId = parseInt(game_uuid, 10);
   const {
     data,
