@@ -1,15 +1,17 @@
+// src/app/users/[user_uuid]/boards/[board_uuid]/GBQCell.tsx
+
 import React from "react";
 import { GameBoardQuestion } from "@/__generated__/types";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import EditQuestionModal from "./EditQuestionModal";
-import theme from "@/app/lib/theme";
 import { Box, Typography } from "@mui/material";
 
 interface GBQCellProps {
   gameBoardQuestion: GameBoardQuestion;
 }
 
+// TODO - Implement drag and drop, as well as swap
 const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [open, setOpen] = useState(false);

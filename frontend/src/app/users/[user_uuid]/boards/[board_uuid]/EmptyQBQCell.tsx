@@ -1,4 +1,4 @@
-// src/app/components/EmptyGBQCell.tsx
+// src/app/users/[user_uuid]/boards/[board_uuid]/EmptyGBQCell.tsx
 
 import {
   Button,
