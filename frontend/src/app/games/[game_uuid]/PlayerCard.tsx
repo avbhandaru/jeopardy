@@ -24,11 +24,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
   const [playerName, setPlayerName] = useState(player.playerName);
   const [updateName, { loading, error }] = useUpdatePlayerNameMutation();
   const [currentScore, setScore] = useState(player.score);
-  const {
-    game_uuid,
-    currentDetailedBoardQuestion,
-    setCurrentDetailedBoardQuestion,
-  } = useGameContext();
+  const { game_uuid, currentGameBoardQuestion, setCurrentGameBoardQuestion } =
+    useGameContext();
 
   const handleTextClick = () => {
     setIsEditing(true);
@@ -50,15 +47,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
   };
 
   const handleClickArrowUp = () => {
-    const questionPoints =
-      currentDetailedBoardQuestion?.boardQuestion.points || 0;
+    const questionPoints = currentGameBoardQuestion?.mapping.points || 0;
     setScore(currentScore + questionPoints);
     console.log("currentScore", currentScore);
   };
 
   const handleClickArrowDown = () => {
-    const questionPoints =
-      currentDetailedBoardQuestion?.boardQuestion.points || 0;
+    const questionPoints = currentGameBoardQuestion?.mapping.points || 0;
     setScore(currentScore - questionPoints);
     console.log("currentScore", currentScore);
   };

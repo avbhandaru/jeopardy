@@ -61,20 +61,32 @@ const Category: React.FC<CategoryProps> = ({
   return (
     <Grid
       size={{ xs: 12 / 5 }}
-      sx={{
+      sx={(theme) => ({
         display: "flex",
-        height: "16%",
+        height: "16.67%",
         alignItems: "center",
         textAlign: "center",
-        border: "2px solid #ccc",
-        backgroundColor: "#2d9b69",
-        padding: 2,
+        border: `2px solid ${theme.palette.divider}`,
+        backgroundColor: theme.palette.primary.main,
         justifyContent: "center",
-      }}
+      })}
     >
       {isEditing ? (
         <TextField
           value={newCategory}
+          // Apply custom styles to match "h4" typography
+          sx={{
+            "& .MuiInputBase-input": {
+              fontSize: "2.125rem", // Typically h4 font size
+              fontWeight: 400, // Adjust as needed
+              lineHeight: 1.235,
+              letterSpacing: "0.00735em",
+            },
+            // Optional: Adjust the label if using one
+            "& .MuiInputLabel-root": {
+              fontSize: "2.125rem",
+            },
+          }}
           onChange={(e) => setNewCategory(e.target.value)}
           onBlur={handleBlurOrEnter}
           onKeyDown={(e) => {
@@ -85,11 +97,11 @@ const Category: React.FC<CategoryProps> = ({
             }
           }}
           autoFocus
-          size="small"
+          size="medium"
         />
       ) : (
         <Typography
-          variant="h6"
+          variant="h4"
           onClick={handleTextClick}
           style={{ cursor: "pointer" }}
         >

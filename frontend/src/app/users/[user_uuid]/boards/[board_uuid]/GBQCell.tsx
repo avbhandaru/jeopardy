@@ -3,6 +3,8 @@ import { GameBoardQuestion } from "@/__generated__/types";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import EditQuestionModal from "./EditQuestionModal";
+import theme from "@/app/lib/theme";
+import { Typography } from "@mui/material";
 
 interface GBQCellProps {
   gameBoardQuestion: GameBoardQuestion;
@@ -18,30 +20,30 @@ const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion }) => {
   return (
     <Grid
       size={{ xs: 12 / 5 }}
-      sx={{
-        height: "16%", // Fixed height of cell
+      sx={(theme) => ({
+        height: "16.67%", // Fixed height of cell
         overflow: "hidden",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        textOverflow: "ellipsis", // Not working
         textAlign: "center",
-        border: "2px solid #ccc",
-        padding: 2,
-        backgroundColor: "#2d9b69",
+        border: `1px solid ${theme.palette.divider}`,
+        backgroundColor: theme.palette.success.main,
         cursor: "pointer",
         "&:hover": {
-          backgroundColor: "#2d9b32",
+          backgroundColor: theme.palette.success.dark,
         },
         transition: "background-color 0.3s ease",
-      }}
+      })}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleOpen}
     >
-      {isHovered
-        ? gameBoardQuestion.question.answer
-        : gameBoardQuestion.question.question}
+      <Typography variant="h6" sx={{ margin: 0 }}>
+        {isHovered
+          ? gameBoardQuestion.question.answer
+          : gameBoardQuestion.question.question}
+      </Typography>
       <EditQuestionModal
         open={open}
         gameBoardQuestion={gameBoardQuestion}

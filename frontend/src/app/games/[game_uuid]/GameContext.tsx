@@ -1,14 +1,12 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import { DetailedBoardQuestion } from "@/__generated__/types";
+import { GameBoardQuestion } from "@/__generated__/types";
 
 interface GameContextValue {
   game_uuid: string;
-  currentDetailedBoardQuestion: DetailedBoardQuestion | null;
-  setCurrentDetailedBoardQuestion: (
-    question: DetailedBoardQuestion | null
-  ) => void;
+  currentGameBoardQuestion: GameBoardQuestion | null;
+  setCurrentGameBoardQuestion: (question: GameBoardQuestion | null) => void;
 }
 
 const GameContext = createContext<GameContextValue | undefined>(undefined);
@@ -28,12 +26,12 @@ export function GameContextProvider({
   game_uuid,
 }: GameContextProviderProps) {
   // State to hold the current detailed board question
-  const [currentDetailedBoardQuestion, setCurrentDetailedBoardQuestion] =
-    useState<DetailedBoardQuestion | null>(null);
+  const [currentGameBoardQuestion, setCurrentGameBoardQuestion] =
+    useState<GameBoardQuestion | null>(null);
   const value: GameContextValue = {
     game_uuid,
-    currentDetailedBoardQuestion,
-    setCurrentDetailedBoardQuestion,
+    currentGameBoardQuestion,
+    setCurrentGameBoardQuestion,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
