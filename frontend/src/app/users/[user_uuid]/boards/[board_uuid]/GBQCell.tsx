@@ -6,22 +6,56 @@ import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import EditQuestionModal from "./EditQuestionModal";
 import { Box, Typography } from "@mui/material";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 interface GBQCellProps {
   gameBoardQuestion: GameBoardQuestion;
+  id: string;
 }
 
 // TODO - Implement drag and drop, as well as swap
-const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion }) => {
+const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion, id }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const handleOpen = () => setOpen(true);
+  const handleOpen = (e: React.MouseEvent) => {
+    // Prevent opening modal when clicking the drag handle
+    if ((e.target as HTMLElement).closest("button")) return;
+    setOpen(true);
+  };
   const handleClose = () => setOpen(false);
+
+  const {
+    attributes: draggableAttributes,
+    listeners,
+    setNodeRef: setDraggableRef,
+    transform,
+    isDragging,
+  } = useDraggable({
+    id,
+  });
+
+  const { isOver, setNodeRef: setDroppableRef } = useDroppable({ id });
+
+  const setNodeRef = (node: HTMLElement | null) => {
+    setDraggableRef(node);
+    setDroppableRef(node);
+  };
+
+  const style = {
+    transform: transform
+      ? `translate3d(${transform?.x}px, ${transform?.y}px, 0)`
+      : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   return (
     <Grid
+      ref={setNodeRef}
       size={{ xs: 12 / 5 }}
+      style={style}
+      {...draggableAttributes}
+      {...listeners}
       sx={(theme) => ({
         height: "16.67%", // Fixed height of cell
         overflow: "hidden",

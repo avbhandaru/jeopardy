@@ -26,6 +26,7 @@ import {
   CreateQuestionInput,
   CreateGameBoardMappingInput,
 } from "@/__generated__/graphql";
+import { useDroppable } from "@dnd-kit/core";
 
 interface EmptyQBQCellProps {
   row: number;
@@ -110,8 +111,12 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
     handleClose();
   };
 
+  const id = `${row},${col}`;
+  const { setNodeRef } = useDroppable({ id });
+
   return (
     <Grid
+      ref={setNodeRef}
       size={{ xs: 12 / 5 }}
       sx={(theme) => ({
         height: "16.67%",
