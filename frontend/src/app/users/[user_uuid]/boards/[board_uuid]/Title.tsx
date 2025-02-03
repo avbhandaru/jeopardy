@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Typography, TextField } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import {
   useUpdateGameBoardTitleMutation,
   FindGameBoardDocument,
@@ -43,9 +44,24 @@ const Title: React.FC<TitleProps> = ({ title, gameBoardId }) => {
   };
 
   return (
-    <div>
+    <Grid size={{ xs: 12, md: 10 }} sx={{ height: "100%" }}>
       {isEditing ? (
         <TextField
+          variant="standard"
+          helperText="Press Enter to save, Esc to cancel"
+          sx={(theme) => ({
+            "& .MuiInputBase-root": {
+              margin: 0,
+              padding: 0,
+              lineHeight: theme.typography.h2.lineHeight,
+            },
+            "& .MuiInputBase-input": {
+              fontSize: theme.typography.h2.fontSize,
+              fontWeight: theme.typography.h2.fontWeight,
+              lineHeight: theme.typography.h2.lineHeight,
+              letterSpacing: theme.typography.h2.letterSpacing,
+            },
+          })}
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           onBlur={handleBlurOrEnter}
@@ -57,7 +73,7 @@ const Title: React.FC<TitleProps> = ({ title, gameBoardId }) => {
             }
           }}
           autoFocus
-          size="small"
+          fullWidth
         />
       ) : (
         <Typography
@@ -68,7 +84,7 @@ const Title: React.FC<TitleProps> = ({ title, gameBoardId }) => {
           {newTitle}
         </Typography>
       )}
-    </div>
+    </Grid>
   );
 };
 

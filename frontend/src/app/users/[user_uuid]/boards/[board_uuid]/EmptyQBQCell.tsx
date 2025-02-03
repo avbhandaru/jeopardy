@@ -112,7 +112,7 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
   };
 
   const id = `${row},${col}`;
-  const { setNodeRef } = useDroppable({ id });
+  const { isOver, setNodeRef } = useDroppable({ id });
 
   return (
     <Grid
@@ -125,7 +125,9 @@ const EmptyGBQCell: React.FC<EmptyQBQCellProps> = ({
         justifyContent: "center",
         textAlign: "center",
         border: `1px solid ${theme.palette.divider}`,
-        backgroundColor: theme.palette.secondary.main,
+        backgroundColor: isOver
+          ? theme.palette.action.hover
+          : theme.palette.secondary.main,
         padding: 2,
         cursor: "pointer",
         "&:hover": {

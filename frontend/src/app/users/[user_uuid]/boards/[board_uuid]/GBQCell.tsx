@@ -64,7 +64,9 @@ const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion, id }) => {
         alignItems: "center",
         textAlign: "center",
         border: `1px solid ${theme.palette.divider}`,
-        backgroundColor: theme.palette.success.main,
+        backgroundColor: isOver
+          ? theme.palette.action.hover // Change background when hovered by another draggable
+          : theme.palette.success.main,
         cursor: "pointer",
         "&:hover": {
           backgroundColor: theme.palette.success.dark,
@@ -76,7 +78,34 @@ const GBQCell: React.FC<GBQCellProps> = ({ gameBoardQuestion, id }) => {
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleOpen}
     >
-      <Box component={Typography} variant="h6" sx={{ margin: "auto" }}>
+      <Box
+        component={Typography}
+        variant="h6"
+        sx={(theme) => {
+          const lineHeightNumber = theme.typography.h6.lineHeight as number; // often a multiplier
+          const fontSizeRem = parseFloat(
+            theme.typography.h6.fontSize as string
+          ); // in rem
+          const spacingPx = parseInt(theme.spacing(1), 10); // returns "8px", we parse as number
+          const baseFontSizePx = 16; // or whatever your HTML base font size is
+
+          // Convert fontSize (rem) -> px: e.g. 1.25rem -> 20px
+          const fontSizePx = fontSizeRem * baseFontSizePx;
+
+          // Now compute total height in px
+          const computedHeight = lineHeightNumber * fontSizePx * 2 + spacingPx;
+          return {
+            display: "-webkit-box",
+            WebkitLineClamp: 2, // number of lines
+            WebkitBoxOrient: "vertical",
+            padding: theme.spacing(1),
+            margin: "auto",
+            textOverflow: "ellipsis",
+            overflow: "hidden",
+            height: computedHeight,
+          };
+        }}
+      >
         {isHovered
           ? gameBoardQuestion.question.answer
           : gameBoardQuestion.question.question}

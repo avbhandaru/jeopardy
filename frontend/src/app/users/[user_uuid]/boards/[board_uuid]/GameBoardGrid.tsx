@@ -209,22 +209,17 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({ gameBoard, userId }) => {
     >
       <Grid
         container
+        alignItems={"stretch"}
         sx={{
-          height: "10%",
-          textAlign: "center",
-          alignItems: "space-between",
+          minHeight: "10%",
         }}
       >
-        <Grid>
-          <Title title={gameBoard.title} gameBoardId={gameBoard.id} />
-        </Grid>
-        <Grid offset={"auto"}>
-          <NewGameButton
-            userId={userId}
-            gameBoard={gameBoard}
-            gameBoardQuestions={gameBoardQuestionsMap}
-          />
-        </Grid>
+        <Title title={gameBoard.title} gameBoardId={gameBoard.id} />
+        <NewGameButton
+          userId={userId}
+          gameBoard={gameBoard}
+          gameBoardQuestions={gameBoardQuestionsMap}
+        />
       </Grid>
       <DndContext
         sensors={sensors}
