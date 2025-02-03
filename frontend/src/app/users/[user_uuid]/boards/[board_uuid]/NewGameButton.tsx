@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
+import Grid from "@mui/material/Grid2";
 import { useCreateGameMutation } from "@/__generated__/graphql";
 import { GameBoard, GameBoardQuestion } from "@/__generated__/types";
 import { Button } from "@mui/material";
@@ -93,15 +94,17 @@ const NewGameButton: React.FC<NewGameButtonProps> = ({
   };
 
   return (
-    <Button
-      size="large"
-      variant="contained"
-      color="secondary"
-      sx={{ maxHeight: "80%" }}
-      onClick={() => handleClickNewGame()}
-    >
-      New Game
-    </Button>
+    <Grid size={{ xs: 12, md: 2 }} sx={{ height: "100%" }}>
+      <Button
+        size="large"
+        variant="contained"
+        color="secondary"
+        sx={{ maxHeight: "80%" }}
+        onClick={() => handleClickNewGame()}
+      >
+        New Game
+      </Button>
+    </Grid>
   );
 };
 

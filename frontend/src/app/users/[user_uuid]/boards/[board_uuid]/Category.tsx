@@ -35,18 +35,26 @@ const Category: React.FC<CategoryProps> = ({
 
   const handleBlurOrEnter = async () => {
     try {
-      console.log("Handle blur or enter, about to update category");
-      console.log(newCategory);
-      await updateCategory({
-        variables: { gameBoardId, index: categoryIndex, category: newCategory },
-        refetchQueries: [
-          {
-            query: FindGameBoardDocument,
-            variables: { gameBoardId },
+      if (!newCategory.trim()) {
+        alert("Category cannot be empty");
+      } else {
+        console.log("Handle blur or enter, about to update category");
+        console.log(newCategory);
+        await updateCategory({
+          variables: {
+            gameBoardId,
+            index: categoryIndex,
+            category: newCategory,
           },
-        ],
-      });
-      onUpdateCategory(newCategory, categoryIndex);
+          refetchQueries: [
+            {
+              query: FindGameBoardDocument,
+              variables: { gameBoardId },
+            },
+          ],
+        });
+        onUpdateCategory(newCategory, categoryIndex);
+      }
     } catch (e) {
       console.error("Error updating category:", e);
     }
@@ -70,24 +78,31 @@ const Category: React.FC<CategoryProps> = ({
         backgroundColor: theme.palette.primary.main,
         justifyContent: "center",
       })}
+      onClick={handleTextClick}
     >
       {isEditing ? (
         <TextField
           value={newCategory}
           // Apply custom styles to match "h4" typography
-          sx={{
+          sx={(theme) => ({
             "& .MuiInputBase-input": {
-              fontSize: "2.125rem", // Typically h4 font size
-              fontWeight: 400, // Adjust as needed
-              lineHeight: 1.235,
-              letterSpacing: "0.00735em",
+              fontSize: theme.typography.h4.fontSize,
+              fontWeight: theme.typography.h4.fontWeight,
+              lineHeight: theme.typography.h4.lineHeight,
+              letterSpacing: theme.typography.h4.letterSpacing,
+              textAlign: "center", // Center text horizontally
             },
             // Optional: Adjust the label if using one
             "& .MuiInputLabel-root": {
               fontSize: "2.125rem",
             },
+          })}
+          onChange={(e) => {
+            const trimmedValue = e.target.value.trim();
+            if (trimmedValue || e.target.value === "") {
+              setNewCategory(e.target.value); // Only set if not purely whitespace
+            }
           }}
-          onChange={(e) => setNewCategory(e.target.value)}
           onBlur={handleBlurOrEnter}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -100,11 +115,7 @@ const Category: React.FC<CategoryProps> = ({
           size="medium"
         />
       ) : (
-        <Typography
-          variant="h4"
-          onClick={handleTextClick}
-          style={{ cursor: "pointer" }}
-        >
+        <Typography variant="h4" style={{ cursor: "pointer" }}>
           {newCategory}
         </Typography>
       )}
