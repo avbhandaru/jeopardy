@@ -19,6 +19,7 @@ import {
   GoogleIcon,
   FacebookIcon,
   SitemarkIcon,
+  DogIcon,
 } from "./components/CustomIcons";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -128,7 +129,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
       <SignUpContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
-          <SitemarkIcon />
+          <DogIcon />
           <Typography
             component="h1"
             variant="h4"

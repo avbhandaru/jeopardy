@@ -16,11 +16,7 @@ import { styled } from "@mui/material/styles";
 import ForgotPassword from "./components/ForgotPassword";
 import AppTheme from "../shared-theme/AppTheme";
 import ColorModeSelect from "../shared-theme/ColorModeSelect";
-import {
-  GoogleIcon,
-  FacebookIcon,
-  SitemarkIcon,
-} from "./components/CustomIcons";
+import { GoogleIcon, FacebookIcon, DogIcon } from "./components/CustomIcons";
 import type {} from "@mui/material/themeCssVarsAugmentation";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -127,7 +123,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
           sx={{ position: "fixed", top: "1rem", right: "1rem" }}
         />
         <Card variant="outlined">
-          <SitemarkIcon />
+          <DogIcon />
           <Typography
             component="h1"
             variant="h4"
