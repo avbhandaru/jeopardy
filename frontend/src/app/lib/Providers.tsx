@@ -2,12 +2,13 @@
 "use client"; // This ensures the component is treated as a Client component
 
 import { ApolloProvider } from "@apollo/client";
+import AuthProvider from "./AuthProvider";
 import client from "./apolloClient";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import theme from "./theme";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import { testTheme } from "./theme";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 
 interface ProviderProps {
   children: React.ReactNode;
@@ -15,14 +16,16 @@ interface ProviderProps {
 
 const Providers = ({ children }: ProviderProps) => {
   return (
-    <ApolloProvider client={client}>
-      <AppRouterCacheProvider>
-        <ThemeProvider theme={testTheme} defaultMode="system">
-          <CssBaseline />
-          {children}
-        </ThemeProvider>
-      </AppRouterCacheProvider>
-    </ApolloProvider>
+    <AuthProvider>
+      <ApolloProvider client={client}>
+        <AppRouterCacheProvider>
+          <ThemeProvider theme={testTheme} defaultMode="system">
+            <CssBaseline />
+            {children}
+          </ThemeProvider>
+        </AppRouterCacheProvider>
+      </ApolloProvider>
+    </AuthProvider>
   );
 };
 

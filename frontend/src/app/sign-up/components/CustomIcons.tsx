@@ -11,7 +11,7 @@ export function DogIcon() {
         width="800px"
         height="800px"
         viewBox="0 0 64 64"
-        enable-background="new 0 0 64 64"
+        enableBackground="new 0 0 64 64"
       >
         <title>Dog</title>
         <desc>Created with Sketch.</desc>
@@ -20,8 +20,8 @@ export function DogIcon() {
             id="Shape_1_"
             fill="none"
             stroke="#6B6C6E"
-            stroke-width="2"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinejoin="round"
             d="M34.7,42c-2.8,0-6.4,4.9-6.4,8h-5.2
 		c-1.7,0-3.2,1.6-3.2,3.5l0,0c0,2,1.4,3.4,3.2,3.4h22.5C58.6,57,62.1,45.3,61,37.1l0,0c0,0-11.1,11.8-14.1,11.8
 		c0.1-12.2-8.9-23.7-14.8-29C28.8,16.9,27.9,9,27.9,9V4.8c0-4.3-0.3-8.9-1.2-9.5c-1.6-1.1-4.4,4.6-6.7,4.6c-11.7,0-10,8-12.5,8H2.2
@@ -31,16 +31,16 @@ export function DogIcon() {
             id="Shape_2_"
             fill="none"
             stroke="#6B6C6E"
-            stroke-width="2"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinejoin="round"
             d="M20.9,38v8.8"
           />
           <path
             id="Shape_4_"
             fill="none"
             stroke="#6B6C6E"
-            stroke-width="2"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinejoin="round"
             d="M1,14h6"
           />
         </g>
