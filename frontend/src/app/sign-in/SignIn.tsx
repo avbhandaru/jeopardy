@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -16,10 +18,15 @@ import { styled } from "@mui/material/styles";
 import ForgotPassword from "./components/ForgotPassword";
 import AppTheme from "../shared-theme/AppTheme";
 import ColorModeSelect from "../shared-theme/ColorModeSelect";
-import { GoogleIcon, FacebookIcon, DogIcon } from "./components/CustomIcons";
+import { GoogleIcon, DogIcon } from "./components/CustomIcons";
 import type {} from "@mui/material/themeCssVarsAugmentation";
 
+import { useAuth } from "../lib/AuthProvider";
+import { useRouter } from "next/navigation";
+import { findUserByFirebaseUid } from "../lib/serverQueries";
+
 const Card = styled(MuiCard)(({ theme }) => ({
+  overflowY: "auto",
   display: "flex",
   flexDirection: "column",
   alignSelf: "center",
@@ -67,6 +74,8 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
   const [open, setOpen] = React.useState(false);
+  const { signIn, signInWithGoogle, user, loading } = useAuth();
+  const router = useRouter();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -76,16 +85,44 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     setOpen(false);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (emailError || passwordError) {
-      event.preventDefault();
       return;
     }
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+    try {
+      // Call the signIn function from the AuthProvider
+      const result = await signIn(email, password);
+      console.log("User signed in:", result.user);
+      const userResult = await findUserByFirebaseUid(result.user.uid);
+      // Optionally, redirect or update UI based on successful sign in
+      router.push("/user/" + userResult.data?.findUserByFirebaseUid?.id);
+    } catch (error) {
+      console.error("Error signing in:", error);
+      // Optionally, update your state to display an error message in the UI
+    }
+  };
+
+  const handleSignInWithGoogle = async () => {
+    // Sign in existing user with google
+    try {
+      // Call the signInWithGoogle function from the AuthProvider
+      const result = await signInWithGoogle();
+      console.log("User signed in with Google:", result.user);
+      if (!result.user) {
+        console.error("Google user not found:", result);
+        return;
+      }
+      // Optionally, redirect or update UI based on successful sign in
+      const userResult = await findUserByFirebaseUid(result.user.uid);
+      router.push("/users/" + userResult.id);
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+      // Optionally, update your state to display an error message in the UI
+    }
   };
 
   const validateInputs = () => {
@@ -133,7 +170,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit}
+            onSubmit={handleSignIn}
             noValidate
             sx={{
               display: "flex",
@@ -204,23 +241,15 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert("Sign in with Google")}
+              onClick={handleSignInWithGoogle}
               startIcon={<GoogleIcon />}
             >
               Sign in with Google
             </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert("Sign in with Facebook")}
-              startIcon={<FacebookIcon />}
-            >
-              Sign in with Facebook
-            </Button>
             <Typography sx={{ textAlign: "center" }}>
               Don&apos;t have an account?{" "}
               <Link
-                href="/material-ui/getting-started/templates/sign-in/"
+                href="/sign-up"
                 variant="body2"
                 sx={{ alignSelf: "center" }}
               >

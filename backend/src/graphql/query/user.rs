@@ -20,6 +20,21 @@ impl UserQuery {
         Ok(user)
     }
 
+    /// Find user by firebase UID
+    async fn find_user_by_firebase_uid(
+        &self,
+        ctx: &Context<'_>,
+        firebase_uid: String,
+    ) -> Result<User> {
+        let pool = ctx
+            .data::<DBPool>()
+            .expect("Cannot get DBPool from context");
+        let mut conn = pool.get().await.expect("Failed to get connection");
+
+        let user: User = User::find_by_firebase_uid(&mut conn, firebase_uid).await?;
+        Ok(user)
+    }
+
     /// Fetch all users in database
     async fn fetch_all_users(&self, ctx: &Context<'_>) -> Result<Vec<User>> {
         let pool = ctx

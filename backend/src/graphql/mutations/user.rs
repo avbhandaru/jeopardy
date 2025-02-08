@@ -1,12 +1,13 @@
 // graphql/mutations/user.rs
 
 use crate::db::pool::DBPool;
-use crate::models::user::{NewUser, User};
+use crate::models::user::User;
 use async_graphql::{Context, InputObject, Object, Result};
 
 #[derive(InputObject)]
 pub struct CreateUserInput {
     pub username: String,
+    pub firebase_uid: String,
 }
 
 // Define the mutation root for User
@@ -21,11 +22,7 @@ impl UserMutation {
             .expect("Cannot get DBPool from context");
         let mut conn = pool.get().await.expect("Failed to get connection");
 
-        let new_user: NewUser = NewUser {
-            username: input.username,
-        };
-
-        let user: User = User::create(&mut conn, new_user).await?;
+        let user: User = User::create(&mut conn, input.username, input.firebase_uid).await?;
         Ok(user)
     }
 }

@@ -5,6 +5,7 @@ export const ADD_USER_MUTATION = gql`
   mutation CreateUser($input: CreateUserInput!) {
     createUser(input: $input) {
       id
+      firebaseUid
       username
       createdAt
       updatedAt

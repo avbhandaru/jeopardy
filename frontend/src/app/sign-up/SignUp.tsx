@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -15,14 +16,15 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import AppTheme from "../shared-theme/AppTheme";
 import ColorModeSelect from "../shared-theme/ColorModeSelect";
-import {
-  GoogleIcon,
-  FacebookIcon,
-  SitemarkIcon,
-  DogIcon,
-} from "./components/CustomIcons";
+import { GoogleIcon, DogIcon } from "./components/CustomIcons";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "../lib/AuthProvider";
+import { createUser, findUserByFirebaseUid } from "../lib/serverQueries";
 
 const Card = styled(MuiCard)(({ theme }) => ({
+  // flexShrink: 0,
+  overflowY: "auto",
   display: "flex",
   flexDirection: "column",
   alignSelf: "center",
@@ -69,13 +71,15 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState("");
+  const [usernameError, setUsernameError] = React.useState(false);
+  const [usernameErrorMessage, setUsernameErrorMessage] = React.useState("");
+  const { signUp, signInWithGoogle } = useAuth();
+  const router = useRouter();
 
   const validateInputs = () => {
     const email = document.getElementById("email") as HTMLInputElement;
     const password = document.getElementById("password") as HTMLInputElement;
-    const name = document.getElementById("name") as HTMLInputElement;
+    const username = document.getElementById("username") as HTMLInputElement;
 
     let isValid = true;
 
@@ -97,30 +101,70 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setPasswordErrorMessage("");
     }
 
-    if (!name.value || name.value.length < 1) {
-      setNameError(true);
-      setNameErrorMessage("Name is required.");
+    if (!username.value || username.value.length < 1) {
+      setUsernameError(true);
+      setUsernameErrorMessage("Username is required.");
       isValid = false;
     } else {
-      setNameError(false);
-      setNameErrorMessage("");
+      setUsernameError(false);
+      setUsernameErrorMessage("");
     }
 
     return isValid;
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (nameError || emailError || passwordError) {
-      event.preventDefault();
+  const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (usernameError || emailError || passwordError) {
       return;
     }
     const data = new FormData(event.currentTarget);
-    console.log({
-      name: data.get("name"),
-      lastName: data.get("lastName"),
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+    const username = data.get("username") as string;
+
+    try {
+      console.log("Attempting to sign up with email:", email);
+      const userCredential = await signUp(email, password);
+      console.log("Firebase sign up successful:", userCredential);
+      const firebaseUser = userCredential.user;
+      const idToken = await firebaseUser.getIdToken();
+
+      // Send the user data to the server
+      const response = await createUser(username, firebaseUser.uid);
+      console.log("Backend createUser response:", response);
+      router.push("/users/" + response.data?.createUser.id);
+    } catch (error) {
+      console.error("Error during Firebase sign up:", error);
+    }
+  };
+
+  const handleSignUpWithGoogle = async () => {
+    // Sign up new user with google
+    try {
+      const result = await signInWithGoogle();
+      if (!result.user) {
+        console.error("Google user not found:", result);
+        return;
+      }
+      console.log("User signed up with Google:", result.user);
+
+      // First check for existing user with firebase UID
+      const existingUser = await findUserByFirebaseUid(result.user.uid);
+      console.log(existingUser);
+      if (existingUser) {
+        console.log("User already exists with firebase UID", result.user.uid);
+        router.push("/users/" + existingUser.id);
+      } else {
+        console.log("No user found with firebase UID", result.user.uid);
+        const displayName = result.user.displayName ?? "Display Name";
+        console.log("Creating new user from google user: ", displayName);
+        const userResult = await createUser(displayName, result.user.uid);
+        router.push("/users/" + userResult.data?.createUser.id);
+      }
+    } catch (error) {
+      console.error("Error signing up with Google:", error);
+    }
   };
 
   return (
@@ -139,21 +183,22 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit}
+            method="post"
+            onSubmit={handleSignUp}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
             <FormControl>
-              <FormLabel htmlFor="name">Full name</FormLabel>
+              <FormLabel htmlFor="username">Username</FormLabel>
               <TextField
-                autoComplete="name"
-                name="name"
+                autoComplete="username"
+                name="username"
                 required
                 fullWidth
-                id="name"
+                id="username"
                 placeholder="Jon Snow"
-                error={nameError}
-                helperText={nameErrorMessage}
-                color={nameError ? "error" : "primary"}
+                error={usernameError}
+                helperText={usernameErrorMessage}
+                color={usernameError ? "error" : "primary"}
               />
             </FormControl>
             <FormControl>
@@ -187,10 +232,6 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 color={passwordError ? "error" : "primary"}
               />
             </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="I want to receive updates via email."
-            />
             <Button
               type="submit"
               fullWidth
@@ -207,23 +248,15 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert("Sign up with Google")}
+              onClick={handleSignUpWithGoogle}
               startIcon={<GoogleIcon />}
             >
               Sign up with Google
             </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert("Sign up with Facebook")}
-              startIcon={<FacebookIcon />}
-            >
-              Sign up with Facebook
-            </Button>
             <Typography sx={{ textAlign: "center" }}>
               Already have an account?{" "}
               <Link
-                href="/material-ui/getting-started/templates/sign-in/"
+                href="/sign-in"
                 variant="body2"
                 sx={{ alignSelf: "center" }}
               >

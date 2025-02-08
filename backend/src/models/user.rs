@@ -22,6 +22,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 ///     created_at: Utc::now(),
 ///     updated_at: Utc::now(),
 ///     username: String::from("johndoe"),
+///     firebase_uid: String::from("123456"),
 /// };
 ///
 /// println!("{:?}", user);
@@ -37,6 +38,8 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
     /// The username of the user.
     pub username: String,
+    /// The Firebase UID of the user.
+    pub firebase_uid: String,
 }
 
 /// Represents a new user to be inserted into the database.
@@ -44,6 +47,7 @@ pub struct User {
 #[diesel(table_name = users)]
 pub struct NewUser {
     pub username: String,
+    pub firebase_uid: String,
 }
 
 impl User {
@@ -60,6 +64,24 @@ impl User {
         user_id: i64,
     ) -> Result<Self, diesel::result::Error> {
         users::table.find(user_id).first(conn).await
+    }
+
+    /// Find a user by their Firebase UID.
+    ///
+    /// # Arguments
+    /// * `conn` - A mutable reference to an async PostgreSQL connection.
+    /// * `firebase_uid` - The Firebase UID of the user to fetch.
+    ///
+    /// # Returns
+    /// A `Result` containing the user or a Diesel error.
+    pub async fn find_by_firebase_uid(
+        conn: &mut AsyncPgConnection,
+        firebase_uid: String,
+    ) -> Result<Self, diesel::result::Error> {
+        users::table
+            .filter(users::firebase_uid.eq(firebase_uid))
+            .first(conn)
+            .await
     }
 
     /// Fetch all users from the database.
@@ -101,8 +123,16 @@ impl User {
     /// A `Result` containing the newly created user or a Diesel error.
     pub async fn create(
         conn: &mut AsyncPgConnection,
-        new_user: NewUser,
+        username: String,
+        firebase_uid: String,
     ) -> Result<Self, diesel::result::Error> {
+        // Using the builder (from derive_builder) to construct a NewUser instance
+        let new_user = NewUserBuilder::default()
+            .username(username)
+            .firebase_uid(firebase_uid)
+            .build()
+            .expect("Failed to build NewUser");
+
         diesel::insert_into(users::table)
             .values(&new_user)
             .get_result(conn)
