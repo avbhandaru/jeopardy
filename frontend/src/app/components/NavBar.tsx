@@ -12,6 +12,7 @@ import { styled } from "@mui/material/styles";
 import Link from "next/link";
 import { useAuth } from "../lib/AuthProvider";
 import useBackendUser from "@/app/hooks/useBackendUser";
+import { useRouter } from "next/navigation";
 
 const StyledLink = styled(Link)({
   textDecoration: "none",
@@ -19,10 +20,22 @@ const StyledLink = styled(Link)({
 });
 
 const NavBar = () => {
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const { backendUser, loading } = useBackendUser();
 
   const myPageUrl = backendUser ? `/users/${backendUser.id}` : "/sign-in";
+  // If a user is signed in, show "My Page", else show "Sign In"
+  const linkText = user ? "My Page" : "Sign In";
+
+  const handleLogOut = async () => {
+    try {
+      await logout();
+      router.push("/");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
   return (
     <Box sx={{ flexGrow: 1, mb: 4 }}>
       <AppBar position="static">
@@ -43,8 +56,14 @@ const NavBar = () => {
             <StyledLink href="/questions">Questions</StyledLink>
           </Button>
           <Button color="inherit">
-            <StyledLink href={myPageUrl}>My Page</StyledLink>
+            <StyledLink href={myPageUrl}>{linkText}</StyledLink>
           </Button>
+          {/* Conditionally render Sign Out if the user is logged in */}
+          {user && (
+            <Button color="inherit" onClick={handleLogOut}>
+              Log Out
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
     </Box>
