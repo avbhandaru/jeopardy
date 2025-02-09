@@ -10,6 +10,8 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
 import Link from "next/link";
+import { useAuth } from "../lib/AuthProvider";
+import useBackendUser from "@/app/hooks/useBackendUser";
 
 const StyledLink = styled(Link)({
   textDecoration: "none",
@@ -17,6 +19,10 @@ const StyledLink = styled(Link)({
 });
 
 const NavBar = () => {
+  const { user } = useAuth();
+  const { backendUser, loading } = useBackendUser();
+
+  const myPageUrl = backendUser ? `/users/${backendUser.id}` : "/sign-in";
   return (
     <Box sx={{ flexGrow: 1, mb: 4 }}>
       <AppBar position="static">
@@ -37,7 +43,7 @@ const NavBar = () => {
             <StyledLink href="/questions">Questions</StyledLink>
           </Button>
           <Button color="inherit">
-            <StyledLink href="/users/1">My Page</StyledLink>
+            <StyledLink href={myPageUrl}>My Page</StyledLink>
           </Button>
         </Toolbar>
       </AppBar>

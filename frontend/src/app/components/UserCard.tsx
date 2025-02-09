@@ -19,7 +19,7 @@ const UserCard: React.FC<UserCardProps> = ({ user_uuid }) => {
     <Card>
       <CardContent>
         <QueryResult loading={loading} error={error} data={data}>
-          <Typography variant="h5" component="h2">
+          <Typography variant="h2" component="h2">
             Username: {data?.findUser?.username}
           </Typography>
         </QueryResult>

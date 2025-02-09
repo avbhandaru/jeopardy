@@ -17,7 +17,6 @@ export default async function UserPage({
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <h1>User Page</h1>
         <List>
           <ListItem>
             <UserCard user_uuid={user_uuid}></UserCard>
