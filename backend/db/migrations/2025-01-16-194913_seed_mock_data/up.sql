@@ -1,13 +1,13 @@
 -- Your SQL goes here
 -- migrations/YYYYMMDDHHMMSS_seed_mock_data/up.sql
 
-INSERT INTO users (username) VALUES
-('jeopardy_master'),
-('quiz_wizard'),
-('daily_double_dominator'),
-('category_king'),
-('clue_collector'),
-('Mudkip');
+INSERT INTO users (username, firebase_uid) VALUES
+('jeopardy_master', gen_random_uuid()),
+('quiz_wizard', gen_random_uuid()),
+('daily_double_dominator', gen_random_uuid()),
+('category_king', gen_random_uuid()),
+('clue_collector', gen_random_uuid()),
+('Mudkip', gen_random_uuid());
 
 INSERT INTO game_boards (user_id, title) VALUES
 (1, 'General Knowledge Board'),

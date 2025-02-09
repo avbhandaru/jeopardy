@@ -60,6 +60,7 @@ diesel::table! {
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         username -> Text,
+        firebase_uid -> Text,
     }
 }
 

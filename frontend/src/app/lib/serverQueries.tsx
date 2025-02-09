@@ -2,6 +2,10 @@
 
 import { gql } from "@apollo/client";
 import client from "./apolloClient";
+import {
+  CreateUserDocument,
+  FindUserByFirebaseUidDocument,
+} from "@/__generated__/graphql";
 
 export const FIND_GAMEBOARD_QUERY = gql`
   query FindGameBoard($gameBoardId: Int!) {
@@ -54,4 +58,28 @@ export async function fetchGame(gameId: number) {
   }
 
   return data.findGame;
+}
+
+export async function createUser(username: string, firebaseUid: string) {
+  const { data } = await client.mutate({
+    mutation: CreateUserDocument,
+    variables: {
+      input: {
+        username,
+        firebaseUid,
+      },
+    },
+  });
+
+  return data.createUser;
+}
+
+export async function findUserByFirebaseUid(firebaseUid: string) {
+  const { data } = await client.query({
+    query: FindUserByFirebaseUidDocument,
+    variables: {
+      firebaseUid,
+    },
+  });
+  return data.findUserByFirebaseUid;
 }

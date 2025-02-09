@@ -46,6 +46,7 @@ export type CreateQuestionInput = {
 };
 
 export type CreateUserInput = {
+  firebaseUid: Scalars['String']['input'];
   username: Scalars['String']['input'];
 };
 
@@ -336,6 +337,8 @@ export type RootQuery = {
   findQuestion: Question;
   /** Find user by id */
   findUser: User;
+  /** Find user by firebase UID */
+  findUserByFirebaseUid: User;
 };
 
 
@@ -410,6 +413,11 @@ export type RootQueryFindUserArgs = {
   userId: Scalars['Int']['input'];
 };
 
+
+export type RootQueryFindUserByFirebaseUidArgs = {
+  firebaseUid: Scalars['String']['input'];
+};
+
 export type UpdateGameBoardInput = {
   boardId: Scalars['Int']['input'];
   categories?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -447,6 +455,7 @@ export type UpdateQuestionInput = {
  * created_at: Utc::now(),
  * updated_at: Utc::now(),
  * username: String::from("johndoe"),
+ * firebase_uid: String::from("123456"),
  * };
  *
  * println!("{:?}", user);
@@ -456,6 +465,8 @@ export type User = {
   __typename?: 'User';
   /** The timestamp when the user was created. */
   createdAt: Scalars['DateTime']['output'];
+  /** The Firebase UID of the user. */
+  firebaseUid: Scalars['String']['output'];
   /** The unique identifier for the user. */
   id: Scalars['Int']['output'];
   /** The timestamp when the user was last updated. */

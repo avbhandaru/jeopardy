@@ -49,6 +49,7 @@ export type CreateQuestionInput = {
 };
 
 export type CreateUserInput = {
+  firebaseUid: Scalars['String']['input'];
   username: Scalars['String']['input'];
 };
 
@@ -339,6 +340,8 @@ export type RootQuery = {
   findQuestion: Question;
   /** Find user by id */
   findUser: User;
+  /** Find user by firebase UID */
+  findUserByFirebaseUid: User;
 };
 
 
@@ -413,6 +416,11 @@ export type RootQueryFindUserArgs = {
   userId: Scalars['Int']['input'];
 };
 
+
+export type RootQueryFindUserByFirebaseUidArgs = {
+  firebaseUid: Scalars['String']['input'];
+};
+
 export type UpdateGameBoardInput = {
   boardId: Scalars['Int']['input'];
   categories?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -450,6 +458,7 @@ export type UpdateQuestionInput = {
  * created_at: Utc::now(),
  * updated_at: Utc::now(),
  * username: String::from("johndoe"),
+ * firebase_uid: String::from("123456"),
  * };
  *
  * println!("{:?}", user);
@@ -459,6 +468,8 @@ export type User = {
   __typename?: 'User';
   /** The timestamp when the user was created. */
   createdAt: Scalars['DateTime']['output'];
+  /** The Firebase UID of the user. */
+  firebaseUid: Scalars['String']['output'];
   /** The unique identifier for the user. */
   id: Scalars['Int']['output'];
   /** The timestamp when the user was last updated. */
@@ -568,7 +579,7 @@ export type CreateUserMutationVariables = Exact<{
 }>;
 
 
-export type CreateUserMutation = { __typename?: 'RootMutation', createUser: { __typename?: 'User', id: number, username: string, createdAt: any, updatedAt: any } };
+export type CreateUserMutation = { __typename?: 'RootMutation', createUser: { __typename?: 'User', id: number, firebaseUid: string, username: string, createdAt: any, updatedAt: any } };
 
 export type FindGbqQueryVariables = Exact<{
   gameBoardId: Scalars['Int']['input'];
@@ -669,14 +680,21 @@ export type FindQuestionQuery = { __typename?: 'RootQuery', findQuestion: { __ty
 export type FetchAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type FetchAllUsersQuery = { __typename?: 'RootQuery', fetchAllUsers: Array<{ __typename?: 'User', id: number, username: string, createdAt: any, updatedAt: any }> };
+export type FetchAllUsersQuery = { __typename?: 'RootQuery', fetchAllUsers: Array<{ __typename?: 'User', id: number, firebaseUid: string, username: string, createdAt: any, updatedAt: any }> };
 
 export type FindUserQueryVariables = Exact<{
   userId: Scalars['Int']['input'];
 }>;
 
 
-export type FindUserQuery = { __typename?: 'RootQuery', findUser: { __typename?: 'User', id: number, username: string, createdAt: any, updatedAt: any } };
+export type FindUserQuery = { __typename?: 'RootQuery', findUser: { __typename?: 'User', id: number, firebaseUid: string, username: string, createdAt: any, updatedAt: any } };
+
+export type FindUserByFirebaseUidQueryVariables = Exact<{
+  firebaseUid: Scalars['String']['input'];
+}>;
+
+
+export type FindUserByFirebaseUidQuery = { __typename?: 'RootQuery', findUserByFirebaseUid: { __typename?: 'User', id: number, firebaseUid: string, username: string, createdAt: any, updatedAt: any } };
 
 
 export const CreateMappingDocument = gql`
@@ -1174,6 +1192,7 @@ export const CreateUserDocument = gql`
     mutation CreateUser($input: CreateUserInput!) {
   createUser(input: $input) {
     id
+    firebaseUid
     username
     createdAt
     updatedAt
@@ -1852,6 +1871,7 @@ export const FetchAllUsersDocument = gql`
     query fetchAllUsers {
   fetchAllUsers {
     id
+    firebaseUid
     username
     createdAt
     updatedAt
@@ -1894,6 +1914,7 @@ export const FindUserDocument = gql`
     query findUser($userId: Int!) {
   findUser(userId: $userId) {
     id
+    firebaseUid
     username
     createdAt
     updatedAt
@@ -1933,3 +1954,47 @@ export type FindUserQueryHookResult = ReturnType<typeof useFindUserQuery>;
 export type FindUserLazyQueryHookResult = ReturnType<typeof useFindUserLazyQuery>;
 export type FindUserSuspenseQueryHookResult = ReturnType<typeof useFindUserSuspenseQuery>;
 export type FindUserQueryResult = Apollo.QueryResult<FindUserQuery, FindUserQueryVariables>;
+export const FindUserByFirebaseUidDocument = gql`
+    query findUserByFirebaseUid($firebaseUid: String!) {
+  findUserByFirebaseUid(firebaseUid: $firebaseUid) {
+    id
+    firebaseUid
+    username
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useFindUserByFirebaseUidQuery__
+ *
+ * To run a query within a React component, call `useFindUserByFirebaseUidQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFindUserByFirebaseUidQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFindUserByFirebaseUidQuery({
+ *   variables: {
+ *      firebaseUid: // value for 'firebaseUid'
+ *   },
+ * });
+ */
+export function useFindUserByFirebaseUidQuery(baseOptions: Apollo.QueryHookOptions<FindUserByFirebaseUidQuery, FindUserByFirebaseUidQueryVariables> & ({ variables: FindUserByFirebaseUidQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<FindUserByFirebaseUidQuery, FindUserByFirebaseUidQueryVariables>(FindUserByFirebaseUidDocument, options);
+      }
+export function useFindUserByFirebaseUidLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FindUserByFirebaseUidQuery, FindUserByFirebaseUidQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<FindUserByFirebaseUidQuery, FindUserByFirebaseUidQueryVariables>(FindUserByFirebaseUidDocument, options);
+        }
+export function useFindUserByFirebaseUidSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<FindUserByFirebaseUidQuery, FindUserByFirebaseUidQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<FindUserByFirebaseUidQuery, FindUserByFirebaseUidQueryVariables>(FindUserByFirebaseUidDocument, options);
+        }
+export type FindUserByFirebaseUidQueryHookResult = ReturnType<typeof useFindUserByFirebaseUidQuery>;
+export type FindUserByFirebaseUidLazyQueryHookResult = ReturnType<typeof useFindUserByFirebaseUidLazyQuery>;
+export type FindUserByFirebaseUidSuspenseQueryHookResult = ReturnType<typeof useFindUserByFirebaseUidSuspenseQuery>;
+export type FindUserByFirebaseUidQueryResult = Apollo.QueryResult<FindUserByFirebaseUidQuery, FindUserByFirebaseUidQueryVariables>;
