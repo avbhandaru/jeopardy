@@ -21,8 +21,8 @@ export default async function GamePage({
       <div className={styles.page}>
         <main className={styles.main}>
           <GameContextProvider game_uuid={game_uuid}>
+            <Scoreboard  />
             <GameBoardGrid gameBoard={gameBoard} />
-            {/* <Scoreboard /> */}
           </GameContextProvider>
         </main>
       </div>

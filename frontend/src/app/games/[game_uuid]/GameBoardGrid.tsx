@@ -37,7 +37,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({ gameBoard }) => {
   }, [data]);
 
   const handleClickQuestionCell = (gameBoardQuestion: GameBoardQuestion) => {
-    console.log("Clicked question:", gameBoardQuestion);
+    // console.log("Clicked question:", gameBoardQuestion);
     // Set the current question in the context
     setCurrentGameBoardQuestion(gameBoardQuestion);
     setAnsweredQuestions((prev) =>
@@ -65,8 +65,8 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({ gameBoard }) => {
     <Paper
       sx={{
         padding: 2,
-        width: "100%",
-        height: "100vh",
+        width: "75%",
+        height: "80vh",
         margin: "auto",
       }}
     >
