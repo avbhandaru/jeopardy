@@ -28,9 +28,6 @@ const NavBar = () => {
             <StyledLink href="/admin">Admin</StyledLink>
           </Button>
           <Button color="inherit">
-            <StyledLink href="/users">Users</StyledLink>
-          </Button>
-          <Button color="inherit">
             <StyledLink href="/games">GameBoards</StyledLink>
           </Button>
           <Button color="inherit">

@@ -4,7 +4,7 @@
 import React from "react";
 import { Card, CardContent, Typography } from "@mui/material";
 import { useFindUserQuery } from "@/__generated__/graphql";
-import QueryResult from "./query-result";
+import QueryResult from "../../components/query-result";
 
 interface UserCardProps {
   user_uuid: string;

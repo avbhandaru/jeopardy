@@ -8,10 +8,14 @@ import {
   Typography,
   IconButton,
   Divider,
+  Tooltip,
 } from "@mui/material";
 import { Player } from "@/__generated__/types";
 import Grid from "@mui/material/Grid2";
-import { useUpdatePlayerNameMutation } from "@/__generated__/graphql";
+import {
+  useUpdatePlayerNameMutation,
+  useUpdatePlayerScoreMutation,
+} from "@/__generated__/graphql";
 import { ArrowDropUp, ArrowDropDown } from "@mui/icons-material";
 import { useGameContext } from "./GameContext";
 
@@ -23,9 +27,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [playerName, setPlayerName] = useState(player.playerName);
   const [updateName, { loading, error }] = useUpdatePlayerNameMutation();
+  const [updateScore, { loading: scoreLoading, error: scoreError }] =
+    useUpdatePlayerScoreMutation();
   const [currentScore, setScore] = useState(player.score);
-  const { game_uuid, currentGameBoardQuestion, setCurrentGameBoardQuestion } =
-    useGameContext();
+  const { currentGameBoardQuestion } = useGameContext();
 
   const handleTextClick = () => {
     setIsEditing(true);
@@ -48,14 +53,36 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
 
   const handleClickArrowUp = () => {
     const questionPoints = currentGameBoardQuestion?.mapping.points || 0;
-    setScore(currentScore + questionPoints);
-    console.log("currentScore", currentScore);
+    const updatedScore = currentScore + questionPoints;
+    setScore(updatedScore);
+    console.log("Updated score", updatedScore);
+    try {
+      updateScore({
+        variables: {
+          playerId: player.id,
+          newScore: updatedScore,
+        },
+      });
+    } catch (e) {
+      console.error("Error updating player score:", e);
+    }
   };
 
   const handleClickArrowDown = () => {
     const questionPoints = currentGameBoardQuestion?.mapping.points || 0;
-    setScore(currentScore - questionPoints);
-    console.log("currentScore", currentScore);
+    const updatedScore = currentScore - questionPoints;
+    setScore(updatedScore);
+    console.log("Updated score", updatedScore);
+    try {
+      updateScore({
+        variables: {
+          playerId: player.id,
+          newScore: updatedScore,
+        },
+      });
+    } catch (e) {
+      console.error("Error updating player score:", e);
+    }
   };
 
   return (
@@ -76,25 +103,31 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
               size="small"
             />
           ) : (
-            <Typography
-              variant="h5"
-              component="h2"
-              onClick={handleTextClick}
-              style={{ cursor: "pointer" }}
-            >
-              {playerName}
-            </Typography>
+            <Tooltip title="Click to edit player name">
+              <Typography
+                variant="h5"
+                component="h2"
+                onClick={handleTextClick}
+                style={{ cursor: "pointer" }}
+              >
+                {playerName}
+              </Typography>
+            </Tooltip>
           )}
         </Grid>
         <Divider />
         <Grid container justifyContent="center" spacing={2}>
-          <IconButton onClick={handleClickArrowUp}>
-            <ArrowDropUp />
-          </IconButton>
+          <Tooltip title="Add prev question points">
+            <IconButton onClick={handleClickArrowUp}>
+              <ArrowDropUp />
+            </IconButton>
+          </Tooltip>
           <Typography color="textSecondary">{currentScore}</Typography>
-          <IconButton onClick={handleClickArrowDown}>
-            <ArrowDropDown />
-          </IconButton>
+          <Tooltip title="Remove prev question points">
+            <IconButton onClick={handleClickArrowDown}>
+              <ArrowDropDown />
+            </IconButton>
+          </Tooltip>
         </Grid>
       </CardContent>
     </Card>

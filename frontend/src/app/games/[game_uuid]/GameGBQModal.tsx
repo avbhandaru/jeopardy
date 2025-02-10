@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogActions,
@@ -19,21 +20,38 @@ const GameGBQModal: React.FC<GameGBQModalProps> = ({
   gameBoardQuestion,
   onClose,
 }) => {
+  const [revealAnswer, setRevealAnswer] = useState(false);
+
   return (
     <Dialog
       open={open}
       onClose={onClose}
       maxWidth="lg"
       fullWidth
-      PaperProps={{ style: { borderRadius: 20, maxHeight: "80%" } }}
+      sx={(theme) => ({
+        minHeight: "50vh",
+        maxHeight: "80vh",
+      })}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          setRevealAnswer(true);
+        }
+      }}
     >
       <DialogContent sx={{ padding: 4 }}>
         <DialogContentText sx={{ fontSize: 75 }}>
           Question: {gameBoardQuestion.question.question}
         </DialogContentText>
-        <DialogContentText sx={{ fontSize: 30 }}>
-          Answer: {gameBoardQuestion.question.answer}
-        </DialogContentText>
+        {revealAnswer ? (
+          <DialogContentText sx={{ fontSize: 30 }}>
+            Answer: {gameBoardQuestion.question.answer}
+          </DialogContentText>
+        ) : (
+          <DialogContentText sx={{ fontSize: 30 }}>
+            Press SPACE or ENTER to reveal answer{" "}
+          </DialogContentText>
+        )}
         <DialogContentText sx={{ fontSize: 30 }}>
           Points: {gameBoardQuestion.mapping.points}
         </DialogContentText>
@@ -45,7 +63,7 @@ const GameGBQModal: React.FC<GameGBQModalProps> = ({
             onClose();
           }}
         >
-          Close
+          Press ESC to close
         </Button>
       </DialogActions>
     </Dialog>

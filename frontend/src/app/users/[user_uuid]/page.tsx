@@ -5,7 +5,7 @@ import styles from "./page.module.css";
 import UserGameBoardDashboard from "./UserGameBoardDashboard";
 import { NewGameBoard } from "./NewGameBoard";
 import { UserGamesDasboard } from "./UserGamesDasboard";
-import UserCard from "@/app/components/UserCard";
+import UserCard from "./UserCard";
 
 export default async function UserPage({
   params,

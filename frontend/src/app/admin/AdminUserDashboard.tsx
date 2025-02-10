@@ -3,7 +3,6 @@
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper, Typography } from "@mui/material";
-import UserMutation from "../users/UserMutation";
 import { useFetchAllUsersQuery } from "@/__generated__/graphql";
 import Link from "next/link";
 
@@ -43,9 +42,6 @@ const AdminUserDashboard = () => {
       <Typography variant="h4" gutterBottom>
         Data from Backend:
       </Typography>
-
-      {/* Include the UserMutation component */}
-      <UserMutation />
 
       <Paper sx={{ height: 400, width: "100%" }}>
         <DataGrid

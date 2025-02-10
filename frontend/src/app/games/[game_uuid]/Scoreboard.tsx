@@ -8,7 +8,7 @@ import {
 } from "@/__generated__/graphql";
 import QueryResult from "@/app/components/query-result";
 import PlayerCard from "./PlayerCard";
-import { Fab } from "@mui/material";
+import { Box, Fab, Typography, Tooltip } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import AddIcon from "@mui/icons-material/Add";
 import { Remove } from "@mui/icons-material";
@@ -76,22 +76,26 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
         {data?.fetchPlayersFromGame.map((player) => (
           <PlayerCard key={player.id} player={player} />
         ))}
-        <Fab
-          onClick={handleAddPlayer}
-          disabled={addLoading} // you can disable if the mutation is in progress
-          color="primary"
-          aria-label="add"
-        >
-          <AddIcon />
-        </Fab>
-        <Fab
-          onClick={handleDeletePlayer}
-          disabled={deleteLoading}
-          color="secondary"
-          aria-label="remove"
-        >
-          <Remove />
-        </Fab>
+        <Tooltip title="Add Player" aria-label="add player">
+          <Fab
+            onClick={handleAddPlayer}
+            disabled={addLoading} // you can disable if the mutation is in progress
+            color="primary"
+            aria-label="add"
+          >
+            <AddIcon />
+          </Fab>
+        </Tooltip>
+        <Tooltip title="Remove Player" aria-label="remove player">
+          <Fab
+            onClick={handleDeletePlayer}
+            disabled={deleteLoading}
+            color="secondary"
+            aria-label="remove"
+          >
+            <Remove />
+          </Fab>
+        </Tooltip>
         {addError && (
           <p style={{ color: "red" }}>
             Error adding player: {addError.message}
