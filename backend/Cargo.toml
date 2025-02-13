@@ -4,10 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 
-[lib]
-# You can omit this section if you're using the default settings
-# path = "src/lib.rs"     # Default path is "src/lib.rs"
-
 [[bin]]
 name = "backend" # Name of the binary
 # path = "src/main.rs"    # Default path is "src/main.rs"

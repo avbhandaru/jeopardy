@@ -3,8 +3,10 @@ use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{extract::Extension, response::Html, routing::get, Router};
 use backend::db::pool::create_app_pool;
 use backend::graphql::schema::{create_schema, AppSchema};
+use dotenvy::dotenv;
 use http::header::{AUTHORIZATION, CONTENT_TYPE};
 use http::{HeaderValue, Method};
+use std::env;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
 
@@ -39,7 +41,12 @@ async fn main() {
         .layer(Extension(schema))
         .layer(cors);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+    dotenv().ok();
+    let port = env::var("PORT")
+        .unwrap_or_else(|_| "8000".to_string())
+        .parse::<u16>()
+        .expect("PORT must be a number");
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     println!("Server running at http://{}", &addr);
 
