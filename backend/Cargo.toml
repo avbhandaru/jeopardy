@@ -9,7 +9,7 @@ name = "backend" # Name of the binary
 # path = "src/main.rs"    # Default path is "src/main.rs"
 
 [dependencies]
-axum = "0.7.5"
+axum = "0.8.1"
 async-graphql = { version = "7.0.9", default-features = false, features = [
     "chrono",
     "playground",
@@ -37,6 +37,8 @@ deadpool-diesel = { version = "0.6.1", default-features = false, features = [
 ] }
 derive_builder = "0.20.2"
 dotenvy = "0.15.7"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread"] }

@@ -9,6 +9,8 @@ use http::{HeaderValue, Method};
 use std::env;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
+use tracing::error;
+use tracing_subscriber::EnvFilter;
 
 async fn graphql_playground() -> Html<String> {
     Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
@@ -23,15 +25,33 @@ async fn graphql_handler(
 
 #[tokio::main]
 async fn main() {
+    // Wrap the application logic in run() to allow graceful error handling.
+    if let Err(err) = run().await {
+        error!("Application error: {}", err);
+        std::process::exit(1);
+    }
+}
+
+async fn run() -> Result<(), Box<dyn std::error::Error>> {
+    // Load environment variables from .env file
+    dotenv().ok();
+
+    // Initialize the tracing subscriber.
+    // For production, you might prefer JSON output. Uncomment the `.json()` call below if desired.
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        // .json() // Uncomment for JSON formatted logs
+        .init();
+
     // Try to get a connection from our DBPool
-    let pool = create_app_pool().expect("Failed to create DBPool");
+    let pool = create_app_pool()?;
 
     // Create graphql schema
     let schema = create_schema(pool);
 
     // Configure CORS
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>()?)
         .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
         .allow_headers([CONTENT_TYPE, AUTHORIZATION])
         .allow_credentials(true); // In case of cookies or other credentials
@@ -41,17 +61,21 @@ async fn main() {
         .layer(Extension(schema))
         .layer(cors);
 
-    dotenv().ok();
     let port = env::var("PORT")
         .unwrap_or_else(|_| "8000".to_string())
         .parse::<u16>()
-        .expect("PORT must be a number");
+        .unwrap_or_else(|err| {
+            tracing::error!("PORT must be a number, but got an error: {}", err);
+            std::process::exit(1);
+        });
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
-    println!("Server running at http://{}", &addr);
+    // Instead of println!, log the startup info using tracing.
+    tracing::info!("Server running at http://{}", &addr);
 
     axum_server::bind(addr)
         .serve(app.into_make_service())
-        .await
-        .unwrap();
+        .await?;
+
+    Ok(())
 }

@@ -125,17 +125,22 @@ impl User {
         conn: &mut AsyncPgConnection,
         username: String,
         firebase_uid: String,
-    ) -> Result<Self, diesel::result::Error> {
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         // Using the builder (from derive_builder) to construct a NewUser instance
         let new_user = NewUserBuilder::default()
             .username(username)
             .firebase_uid(firebase_uid)
             .build()
-            .expect("Failed to build NewUser");
+            .map_err(|err| {
+                tracing::error!("Failed to build NewUser: {:?}", err);
+                Box::new(err) as Box<dyn std::error::Error>
+            })?;
 
-        diesel::insert_into(users::table)
+        let user = diesel::insert_into(users::table)
             .values(&new_user)
             .get_result(conn)
-            .await
+            .await?;
+
+        Ok(user)
     }
 }

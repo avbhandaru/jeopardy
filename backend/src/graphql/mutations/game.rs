@@ -17,10 +17,14 @@ pub struct GameMutation;
 #[Object]
 impl GameMutation {
     async fn create_game(&self, ctx: &Context<'_>, input: CreateGameInput) -> Result<Game> {
-        let pool = ctx
-            .data::<DBPool>()
-            .expect("Cannot get DBPool from context");
-        let mut conn = pool.get().await?;
+        let pool = ctx.data::<DBPool>().map_err(|e| {
+            async_graphql::Error::new(format!("Cannot get DBPool from context: {:?}", e))
+        })?;
+        let mut conn = pool
+            .get()
+            .await
+            .map_err(|e| async_graphql::Error::new(format!("Failed to get connection: {}", e)))?;
+
         let new_game: NewGame = NewGame {
             user_id: input.user_id,
             game_board_id: input.game_board_id,

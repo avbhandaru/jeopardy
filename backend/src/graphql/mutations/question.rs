@@ -29,8 +29,14 @@ impl QuestionMutation {
         ctx: &Context<'_>,
         input: CreateQuestionInput,
     ) -> Result<Question> {
-        let pool = ctx.data::<DBPool>().expect("Cant get DBPool from context");
-        let mut conn = pool.get().await.expect("Failed to get connection");
+        let pool = ctx.data::<DBPool>().map_err(|e| {
+            async_graphql::Error::new(format!("Cannot get DBPool from context: {:?}", e))
+        })?;
+        let mut conn = pool
+            .get()
+            .await
+            .map_err(|e| async_graphql::Error::new(format!("Failed to get connection: {}", e)))?;
+
         let new_question: NewQuestion = NewQuestion {
             user_id: input.user_id,
             question: input.question,
@@ -46,8 +52,13 @@ impl QuestionMutation {
         ctx: &Context<'_>,
         input: UpdateQuestionInput,
     ) -> Result<Question> {
-        let pool = ctx.data::<DBPool>().expect("Cant get DBPool from context");
-        let mut conn = pool.get().await.expect("Failed to get connection");
+        let pool = ctx.data::<DBPool>().map_err(|e| {
+            async_graphql::Error::new(format!("Cannot get DBPool from context: {:?}", e))
+        })?;
+        let mut conn = pool
+            .get()
+            .await
+            .map_err(|e| async_graphql::Error::new(format!("Failed to get connection: {}", e)))?;
 
         // Fetch the existing question
         let existing_question_result = Question::find_by_id(&mut conn, input.id).await;
@@ -93,10 +104,13 @@ impl QuestionMutation {
 
     /// Delete a question by ID
     async fn delete_question(&self, ctx: &Context<'_>, question_id: i64) -> Result<bool> {
-        let pool = ctx
-            .data::<DBPool>()
-            .expect("Cannot get DBPool from context");
-        let mut conn = pool.get().await?;
+        let pool = ctx.data::<DBPool>().map_err(|e| {
+            async_graphql::Error::new(format!("Cannot get DBPool from context: {:?}", e))
+        })?;
+        let mut conn = pool
+            .get()
+            .await
+            .map_err(|e| async_graphql::Error::new(format!("Failed to get connection: {}", e)))?;
 
         let rows_deleted = Question::delete_by_id(&mut conn, question_id).await?;
         Ok(rows_deleted > 0) // Return true if a row was deleted
